@@ -1,15 +1,18 @@
 {
-  "comment": "",
-  "completed_directories": [],
+  "comment": "neat",
   "steps": [
     {
       "comment": null,
-      "completed_directories": [],
+      "completed_directories": [
+        "/Users/david/projects/airtable-adding-games",
+        "/Users/david/projects/ref-haus"
+      ],
       "slug": "clean-status"
     }
   ],
   "directories": [
     "/Users/david/projects/airtable-adding-games",
-    "/Users/david/projects/ref-haus"
+    "/Users/david/projects/ref-haus",
+    "/Users/david/projects/shellprints"
   ]
 }

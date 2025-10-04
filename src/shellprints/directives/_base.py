@@ -23,5 +23,5 @@ class BaseDirective(BaseModel):
     comment: Optional[str] = None
     completed_directories: AbsPathList = []
 
-    def run(self):
+    def run(self, directory: Path) -> bool:
         raise NotImplementedError

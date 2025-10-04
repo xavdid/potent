@@ -1,3 +1,4 @@
+from subprocess import CalledProcessError
 from time import sleep
 
 import typer
@@ -11,16 +12,24 @@ app = typer.Typer()
 @app.command()
 def run(path: PlanJson):
     with path.open("r+") as plan_file:
-        plan = Shellprint.model_validate_json(plan_file.read())
-        plan.comment = f"{plan.comment or ''} cool"
-        plan_file.seek(0)
-        plan_file.truncate()
-        plan_file.write(plan.model_dump_json(indent=2))
-        plan_file.flush()
+        plan = Shellprint.from_file(plan_file)
 
-        sleep(2)
-        plan.comment = ""
-        plan_file.seek(0)
-        plan_file.truncate()
-        plan_file.write(plan.model_dump_json(indent=2))
-        plan_file.flush()
+        for directory in plan.directories:
+            print(f"Runnig in {directory}")
+            try:
+                for step in plan.steps:
+                    if directory in step.completed_directories:
+                        print("  skipping")
+                        continue
+                    print(f"  executing: {step}")
+                    if step.run(directory):
+                        step.completed_directories.append(directory)
+                        plan.save(plan_file)
+                        print("    success!")
+                    else:
+                        print("    fail!")
+                        break
+
+            except CalledProcessError:
+                print("ERR: ")
+                continue
