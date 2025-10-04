@@ -1,0 +1,141 @@
+{
+  "$defs": {
+    "CleanStatus": {
+      "properties": {
+        "comment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment"
+        },
+        "slug": {
+          "const": "clean-status",
+          "title": "Slug",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slug"
+      ],
+      "title": "CleanStatus",
+      "type": "object"
+    },
+    "GitPull": {
+      "properties": {
+        "comment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment"
+        },
+        "slug": {
+          "const": "git-pull",
+          "title": "Slug",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slug"
+      ],
+      "title": "GitPull",
+      "type": "object"
+    },
+    "UseBranch": {
+      "description": "Creates a branch if missing. Re-verifies you're on that branch every time",
+      "properties": {
+        "comment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment"
+        },
+        "slug": {
+          "const": "git-checkout",
+          "title": "Slug",
+          "type": "string"
+        },
+        "branch": {
+          "title": "Branch",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slug",
+        "branch"
+      ],
+      "title": "UseBranch",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "comment": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Comment"
+    },
+    "steps": {
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "clean-status": "#/$defs/CleanStatus",
+            "git-checkout": "#/$defs/UseBranch",
+            "git-pull": "#/$defs/GitPull"
+          },
+          "propertyName": "slug"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/GitPull"
+          },
+          {
+            "$ref": "#/$defs/UseBranch"
+          },
+          {
+            "$ref": "#/$defs/CleanStatus"
+          }
+        ]
+      },
+      "title": "Steps",
+      "type": "array"
+    },
+    "directories": {
+      "items": {
+        "format": "directory-path",
+        "type": "string"
+      },
+      "title": "Directories",
+      "type": "array"
+    }
+  },
+  "required": [
+    "steps",
+    "directories"
+  ],
+  "title": "Shellprint",
+  "type": "object"
+}
