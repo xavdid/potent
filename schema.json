@@ -14,6 +14,10 @@
           "default": null,
           "title": "Comment"
         },
+        "completed_directories": {
+          "$ref": "#/$defs/shellprints__directives___base__AbsPathList__1",
+          "default": []
+        },
         "slug": {
           "const": "clean-status",
           "title": "Slug",
@@ -39,6 +43,10 @@
           ],
           "default": null,
           "title": "Comment"
+        },
+        "completed_directories": {
+          "$ref": "#/$defs/shellprints__directives___base__AbsPathList__1",
+          "default": []
         },
         "slug": {
           "const": "git-pull",
@@ -67,6 +75,10 @@
           "default": null,
           "title": "Comment"
         },
+        "completed_directories": {
+          "$ref": "#/$defs/shellprints__directives___base__AbsPathList__1",
+          "default": []
+        },
         "slug": {
           "const": "git-checkout",
           "title": "Slug",
@@ -83,6 +95,21 @@
       ],
       "title": "UseBranch",
       "type": "object"
+    },
+    "shellprints__directives___base__AbsPathList__1": {
+      "items": {
+        "format": "directory-path",
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "shellprints__directives___base__AbsPathList__2": {
+      "items": {
+        "format": "directory-path",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
     }
   },
   "properties": {
@@ -124,12 +151,7 @@
       "type": "array"
     },
     "directories": {
-      "items": {
-        "format": "directory-path",
-        "type": "string"
-      },
-      "title": "Directories",
-      "type": "array"
+      "$ref": "#/$defs/shellprints__directives___base__AbsPathList__2"
     }
   },
   "required": [

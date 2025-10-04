@@ -1,6 +1,3 @@
-from pathlib import Path
-from typing import Annotated
-
 import typer
 
 from shellprints.commands._types import PlanJson
@@ -15,7 +12,7 @@ def validate(path: PlanJson):
     # probably want to hide the traceback though
     # and maybe return
     # can raise typer.Exit(code=int)
-    print(Shellprint.model_validate_json(path.read_text()))
+    Shellprint.from_path(path)
 
 
 # could try to wrap, but the basic error is pretty good:

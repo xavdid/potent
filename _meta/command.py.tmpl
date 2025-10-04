@@ -1,0 +1,11 @@
+import typer
+
+from shellprints.commands._types import PlanJson
+from shellprints.shellprint import Shellprint
+
+app = typer.Typer()
+
+
+@app.command()
+def <NAME>(path: PlanJson):
+    plan = Shellprint.model_validate_json(path.read_text())

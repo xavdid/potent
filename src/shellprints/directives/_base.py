@@ -25,3 +25,6 @@ class BaseDirective(BaseModel):
 
     def run(self, directory: Path) -> bool:
         raise NotImplementedError
+
+    def reset(self) -> None:
+        self.completed_directories = []
