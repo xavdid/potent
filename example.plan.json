@@ -3,10 +3,29 @@
   "steps": [
     {
       "comment": null,
-      "completed_directories": [
-        "/Users/david/projects/airtable-adding-games",
-        "/Users/david/projects/ref-haus"
-      ],
+      "directory_statuses": {
+        "/Users/david/projects/airtable-adding-games": "completed",
+        "/Users/david/projects/ref-haus": "completed",
+        "/Users/david/projects/shellprints": "failed"
+      },
+      "slug": "clean-status"
+    },
+    {
+      "comment": null,
+      "directory_statuses": {
+        "/Users/david/projects/airtable-adding-games": "failed",
+        "/Users/david/projects/ref-haus": "completed",
+        "/Users/david/projects/shellprints": "not-started"
+      },
+      "slug": "git-pull"
+    },
+    {
+      "comment": null,
+      "directory_statuses": {
+        "/Users/david/projects/airtable-adding-games": "not-started",
+        "/Users/david/projects/ref-haus": "completed",
+        "/Users/david/projects/shellprints": "not-started"
+      },
       "slug": "clean-status"
     }
   ],

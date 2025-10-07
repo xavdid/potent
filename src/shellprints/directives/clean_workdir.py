@@ -10,7 +10,7 @@ class CleanWorkdir(BaseDirective):
     slug: Literal["clean-status"]
 
     @override
-    def run(self, directory: Path) -> bool:
+    def _run(self, directory: Path) -> bool:
         result = subprocess.run(
             ["git", "status", "--porcelain"],
             cwd=directory,
@@ -18,4 +18,5 @@ class CleanWorkdir(BaseDirective):
             capture_output=True,
         )
         sleep(2)
+
         return not result.stdout

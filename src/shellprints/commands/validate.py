@@ -12,7 +12,9 @@ def validate(path: PlanJson):
     # probably want to hide the traceback though
     # and maybe return
     # can raise typer.Exit(code=int)
-    Shellprint.from_path(path)
+    print(f"Shellprint @ {str(path)}")
+    # print(Shellprint.from_path(path))
+    print(Shellprint.from_path(path).summarize())
 
 
 # could try to wrap, but the basic error is pretty good:

@@ -3,6 +3,7 @@ from time import sleep
 
 import typer
 
+# from rich.live import Live
 from shellprints.commands._types import PlanJson
 from shellprints.shellprint import Shellprint
 
@@ -15,21 +16,34 @@ def run(path: PlanJson):
         plan = Shellprint.from_file(plan_file)
 
         for directory in plan.directories:
-            print(f"Runnig in {directory}")
+            print()
+            if plan.directory_complete(directory):
+                print(f"☑️ {directory.name}")
+                # directory_spinner.ok(f"☑️ {directory.name}")
+                print("  skipping all!")
+                continue
+
             try:
+                print(f"➡️ {directory.name}")
                 for step in plan.steps:
-                    if directory in step.completed_directories:
-                        print("  skipping")
+                    print(f"  {step.slug}...", end="", flush=True)
+                    # with [].slug}") as task_spinner:
+                    if step.completed(directory):
+                        print(" ☑️")
+                        # task_spinner.ok("  ☑️ Skipping")
                         continue
-                    print(f"  executing: {step}")
-                    if step.run(directory):
-                        step.completed_directories.append(directory)
-                        plan.save(plan_file)
-                        print("    success!")
+                    success = step.run(directory)
+                    plan.save(plan_file)
+                    if success:
+                        # plan.save(plan_file)
+                        # task_spinner.ok("  OK")
+                        print(" ✅")
                     else:
-                        print("    fail!")
+                        # task_spinner.fail("  FAIL")
+                        print(" ❌")
                         break
 
-            except CalledProcessError:
-                print("ERR: ")
+            except (CalledProcessError, NotImplementedError):
+                # directory_spinner.fail("ERR")
+                print("    err!")
                 continue
