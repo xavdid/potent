@@ -14,17 +14,14 @@
       "comment": null,
       "directory_statuses": {
         "/Users/david/projects/airtable-adding-games": "failed",
-        "/Users/david/projects/ref-haus": "completed",
-        "/Users/david/projects/shellprints": "not-started"
+        "/Users/david/projects/ref-haus": "completed"
       },
       "slug": "git-pull"
     },
     {
       "comment": null,
       "directory_statuses": {
-        "/Users/david/projects/airtable-adding-games": "not-started",
-        "/Users/david/projects/ref-haus": "completed",
-        "/Users/david/projects/shellprints": "not-started"
+        "/Users/david/projects/ref-haus": "completed"
       },
       "slug": "clean-status"
     }

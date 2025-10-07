@@ -4,6 +4,7 @@ from typing import Annotated, Any, Optional, TextIO, Union
 from annotated_types import Len
 from pydantic import AfterValidator, BaseModel, Field
 from rich.console import Group
+from rich.tree import Tree
 
 from shellprints.directives._base import AbsPath
 from shellprints.directives.clean_workdir import CleanWorkdir
@@ -71,29 +72,36 @@ class Shellprint(BaseModel):
     # def directory_started(self, directory: Path) -> bool:
     #     return any(s.completed(directory) for s in self.steps)
 
-    def summarize(self) -> str:
+    def summarize(self, path: Path) -> Tree:
         """
         Show this plan as plaintext
         """
 
-        res = []
+        root = Tree(f"[yellow] {path.absolute()}")
 
         for d in self.directories:
-            res.append("")
+            # res.append("")
             if self.directory_complete(d):
-                res.append(f"✅ {d.name}")
+                root.add(f"✅ {d.name}", style="green", guide_style="green")
+                # res.append(f"✅ {d.name}")
             elif self.directory_failed(d):
-                res.append(f"❌ {d.name}:\n")
+                failed = root.add(f"❌ {d.name}", style="red", guide_style="red")
+                # res.append(f"❌ {d.name}:\n")
                 for s in self.steps:
                     if s.completed(d):
-                        res.append(f"  ✅ {s.slug}")
+                        failed.add(f"✅ {s.slug}", style="green")
+                        # res.append(f"  ✅ {s.slug}")
                     elif s.failed(d):
-                        res.append(f"  ❌ {s.slug}")
+                        failed.add(f"❌ {s.slug}", style="red")
+                        # res.append(f"  ❌ {s.slug}")
                     else:
-                        res.append(f"  ⌛ {s.slug}")
+                        failed.add(f"⌛ {s.slug}", style="dim white")
+                        # res.append(f"  ⌛ {s.slug}")
             else:
-                res.append(f"⌛ {d.name}")
+                root.add(f"⌛ {d.name}", style="yellow")
+                # res.append(f"⌛ {d.name}")
 
-        res.append("")
+        # res.append("")
 
-        return "\n".join(res)
+        # return "\n".join(res)
+        return root

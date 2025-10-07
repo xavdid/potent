@@ -1,3 +1,4 @@
+import rich
 import typer
 
 from shellprints.commands._types import PlanJson
@@ -14,7 +15,7 @@ def validate(path: PlanJson):
     # can raise typer.Exit(code=int)
     print(f"Shellprint @ {str(path)}")
     # print(Shellprint.from_path(path))
-    print(Shellprint.from_path(path).summarize())
+    rich.print(Shellprint.from_path(path).summarize(path))
 
 
 # could try to wrap, but the basic error is pretty good:
