@@ -8,3 +8,6 @@ wheels/
 
 # Virtual environments
 .venv
+
+# ignore these by default; I'll force-add what I need
+*.plan.json
