@@ -1,3 +1,4 @@
+import subprocess
 from pathlib import Path
 from typing import Literal
 
@@ -8,8 +9,15 @@ class GitPull(BaseDirective):
     slug: Literal["git-pull"]
 
     def _run(self, directory: Path) -> bool:
-        # TODO: fix
-        if directory.name.endswith("haus"):
+        result = subprocess.run(
+            ["git", "pull"],
+            cwd=directory,
+            check=False,
+            capture_output=True,
+        )
+
+        if result.returncode == 0:
             return True
 
-        return super().run(directory)
+        print(result.stderr)
+        return False

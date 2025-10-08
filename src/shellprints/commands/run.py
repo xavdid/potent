@@ -20,13 +20,13 @@ def run(path: PlanJson):
             if plan.directory_complete(directory):
                 print(f"☑️ {directory.name}")
                 # directory_spinner.ok(f"☑️ {directory.name}")
-                print("  skipping all!")
+                print("   already finished!")
                 continue
 
             try:
                 print(f"➡️ {directory.name}")
                 for step in plan.steps:
-                    print(f"  {step.slug}...", end="", flush=True)
+                    print(f"\n   running: {step.slug}")
                     # with [].slug}") as task_spinner:
                     if step.completed(directory):
                         print(" ☑️")
@@ -37,10 +37,10 @@ def run(path: PlanJson):
                     if success:
                         # plan.save(plan_file)
                         # task_spinner.ok("  OK")
-                        print(" ✅")
+                        print("   ✅ Completed")
                     else:
                         # task_spinner.fail("  FAIL")
-                        print(" ❌")
+                        print("   ❌ Failed")
                         break
 
             except (CalledProcessError, NotImplementedError):

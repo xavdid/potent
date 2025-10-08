@@ -30,7 +30,7 @@ class BaseDirective(BaseModel):
             self.directory_statuses[directory] = "completed" if success else "failed"
 
             return success
-        except Exception:
+        except Exception:  # noqa: BLE001
             return False
 
     def _run(self, directory: Path) -> bool:

@@ -22,7 +22,11 @@ class Shellprint(BaseModel):
     comment: Optional[str] = None
     steps: list[
         Annotated[
-            Union[GitPull, UseBranch, CleanWorkdir],
+            Union[
+                GitPull,
+                UseBranch,
+                CleanWorkdir,
+            ],
             Field(discriminator="slug"),
         ]
     ]
@@ -83,6 +87,7 @@ class Shellprint(BaseModel):
             # res.append("")
             if self.directory_complete(d):
                 root.add(f"✅ {d.name}", style="green", guide_style="green")
+
                 # res.append(f"✅ {d.name}")
             elif self.directory_failed(d):
                 failed = root.add(f"❌ {d.name}", style="red", guide_style="red")

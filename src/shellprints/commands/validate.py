@@ -13,7 +13,7 @@ def validate(path: PlanJson):
     # probably want to hide the traceback though
     # and maybe return
     # can raise typer.Exit(code=int)
-    print(f"Shellprint @ {str(path)}")
+    # print(f"Shellprint @ {str(path)}")
     # print(Shellprint.from_path(path))
     rich.print(Shellprint.from_path(path).summarize(path))
 

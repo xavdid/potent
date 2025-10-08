@@ -5,7 +5,7 @@ _default:
 
 [positional-arguments]
 run *args:
-  uv run -- shellprints "$@"
+  uv run -- shellprints "$@" example.plan.json
 
 lint *args:
   uv run -- ruff check {{ args }}
