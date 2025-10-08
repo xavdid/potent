@@ -29,7 +29,7 @@ def run(path: PlanJson):
                     print(f"\n   running: {step.slug}")
                     # with [].slug}") as task_spinner:
                     if step.completed(directory):
-                        print(" ☑️")
+                        print("   ☑️ Already completed")
                         # task_spinner.ok("  ☑️ Skipping")
                         continue
                     success = step.run(directory)

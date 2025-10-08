@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Annotated, Any, Optional, TextIO, Union
+from typing import Annotated, Any, Literal, Optional, TextIO, Union
 
 from annotated_types import Len
 from pydantic import AfterValidator, BaseModel, Field
@@ -9,7 +9,7 @@ from rich.tree import Tree
 from shellprints.directives._base import AbsPath
 from shellprints.directives.clean_workdir import CleanWorkdir
 from shellprints.directives.git_pull import GitPull
-from shellprints.directives.use_branch import UseBranch
+from shellprints.directives.switch_branch import SwitchBranch
 
 
 def unique_items(v):
@@ -18,13 +18,17 @@ def unique_items(v):
     return v
 
 
+Version = Literal["v1"]
+
+
 class Shellprint(BaseModel):
+    version: Version = "v1"
     comment: Optional[str] = None
     steps: list[
         Annotated[
             Union[
                 GitPull,
-                UseBranch,
+                SwitchBranch,
                 CleanWorkdir,
             ],
             Field(discriminator="slug"),
@@ -35,10 +39,6 @@ class Shellprint(BaseModel):
         Len(min_length=1),
         AfterValidator(unique_items),
     ]
-
-    # def model_post_init(self, _) -> None:
-    #     for s in self.steps:
-    #         s.initialize_dirs(self.directories)
 
     @staticmethod
     def from_file(f: TextIO) -> "Shellprint":
@@ -82,6 +82,8 @@ class Shellprint(BaseModel):
         """
 
         root = Tree(f"[yellow] {path.absolute()}")
+        # only print all steps if nothing has printed them yet
+        should_print_all = True
 
         for d in self.directories:
             # res.append("")
@@ -90,6 +92,7 @@ class Shellprint(BaseModel):
 
                 # res.append(f"✅ {d.name}")
             elif self.directory_failed(d):
+                should_print_all = False
                 failed = root.add(f"❌ {d.name}", style="red", guide_style="red")
                 # res.append(f"❌ {d.name}:\n")
                 for s in self.steps:
@@ -103,7 +106,14 @@ class Shellprint(BaseModel):
                         failed.add(f"⌛ {s.slug}", style="dim white")
                         # res.append(f"  ⌛ {s.slug}")
             else:
-                root.add(f"⌛ {d.name}", style="yellow")
+                pending = root.add(f"⌛ {d.name}", style="yellow")
+                if should_print_all:
+                    should_print_all = False
+                    for s in self.steps:
+                        pending.add(f"{s.slug}", style="white")
+                else:
+                    pending.add("same as above", style="dim white")
+
                 # res.append(f"⌛ {d.name}")
 
         # res.append("")

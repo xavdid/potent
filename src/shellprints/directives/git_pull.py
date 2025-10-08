@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Literal
 
 from shellprints.directives._base import BaseDirective
+from shellprints.util import indent_command_output
 
 
 class GitPull(BaseDirective):
@@ -19,5 +20,5 @@ class GitPull(BaseDirective):
         if result.returncode == 0:
             return True
 
-        print(result.stderr)
+        print(indent_command_output(result.stderr))
         return False

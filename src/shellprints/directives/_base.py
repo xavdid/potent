@@ -19,19 +19,24 @@ AbsPath = Annotated[
 ]
 
 
+class EmptyConfig(BaseModel):
+    pass
+
+
 class BaseDirective(BaseModel):
     comment: Optional[str] = None
     directory_statuses: dict[AbsPath, Status] = {}
+    config: EmptyConfig = EmptyConfig()
 
     @final
     def run(self, directory: Path) -> bool:
-        try:
-            success = self._run(directory)
-            self.directory_statuses[directory] = "completed" if success else "failed"
+        # try:
+        success = self._run(directory)
+        # except Exception:  # noqa: BLE001
+        #     success = False
 
-            return success
-        except Exception:  # noqa: BLE001
-            return False
+        self.directory_statuses[directory] = "completed" if success else "failed"
+        return success
 
     def _run(self, directory: Path) -> bool:
         raise NotImplementedError
