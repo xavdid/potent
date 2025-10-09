@@ -1,7 +1,10 @@
+import subprocess
 from pathlib import Path
 from typing import Annotated, Literal, Optional, final
 
 from pydantic import AfterValidator, BaseModel, DirectoryPath
+
+from shellprints.util import truthy_list
 
 Status = Literal["not-started", "failed", "completed"]
 
@@ -19,6 +22,15 @@ AbsPath = Annotated[
 ]
 
 
+class DirectiveResult(BaseModel):
+    success: bool
+    output: str
+
+    @staticmethod
+    def from_process(result: subprocess.CompletedProcess[str]):
+        return DirectiveResult(success=result.returncode == 0, output=result.stdout)
+
+
 class EmptyConfig(BaseModel):
     pass
 
@@ -29,16 +41,16 @@ class BaseDirective(BaseModel):
     config: EmptyConfig = EmptyConfig()
 
     @final
-    def run(self, directory: Path) -> bool:
+    def run(self, directory: Path) -> DirectiveResult:
         # try:
-        success = self._run(directory)
+        result = self._run(directory)
         # except Exception:  # noqa: BLE001
         #     success = False
 
-        self.directory_statuses[directory] = "completed" if success else "failed"
-        return success
+        self.directory_statuses[directory] = "completed" if result.success else "failed"
+        return result
 
-    def _run(self, directory: Path) -> bool:
+    def _run(self, directory: Path) -> DirectiveResult:
         raise NotImplementedError
 
     def reset(self) -> None:
@@ -52,3 +64,18 @@ class BaseDirective(BaseModel):
 
     def initialize_dirs(self, directories: list[Path]) -> None:
         self.directory_statuses |= dict.fromkeys(directories, "not-started")
+
+    def _run_cmd(
+        self, directory: Path, cmd: list[str]
+    ) -> subprocess.CompletedProcess[str]:
+        """
+        helper for shelling out
+        """
+        return subprocess.run(
+            truthy_list(cmd),
+            cwd=directory,
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )

@@ -4,7 +4,7 @@ from typing import Literal, override
 
 from pydantic import BaseModel
 
-from shellprints.directives._base import BaseDirective
+from shellprints.directives._base import BaseDirective, DirectiveResult
 from shellprints.util import truthy_list
 
 
@@ -29,25 +29,13 @@ class SwitchBranch(BaseDirective):
     # """
 
     @override
-    def _run(self, directory: Path) -> bool:
-        command = truthy_list(
-            [
-                "git",
-                "switch",
-                "-c" if self.config.create else "",
-                self.config.branch,
-            ]
+    def _run(self, directory: Path) -> DirectiveResult:
+        result = self._run_cmd(
+            directory,
+            ["git", "switch", "-c" if self.config.create else "", self.config.branch],
         )
-        # command = [
-        #     "git",
-        #     "switch",
-        #     "-c" if self.config.create else "",
-        #     self.config.branch,
-        # ]
 
-        result = subprocess.run(
-            command, cwd=directory, check=False, capture_output=True
-        )
+        return DirectiveResult.from_process(result)
 
         if result.returncode == 0:
             return True
@@ -55,7 +43,7 @@ class SwitchBranch(BaseDirective):
         print(result.stderr)
         return False
 
-    def verify(self) -> None:
-        """
-        verify branch on every run
-        """
+    # def verify(self) -> None:
+    #     """
+    #     verify branch on every run
+    #     """
