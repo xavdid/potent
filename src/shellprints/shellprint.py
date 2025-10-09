@@ -39,6 +39,7 @@ class Shellprint(BaseModel):
         Len(min_length=1),
         AfterValidator(unique_items),
     ]
+    _path: Optional[Path] = None
 
     @staticmethod
     def from_file(f: TextIO) -> "Shellprint":
@@ -46,12 +47,21 @@ class Shellprint(BaseModel):
 
     @staticmethod
     def from_path(f: Path) -> "Shellprint":
-        return Shellprint.model_validate_json(f.read_text())
+        plan = Shellprint.model_validate_json(f.read_text())
+        plan._path = f
+        return plan
 
-    def run(self):
-        pass
+    # def run(self):
+    #     if not self._path:
+    #         raise ValueError("Can't run plan without path")
+
+    #     with self._path.open("r+") as fp:
+    #         pass
 
     def save(self, f: TextIO):
+        """
+        Operates on an open file for performance reasons
+        """
         f.seek(0)
         f.truncate()
         f.write(self.model_dump_json(indent=2))

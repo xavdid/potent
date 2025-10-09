@@ -1,11 +1,11 @@
 import subprocess
 from pathlib import Path
-from typing import Literal, Optional, override
+from typing import Literal, override
 
 from pydantic import BaseModel
 
 from shellprints.directives._base import BaseDirective
-from shellprints.util import indent_command_output, truthy_list
+from shellprints.util import truthy_list
 
 
 class Config(BaseModel):
@@ -52,7 +52,7 @@ class SwitchBranch(BaseDirective):
         if result.returncode == 0:
             return True
 
-        print(indent_command_output(result.stderr))
+        print(result.stderr)
         return False
 
     def verify(self) -> None:
