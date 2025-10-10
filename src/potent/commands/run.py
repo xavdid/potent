@@ -7,8 +7,8 @@ from rich.console import Console
 from rich.panel import Panel
 
 # from rich.live import Live
-from shellprints.commands._types import PlanJson
-from shellprints.shellprint import Shellprint
+from potent.commands._types import PlanJson
+from potent.shellprint import Shellprint
 
 app = typer.Typer()
 
@@ -46,7 +46,8 @@ def run(path: PlanJson):
                     output = ""
                     style = ""
                     if step.completed(directory):
-                        subtitle = "Already completed"
+                        output = "Already completed"
+                        subtitle = "skipped"
                     else:
                         result = step.run(directory)
                         plan.save(plan_file)
@@ -61,7 +62,7 @@ def run(path: PlanJson):
 
                     console.print(
                         Panel(
-                            output,
+                            f"\n{output.strip()}\n",
                             title=f"[dim white]step[not dim]: {step.slug}",
                             title_align="left",
                             border_style=style,
@@ -72,21 +73,6 @@ def run(path: PlanJson):
                     console.print()
                     if success is False:
                         break
-
-                    # task_spinner.ok("  ☑️ Skipping")
-                    # continue
-
-                    # console.print(
-                    #     f"\n[dim]running step[not dim]: [underline]{step.slug}\n"
-                    # )
-                    # # with [].slug}") as task_spinner:
-                    #     # plan.save(plan_file)
-                    #     # task_spinner.ok("  OK")
-                    #     console.print("✅ [green]Completed")
-                    # else:
-                    #     # task_spinner.fail("  FAIL")
-                    #     console.print("❌ [red]Failed")
-                    #     break
 
             except NotImplementedError:
                 # directory_spinner.fail("ERR")

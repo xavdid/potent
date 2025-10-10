@@ -3,7 +3,7 @@ from pathlib import Path
 
 import typer
 
-from shellprints.shellprint import Shellprint
+from potent.shellprint import Shellprint
 
 app = typer.Typer()
 

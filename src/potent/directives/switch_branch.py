@@ -4,8 +4,8 @@ from typing import Literal, override
 
 from pydantic import BaseModel
 
-from shellprints.directives._base import BaseDirective, DirectiveResult
-from shellprints.util import truthy_list
+from potent.directives._base import BaseDirective, DirectiveResult
+from potent.util import truthy_list
 
 
 class Config(BaseModel):

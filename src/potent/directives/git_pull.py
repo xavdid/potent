@@ -2,7 +2,7 @@ import subprocess
 from pathlib import Path
 from typing import Literal
 
-from shellprints.directives._base import BaseDirective, DirectiveResult
+from potent.directives._base import BaseDirective, DirectiveResult
 
 
 class GitPull(BaseDirective):

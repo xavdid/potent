@@ -6,10 +6,10 @@ from pydantic import AfterValidator, BaseModel, Field
 from rich.console import Group
 from rich.tree import Tree
 
-from shellprints.directives._base import AbsPath
-from shellprints.directives.clean_workdir import CleanWorkdir
-from shellprints.directives.git_pull import GitPull
-from shellprints.directives.switch_branch import SwitchBranch
+from potent.directives._base import AbsPath
+from potent.directives.clean_workdir import CleanWorkdir
+from potent.directives.git_pull import GitPull
+from potent.directives.switch_branch import SwitchBranch
 
 
 def unique_items(v):

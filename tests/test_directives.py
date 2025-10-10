@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from shellprints.directives._base import BaseDirective
+from potent.directives._base import BaseDirective
 
 
 def test_directive_saves_on_fail(tmp_path: Path):

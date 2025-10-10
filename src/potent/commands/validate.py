@@ -1,8 +1,8 @@
 import rich
 import typer
 
-from shellprints.commands._types import PlanJson
-from shellprints.shellprint import Shellprint
+from potent.commands._types import PlanJson
+from potent.shellprint import Shellprint
 
 app = typer.Typer()
 

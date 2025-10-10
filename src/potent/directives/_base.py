@@ -4,7 +4,7 @@ from typing import Annotated, Literal, Optional, final
 
 from pydantic import AfterValidator, BaseModel, DirectoryPath
 
-from shellprints.util import truthy_list
+from potent.util import truthy_list
 
 Status = Literal["not-started", "failed", "completed"]
 

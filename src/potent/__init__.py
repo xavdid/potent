@@ -1,9 +1,9 @@
 import typer
 
-from shellprints.commands.dump_schema import app as dump_schema
-from shellprints.commands.reset import app as reset
-from shellprints.commands.run import app as run
-from shellprints.commands.validate import app as validate
+from potent.commands.dump_schema import app as dump_schema
+from potent.commands.reset import app as reset
+from potent.commands.run import app as run
+from potent.commands.validate import app as validate
 
 # COMMAND IMPORTS ^
 

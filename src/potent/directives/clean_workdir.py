@@ -2,7 +2,7 @@ from pathlib import Path
 from time import sleep
 from typing import Literal, override
 
-from shellprints.directives._base import BaseDirective, DirectiveResult
+from potent.directives._base import BaseDirective, DirectiveResult
 
 
 class CleanWorkdir(BaseDirective):
