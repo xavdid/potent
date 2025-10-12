@@ -25,10 +25,20 @@ AbsPath = Annotated[
 class DirectiveResult(BaseModel):
     success: bool
     output: str
+    cmd: Optional[str] = None
 
     @staticmethod
-    def from_process(result: subprocess.CompletedProcess[str]):
-        return DirectiveResult(success=result.returncode == 0, output=result.stdout)
+    def from_process(
+        result: subprocess.CompletedProcess[str], cmd: Optional[list[str]] = None
+    ):
+        command = None
+
+        if cmd:
+            command = " ".join(cmd)
+
+        return DirectiveResult(
+            success=result.returncode == 0, output=result.stdout, cmd=command
+        )
 
 
 class BaseDirective(BaseModel):

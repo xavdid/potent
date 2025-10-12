@@ -1,6 +1,4 @@
 from pathlib import Path
-from subprocess import CalledProcessError
-from time import sleep
 
 import typer
 from rich.console import Console
@@ -59,6 +57,8 @@ def run(path: PlanJson):
                             subtitle = "Failed"
 
                         output = result.output or "[dim]no output"
+                        if result.cmd:
+                            output = f"[dim white]ran:[/] {result.cmd}`\n\n{output}"
 
                     console.print(
                         Panel(
@@ -78,3 +78,7 @@ def run(path: PlanJson):
                 # directory_spinner.fail("ERR")
                 print("    err!")
                 continue
+
+    console.print()
+    console.rule("Summary")
+    console.print(plan.summarize(path, short=True))

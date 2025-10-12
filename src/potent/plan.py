@@ -7,8 +7,8 @@ from rich.console import Group
 from rich.tree import Tree
 
 from potent.directives._base import AbsPath
-from potent.directives.add import GitAdd
 from potent.directives.clean_workdir import CleanWorkdir
+from potent.directives.git_add import GitAdd
 from potent.directives.git_pull import GitPull
 from potent.directives.switch_branch import SwitchBranch
 
@@ -91,12 +91,12 @@ class Plan(BaseModel):
     # def directory_started(self, directory: Path) -> bool:
     #     return any(s.completed(directory) for s in self.steps)
 
-    def summarize(self, path: Path) -> Tree:
+    def summarize(self, path: Path, *, short=False) -> Tree:
         """
         Show this plan as plaintext
         """
 
-        root = Tree(f"[yellow] {path.absolute()}")
+        root = Tree(f"[yellow] {path.name if short else path.absolute()}")
         # only print all steps if nothing has printed them yet
         should_print_all = True
 
