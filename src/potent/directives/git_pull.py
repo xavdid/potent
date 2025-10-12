@@ -13,9 +13,3 @@ class GitPull(BaseDirective):
 
         # print stdout? not sure if/when it's useful, can be long
         return DirectiveResult.from_process(result)
-
-        if result.returncode == 0:
-            return True
-
-        # print(result.stderr)
-        return False

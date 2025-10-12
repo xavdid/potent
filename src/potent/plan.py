@@ -21,7 +21,7 @@ def unique_items(v):
 Version = Literal["v1"]
 
 
-class Shellprint(BaseModel):
+class Plan(BaseModel):
     version: Version = "v1"
     comment: Optional[str] = None
     steps: list[
@@ -42,12 +42,12 @@ class Shellprint(BaseModel):
     _path: Optional[Path] = None
 
     @staticmethod
-    def from_file(f: TextIO) -> "Shellprint":
-        return Shellprint.model_validate_json(f.read())
+    def from_file(f: TextIO) -> "Plan":
+        return Plan.model_validate_json(f.read())
 
     @staticmethod
-    def from_path(f: Path) -> "Shellprint":
-        plan = Shellprint.model_validate_json(f.read_text())
+    def from_path(f: Path) -> "Plan":
+        plan = Plan.model_validate_json(f.read_text())
         plan._path = f
         return plan
 

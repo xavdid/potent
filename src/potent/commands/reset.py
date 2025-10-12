@@ -1,7 +1,7 @@
 import typer
 
 from potent.commands._types import PlanJson
-from potent.shellprint import Shellprint
+from potent.plan import Plan
 
 app = typer.Typer()
 
@@ -12,6 +12,6 @@ def reset(path: PlanJson):
     Resets a plan file so it can be run again from scratch.
     """
     with path.open("r+") as plan_file:
-        plan = Shellprint.from_file(plan_file)
+        plan = Plan.from_file(plan_file)
         plan.reset()
         plan.save(plan_file)

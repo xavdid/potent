@@ -3,7 +3,7 @@ from pathlib import Path
 
 import typer
 
-from potent.shellprint import Shellprint
+from potent.plan import Plan
 
 app = typer.Typer()
 
@@ -11,5 +11,5 @@ app = typer.Typer()
 @app.command()
 def dump_schema():
     Path(__file__, "..", "..", "..", "..", "schema.json").resolve().write_text(
-        json.dumps(Shellprint.model_json_schema(), indent=2)
+        json.dumps(Plan.model_json_schema(), indent=2)
     )

@@ -8,7 +8,7 @@ from rich.panel import Panel
 
 # from rich.live import Live
 from potent.commands._types import PlanJson
-from potent.shellprint import Shellprint
+from potent.plan import Plan
 
 app = typer.Typer()
 
@@ -23,7 +23,7 @@ def directory_header(console: Console, directory: Path) -> None:
 def run(path: PlanJson):
     # TODO: probably make this internal to the class??
     # can maybe use a generator so the presentation is controlled in the CLI
-    plan = Shellprint.from_path(path)
+    plan = Plan.from_path(path)
     console = Console()
 
     console.print(f"Running [bold yellow]{str(path)}")

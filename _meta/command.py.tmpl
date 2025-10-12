@@ -1,11 +1,11 @@
 import typer
 
-from shellprints.commands._types import PlanJson
-from shellprints.shellprint import Shellprint
+from potent.commands._types import PlanJson
+from potent.plan import Plan
 
 app = typer.Typer()
 
 
 @app.command()
 def <NAME>(path: PlanJson):
-    plan = Shellprint.model_validate_json(path.read_text())
+    plan = Plan.model_validate_json(path.read_text())

@@ -2,7 +2,7 @@ import rich
 import typer
 
 from potent.commands._types import PlanJson
-from potent.shellprint import Shellprint
+from potent.plan import Plan
 
 app = typer.Typer()
 
@@ -15,7 +15,7 @@ def summarize(path: PlanJson):
     # can raise typer.Exit(code=int)
     # print(f"Shellprint @ {str(path)}")
     # print(Shellprint.from_path(path))
-    rich.print(Shellprint.from_path(path).summarize(path))
+    rich.print(Plan.from_path(path).summarize(path))
 
 
 # could try to wrap, but the basic error is pretty good:
