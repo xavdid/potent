@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Annotated, Any, Literal, Optional, TextIO, Union
+from typing import Annotated, Literal, Optional, TextIO, Union
 
 from annotated_types import Len
 from pydantic import AfterValidator, BaseModel, Field
@@ -7,9 +7,12 @@ from rich.console import Group
 from rich.tree import Tree
 
 from potent.directives._base import AbsPath
+from potent.directives.add import GitAdd
 from potent.directives.clean_workdir import CleanWorkdir
 from potent.directives.git_pull import GitPull
 from potent.directives.switch_branch import SwitchBranch
+
+# DIRECTIVE IMPORTS ^
 
 
 def unique_items(v):
@@ -30,6 +33,8 @@ class Plan(BaseModel):
                 GitPull,
                 SwitchBranch,
                 CleanWorkdir,
+                GitAdd,
+                # DIRECTIVES ^
             ],
             Field(discriminator="slug"),
         ]
