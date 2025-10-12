@@ -1,16 +1,20 @@
-import subprocess
 from pathlib import Path
 from typing import Literal, override
 
 from pydantic import BaseModel
 
 from potent.directives._base import BaseDirective, DirectiveResult
-from potent.util import truthy_list
 
 
 class Config(BaseModel):
     branch: str
-    create: bool = False
+    """
+    branch name
+    """
+    create_if_missing: bool = False
+    """
+    If true, tries creating the branch if switching to it fails
+    """
 
 
 class SwitchBranch(BaseDirective):
@@ -20,30 +24,33 @@ class SwitchBranch(BaseDirective):
 
     slug: Literal["switch-branch"]
     config: Config
-    """
-    branch name
-    """
-    # base: Optional[str]
-    # """
-    # Branch to base the new branch off of. Will switch to this first to create the branch.
-    # """
 
     @override
     def _run(self, directory: Path) -> DirectiveResult:
-        result = self._run_cmd(
+        switch_without_create = self._run_cmd(
             directory,
-            ["git", "switch", "-c" if self.config.create else "", self.config.branch],
+            [
+                "git",
+                "switch",
+                self.config.branch,
+            ],
         )
 
-        return DirectiveResult.from_process(result)
+        if (
+            switch_without_create.returncode > 0
+            and self.config.create_if_missing
+            and "invalid reference" in switch_without_create.stdout
+        ):
+            return DirectiveResult.from_process(
+                self._run_cmd(
+                    directory,
+                    [
+                        "git",
+                        "switch",
+                        "-c",
+                        self.config.branch,
+                    ],
+                )
+            )
 
-        if result.returncode == 0:
-            return True
-
-        print(result.stderr)
-        return False
-
-    # def verify(self) -> None:
-    #     """
-    #     verify branch on every run
-    #     """
+        return DirectiveResult.from_process(switch_without_create)

@@ -31,14 +31,9 @@ class DirectiveResult(BaseModel):
         return DirectiveResult(success=result.returncode == 0, output=result.stdout)
 
 
-class EmptyConfig(BaseModel):
-    pass
-
-
 class BaseDirective(BaseModel):
     comment: Optional[str] = None
     directory_statuses: dict[AbsPath, Status] = {}
-    config: EmptyConfig = EmptyConfig()
 
     @final
     def run(self, directory: Path) -> DirectiveResult:

@@ -8,7 +8,7 @@ app = typer.Typer()
 
 
 @app.command()
-def validate(path: PlanJson):
+def summarize(path: PlanJson):
     # can handle this pretty cleanly by pegging the step location and the error type (missing, etc)
     # probably want to hide the traceback though
     # and maybe return
