@@ -2,12 +2,13 @@ from pathlib import Path
 from typing import Annotated, Literal, Optional, TextIO, Union
 
 from annotated_types import Len
-from pydantic import AfterValidator, BaseModel, Field
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from rich.console import Group
 from rich.tree import Tree
 
 from potent.directives._base import AbsPath
 from potent.directives.clean_workdir import CleanWorkdir
+from potent.directives.create_pr import CreatePR
 from potent.directives.git_add import GitAdd
 from potent.directives.git_commit import GitCommit
 from potent.directives.git_pull import GitPull
@@ -27,6 +28,8 @@ Version = Literal["v1"]
 
 
 class Plan(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     version: Version = "v1"
     comment: Optional[str] = None
     steps: list[
@@ -38,6 +41,7 @@ class Plan(BaseModel):
                 GitAdd,
                 GitCommit,
                 GitPush,
+                CreatePR,
                 # DIRECTIVES ^
             ],
             Field(discriminator="slug"),
@@ -92,15 +96,15 @@ class Plan(BaseModel):
     def directory_failed(self, directory: Path) -> bool:
         return any(s.failed(directory) for s in self.steps)
 
-    # def directory_started(self, directory: Path) -> bool:
-    #     return any(s.completed(directory) for s in self.steps)
+    def directory_pending(self, directory: Path) -> bool:
+        return all(s.pending(directory) for s in self.steps)
 
-    def summarize(self, path: Path, *, short=False) -> Tree:
+    def summarize(self, path: Path, *, short_plan=False) -> Tree:
         """
         Show this plan as plaintext
         """
 
-        root = Tree(f"[yellow] {path.name if short else path.absolute()}")
+        root = Tree(f"[yellow] {path.name if short_plan else path.absolute()}")
         # only print all steps if nothing has printed them yet
         should_print_all = True
 
@@ -109,33 +113,33 @@ class Plan(BaseModel):
             if self.directory_complete(d):
                 root.add(f"✅ {d.name}", style="green", guide_style="green")
 
-                # res.append(f"✅ {d.name}")
             elif self.directory_failed(d):
                 should_print_all = False
                 failed = root.add(f"❌ {d.name}", style="red", guide_style="red")
-                # res.append(f"❌ {d.name}:\n")
                 for s in self.steps:
                     if s.completed(d):
                         failed.add(f"✅ {s.slug}", style="green")
-                        # res.append(f"  ✅ {s.slug}")
                     elif s.failed(d):
-                        failed.add(f"❌ {s.slug}", style="red")
-                        # res.append(f"  ❌ {s.slug}")
+                        failed.add(f"❌ {s.slug}", style="bold red")
                     else:
                         failed.add(f"⌛ {s.slug}", style="dim white")
-                        # res.append(f"  ⌛ {s.slug}")
-            else:
+            elif self.directory_pending(d):
                 pending = root.add(f"⌛ {d.name}", style="yellow")
                 if should_print_all:
                     should_print_all = False
                     for s in self.steps:
-                        pending.add(f"{s.slug}", style="white")
+                        pending.add(f"⌛ {s.slug}", style="dim white")
                 else:
-                    pending.add("same as above", style="dim white")
+                    pending.add("same steps as above", style="dim white")
+            else:
+                # plan was modified or something, so a previously-complete plan could now be incomplete
+                pending = root.add(f"⌛ {d.name}", style="yellow")
+                for s in self.steps:
+                    if s.completed(d):
+                        pending.add(f"✅ {s.slug}", style="green")
+                    elif s.failed(d):
+                        pending.add(f"❌ {s.slug}", style="red")
+                    else:
+                        pending.add(f"⌛ {s.slug}", style="bold white")
 
-                # res.append(f"⌛ {d.name}")
-
-        # res.append("")
-
-        # return "\n".join(res)
         return root

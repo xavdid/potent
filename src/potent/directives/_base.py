@@ -2,7 +2,7 @@ import subprocess
 from pathlib import Path
 from typing import Annotated, Literal, Optional, final
 
-from pydantic import AfterValidator, BaseModel, DirectoryPath
+from pydantic import AfterValidator, BaseModel, ConfigDict, DirectoryPath
 
 from potent.util import truthy_list
 
@@ -41,7 +41,13 @@ class DirectiveResult(BaseModel):
         )
 
 
+class BaseConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
 class BaseDirective(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     comment: Optional[str] = None
     directory_statuses: dict[AbsPath, Status] = {}
 
@@ -66,6 +72,9 @@ class BaseDirective(BaseModel):
 
     def failed(self, directory: Path) -> bool:
         return self.directory_statuses.get(directory) == "failed"
+
+    def pending(self, directory: Path) -> bool:
+        return self.directory_statuses.get(directory, "not-started") == "not-started"
 
     def initialize_dirs(self, directories: list[Path]) -> None:
         self.directory_statuses |= dict.fromkeys(directories, "not-started")

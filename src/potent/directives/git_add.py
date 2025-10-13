@@ -1,13 +1,13 @@
 from pathlib import Path
 from typing import Literal, Self, override
 
-from pydantic import BaseModel, model_validator
+from pydantic import model_validator
 
-from potent.directives._base import BaseDirective, DirectiveResult
+from potent.directives._base import BaseConfig, BaseDirective, DirectiveResult
 
 
 # remove if unused:
-class Config(BaseModel):
+class Config(BaseConfig):
     all: bool = False
     pattern: str = ""
 

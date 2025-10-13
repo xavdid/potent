@@ -81,4 +81,4 @@ def run(path: PlanJson):
 
     console.print()
     console.rule("Summary")
-    console.print(plan.summarize(path, short=True))
+    console.print(plan.summarize(path, short_plan=True))

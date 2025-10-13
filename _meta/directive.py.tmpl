@@ -3,11 +3,11 @@ from typing import Literal, override
 
 from pydantic import BaseModel
 
-from potent.directives._base import BaseDirective, DirectiveResult
+from potent.directives._base import BaseDirective, DirectiveResult, BaseConfig
 
 
 # remove if unused:
-class Config(BaseModel):
+class Config(BaseConfig):
     pass
 
 

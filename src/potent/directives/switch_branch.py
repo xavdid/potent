@@ -1,12 +1,10 @@
 from pathlib import Path
 from typing import Literal, override
 
-from pydantic import BaseModel
-
-from potent.directives._base import BaseDirective, DirectiveResult
+from potent.directives._base import BaseConfig, BaseDirective, DirectiveResult
 
 
-class Config(BaseModel):
+class Config(BaseConfig):
     branch: str
     """
     branch name
