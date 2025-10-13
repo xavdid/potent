@@ -11,6 +11,7 @@ from potent.directives.clean_workdir import CleanWorkdir
 from potent.directives.git_add import GitAdd
 from potent.directives.git_commit import GitCommit
 from potent.directives.git_pull import GitPull
+from potent.directives.git_push import GitPush
 from potent.directives.switch_branch import SwitchBranch
 
 # DIRECTIVE IMPORTS ^
@@ -36,6 +37,7 @@ class Plan(BaseModel):
                 CleanWorkdir,
                 GitAdd,
                 GitCommit,
+                GitPush,
                 # DIRECTIVES ^
             ],
             Field(discriminator="slug"),
