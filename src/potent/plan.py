@@ -9,6 +9,7 @@ from rich.tree import Tree
 from potent.directives._base import AbsPath
 from potent.directives.clean_workdir import CleanWorkdir
 from potent.directives.git_add import GitAdd
+from potent.directives.git_commit import GitCommit
 from potent.directives.git_pull import GitPull
 from potent.directives.switch_branch import SwitchBranch
 
@@ -34,6 +35,7 @@ class Plan(BaseModel):
                 SwitchBranch,
                 CleanWorkdir,
                 GitAdd,
+                GitCommit,
                 # DIRECTIVES ^
             ],
             Field(discriminator="slug"),
