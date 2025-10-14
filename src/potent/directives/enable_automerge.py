@@ -4,17 +4,16 @@ from typing import Literal, override
 from potent.directives._base import BaseConfig, BaseDirective, DirectiveResult
 
 
-# remove if unused:
 class Config(BaseConfig):
-    pass
+    mode: Literal["merge", "squash"] = "squash"
 
 
-class TKTK(BaseDirective):
+class EnableAutomerge(BaseDirective):
     """
-    Creates a branch if missing. Re-verifies that you're on that branch during every run.
+    Creates
     """
 
-    slug: Literal["TKTK"]
+    slug: Literal["enable-automerge"]
     config: Config
 
     @override
@@ -22,7 +21,11 @@ class TKTK(BaseDirective):
         result = self._run_cmd(
             directory,
             [
-                "",
+                "gh",
+                "pr",
+                "merge",
+                "--auto",
+                "--merge" if self.config.mode == "merge" else "squash",
             ],
         )
 

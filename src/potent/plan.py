@@ -9,6 +9,7 @@ from rich.tree import Tree
 from potent.directives._base import AbsPath
 from potent.directives.clean_workdir import CleanWorkdir
 from potent.directives.create_pr import CreatePR
+from potent.directives.enable_automerge import EnableAutomerge
 from potent.directives.git_add import GitAdd
 from potent.directives.git_commit import GitCommit
 from potent.directives.git_pull import GitPull
@@ -42,6 +43,7 @@ class Plan(BaseModel):
                 GitCommit,
                 GitPush,
                 CreatePR,
+                EnableAutomerge,
                 # DIRECTIVES ^
             ],
             Field(discriminator="slug"),
