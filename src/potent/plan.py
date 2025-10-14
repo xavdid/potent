@@ -14,6 +14,7 @@ from potent.directives.git_add import GitAdd
 from potent.directives.git_commit import GitCommit
 from potent.directives.git_pull import GitPull
 from potent.directives.git_push import GitPush
+from potent.directives.raw_command import RawCommand
 from potent.directives.switch_branch import SwitchBranch
 
 # DIRECTIVE IMPORTS ^
@@ -44,6 +45,7 @@ class Plan(BaseModel):
                 GitPush,
                 CreatePR,
                 EnableAutomerge,
+                RawCommand,
                 # DIRECTIVES ^
             ],
             Field(discriminator="slug"),

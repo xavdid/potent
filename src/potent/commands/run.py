@@ -58,7 +58,7 @@ def run(path: PlanJson):
 
                         output = result.output or "[dim]no output"
                         if result.cmd:
-                            output = f"[dim white]ran:[/] {result.cmd}`\n\n{output}"
+                            output = f"[dim white]ran:[/] `{result.cmd}`\n\n{output}"
 
                     console.print(
                         Panel(
