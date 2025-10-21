@@ -6,10 +6,15 @@ from pydantic import model_validator
 from potent.directives._base import BaseConfig, BaseDirective, DirectiveResult
 
 
-# remove if unused:
 class Config(BaseConfig):
     all: bool = False
+    """
+    If `true`, add stage files. Exactly one of `all` or `pattern` must be specified.
+    """
     pattern: str = ""
+    """
+    The file(s) to stage. Exactly one of `all` or `pattern` must be specified.
+    """
 
     @model_validator(mode="after")
     def check_something_to_add(self) -> Self:

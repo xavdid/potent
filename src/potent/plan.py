@@ -6,7 +6,7 @@ from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from rich.console import Group
 from rich.tree import Tree
 
-from potent.directives._base import AbsPath
+from potent.directives._base import AbsDirPath
 from potent.directives.clean_workdir import CleanWorkdir
 from potent.directives.create_pr import CreatePR
 from potent.directives.enable_automerge import EnableAutomerge
@@ -52,7 +52,7 @@ class Plan(BaseModel):
         ]
     ]
     directories: Annotated[
-        list[AbsPath],
+        list[AbsDirPath],
         Len(min_length=1),
         AfterValidator(unique_items),
     ]

@@ -1,25 +1,43 @@
 from pathlib import Path
 from typing import Literal, Optional, Self, override
 
-from pydantic import ConfigDict, FilePath, model_validator
+from pydantic import model_validator
 
-from potent.directives._base import BaseConfig, BaseDirective, DirectiveResult
+from potent.directives._base import (
+    AbsFilePath,
+    BaseConfig,
+    BaseDirective,
+    DirectiveResult,
+)
 
 
 # remove if unused:
 class Config(BaseConfig):
     title: str
+    """
+    The title of the PR.
+    """
 
     body_text: Optional[str] = None
-    body_file: Optional[FilePath] = None
+    """
+    A string that will be used as the body of the PR. Exactly one of `body_text` or `body_file` is required.
+    """
+    body_file: Optional[AbsFilePath] = None
+    """
+    The path to a readable file containing the full body of the PR. Exactly one of `body_text` or `body_file` is required.
+    """
 
     draft: bool = False
     base_branch: Optional[str] = None
 
     @model_validator(mode="after")
-    def check_passwords_match(self) -> Self:
+    def check_body_source(self) -> Self:
+        if self.body_text and self.body_file:
+            raise ValueError("Supply exactly one of `body_text` or `body_file`.")
+
         if not (self.body_text or self.body_file):
             raise ValueError("Need one of `body_text` or `body_file`")
+
         return self
 
 
@@ -30,7 +48,6 @@ class CreatePR(BaseDirective):
 
     slug: Literal["create-pr"]
     config: Config
-    model_config = ConfigDict(extra="forbid")
 
     @override
     def _run(self, directory: Path) -> DirectiveResult:

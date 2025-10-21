@@ -1,8 +1,8 @@
 import subprocess
 from pathlib import Path
-from typing import Annotated, Literal, Optional, final
+from typing import Annotated, Literal, Optional, final, get_args
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, DirectoryPath
+from pydantic import AfterValidator, BaseModel, ConfigDict, DirectoryPath, FilePath
 
 from potent.util import truthy_list
 
@@ -16,10 +16,18 @@ def make_abs_path(value: Path) -> Path:
     return value
 
 
-AbsPath = Annotated[
+AbsDirPath = Annotated[
     DirectoryPath,
     AfterValidator(make_abs_path),
 ]
+
+AbsFilePath = Annotated[
+    FilePath,
+    AfterValidator(make_abs_path),
+]
+"""
+AbsFilePath cool comment?
+"""
 
 
 class DirectiveResult(BaseModel):
@@ -41,15 +49,17 @@ class DirectiveResult(BaseModel):
         )
 
 
-class BaseConfig(BaseModel):
+class CommonBase(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class BaseDirective(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+class BaseConfig(CommonBase):
+    model_config = ConfigDict(use_attribute_docstrings=True)
 
+
+class BaseDirective(CommonBase):
     comment: Optional[str] = None
-    directory_statuses: dict[AbsPath, Status] = {}
+    directory_statuses: dict[AbsDirPath, Status] = {}
 
     @final
     def run(self, directory: Path) -> DirectiveResult:
@@ -93,3 +103,35 @@ class BaseDirective(BaseModel):
             stderr=subprocess.STDOUT,
             text=True,
         )
+
+    @classmethod
+    def to_markdown(cls) -> list[str]:
+        """
+        Returns a nicely formatted multiline markdown string that documents all of the properties on the model.
+        """
+        fields = cls.model_fields
+        lines = [
+            f"### {cls.__name__}",
+            "",
+            (cls.__doc__ or "").strip(),
+            "",
+            f'Slug: `"{get_args(fields["slug"].annotation)[0]}"`',
+            "",
+        ]
+
+        if (config := fields.get("config")) and config.annotation:
+            config = config.annotation.model_fields
+
+            lines += [
+                "#### Config",
+                "",
+                "| name | type | description | default (if optional) |",
+                "|---|---|---|---|",
+                *[
+                    f"| `{conf_key}` | {v.annotation.__name__} | {v.description} | {f'`{v.default}`' if v.default else ''} |"
+                    for conf_key, v in config.items()
+                ],
+            ]
+        # return fields
+
+        return lines

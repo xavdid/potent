@@ -3,6 +3,11 @@ set quiet
 _default:
   just --list
 
+# regenerate the autodocs
+update-docs:
+  uv run -- _meta/update_docs.py
+
+# used for running the CLI locally
 [positional-arguments]
 run *args:
   uv run -- potent "$@" example.plan.json

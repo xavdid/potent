@@ -6,6 +6,9 @@ from potent.directives._base import BaseConfig, BaseDirective, DirectiveResult
 
 class Config(BaseConfig):
     arguments: list[str]
+    """
+    The arguments that will be passed into Python's [subprocess.run](https://docs.python.org/3/library/subprocess.html#subprocess.run)
+    """
 
 
 class RawCommand(BaseDirective):
