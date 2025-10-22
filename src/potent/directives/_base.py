@@ -111,18 +111,19 @@ class BaseDirective(CommonBase):
         """
         fields = cls.model_fields
         lines = [
+            "",
             f"### {cls.__name__}",
             "",
             (cls.__doc__ or "").strip(),
             "",
-            f'Slug: `"{get_args(fields["slug"].annotation)[0]}"`',
-            "",
+            f"Slug: `{get_args(fields['slug'].annotation)[0]}`",
         ]
 
         if (config := fields.get("config")) and config.annotation:
             config = config.annotation.model_fields
 
             lines += [
+                "",
                 "#### Config",
                 "",
                 "| name | type | description | default (if optional) |",

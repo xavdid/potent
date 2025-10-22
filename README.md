@@ -44,13 +44,15 @@ Scripts are run as Plan files. They've got the extension `.plan.json`, but are s
 
 ### CleanWorkdir
 
-Slug: `"clean-status"`
+asdf
+
+Slug: `clean-status`
 
 ### CreatePR
 
 Creates a branch if missing. Re-verifies that you're on that branch during every run.
 
-Slug: `"create-pr"`
+Slug: `create-pr`
 
 #### Config
 
@@ -66,7 +68,7 @@ Slug: `"create-pr"`
 
 Creates
 
-Slug: `"enable-automerge"`
+Slug: `enable-automerge`
 
 #### Config
 
@@ -78,7 +80,7 @@ Slug: `"enable-automerge"`
 
 Creates a branch if missing. Re-verifies that you're on that branch during every run.
 
-Slug: `"git-add"`
+Slug: `git-add`
 
 #### Config
 
@@ -91,7 +93,7 @@ Slug: `"git-add"`
 
 Creates a branch if missing. Re-verifies that you're on that branch during every run.
 
-Slug: `"git-commit"`
+Slug: `git-commit`
 
 #### Config
 
@@ -101,19 +103,19 @@ Slug: `"git-commit"`
 
 ### GitPull
 
-Slug: `"git-pull"`
+Slug: `git-pull`
 
 ### GitPush
 
 Creates a branch if missing. Re-verifies that you're on that branch during every run.
 
-Slug: `"git-push"`
+Slug: `git-push`
 
 ### RawCommand
 
 Runs a bash command. The step is successful if it exits 0 and fails otherwise.
 
-Slug: `"raw-command"`
+Slug: `raw-command`
 
 #### Config
 
@@ -125,7 +127,7 @@ Slug: `"raw-command"`
 
 Creates a branch if missing. Re-verifies that you're on that branch during every run.
 
-Slug: `"switch-branch"`
+Slug: `switch-branch`
 
 #### Config
 
