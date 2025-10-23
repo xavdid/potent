@@ -7,7 +7,13 @@ from potent.directives._base import BaseConfig, BaseDirective, DirectiveResult
 # remove if unused:
 class Config(BaseConfig):
     message: str
+    """
+    Commit message, submitted as is.
+    """
     allow_empty: bool = False
+    """
+    If true, allows commits without changed/added files.
+    """
 
 
 class GitCommit(BaseDirective):

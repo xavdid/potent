@@ -6,7 +6,7 @@ from potent.directives._base import BaseDirective, DirectiveResult
 
 class GitPush(BaseDirective):
     """
-    Creates a branch if missing. Re-verifies that you're on that branch during every run.
+    Push to the remote repository.
     """
 
     slug: Literal["git-push"]

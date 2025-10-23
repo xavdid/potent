@@ -6,11 +6,14 @@ from potent.directives._base import BaseConfig, BaseDirective, DirectiveResult
 
 class Config(BaseConfig):
     mode: Literal["merge", "squash"] = "squash"
+    """
+    Sets the merge strategy for the PR.
+    """
 
 
 class EnableAutomerge(BaseDirective):
     """
-    Creates
+    Enables automerge for the PR corresponding to the current branch.
     """
 
     slug: Literal["enable-automerge"]

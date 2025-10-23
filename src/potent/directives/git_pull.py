@@ -5,6 +5,10 @@ from potent.directives._base import BaseDirective, DirectiveResult
 
 
 class GitPull(BaseDirective):
+    """
+    Pull from the remote repository.
+    """
+
     slug: Literal["git-pull"]
 
     def _run(self, directory: Path) -> DirectiveResult:

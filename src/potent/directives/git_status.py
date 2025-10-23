@@ -1,16 +1,15 @@
 from pathlib import Path
-from time import sleep
 from typing import Literal, override
 
 from potent.directives._base import BaseDirective, DirectiveResult
 
 
-class CleanStatus(BaseDirective):
+class GitStatus(BaseDirective):
     """
-    asdf
+    Ensures that you have a clean working directory. If there are any modified or unstaged files, this step fails.
     """
 
-    slug: Literal["clean-status"]
+    slug: Literal["git-status"]
 
     @override
     def _run(self, directory: Path) -> DirectiveResult:

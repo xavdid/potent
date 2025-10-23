@@ -1,52 +1,8 @@
 {
   "$defs": {
-    "CleanWorkdir": {
-      "additionalProperties": false,
-      "description": "asdf",
-      "properties": {
-        "comment": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Comment"
-        },
-        "directory_statuses": {
-          "additionalProperties": {
-            "enum": [
-              "not-started",
-              "failed",
-              "completed"
-            ],
-            "type": "string"
-          },
-          "default": {},
-          "propertyNames": {
-            "format": "directory-path"
-          },
-          "title": "Directory Statuses",
-          "type": "object"
-        },
-        "slug": {
-          "const": "clean-status",
-          "title": "Slug",
-          "type": "string"
-        }
-      },
-      "required": [
-        "slug"
-      ],
-      "title": "CleanWorkdir",
-      "type": "object"
-    },
     "CreatePR": {
       "additionalProperties": false,
-      "description": "Creates a branch if missing. Re-verifies that you're on that branch during every run.",
+      "description": "Creates a pull request using the `gh` CLI.",
       "properties": {
         "comment": {
           "anyOf": [
@@ -94,7 +50,7 @@
     },
     "EnableAutomerge": {
       "additionalProperties": false,
-      "description": "Creates",
+      "description": "Enables automerge for the PR corresponding to the current branch.",
       "properties": {
         "comment": {
           "anyOf": [
@@ -238,6 +194,7 @@
     },
     "GitPull": {
       "additionalProperties": false,
+      "description": "Pull from the remote repository.",
       "properties": {
         "comment": {
           "anyOf": [
@@ -281,7 +238,7 @@
     },
     "GitPush": {
       "additionalProperties": false,
-      "description": "Creates a branch if missing. Re-verifies that you're on that branch during every run.",
+      "description": "Push to the remote repository.",
       "properties": {
         "comment": {
           "anyOf": [
@@ -321,6 +278,98 @@
         "slug"
       ],
       "title": "GitPush",
+      "type": "object"
+    },
+    "GitStatus": {
+      "additionalProperties": false,
+      "description": "Ensures that you have a clean working directory. If there are any modified or unstaged files, this step fails.",
+      "properties": {
+        "comment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment"
+        },
+        "directory_statuses": {
+          "additionalProperties": {
+            "enum": [
+              "not-started",
+              "failed",
+              "completed"
+            ],
+            "type": "string"
+          },
+          "default": {},
+          "propertyNames": {
+            "format": "directory-path"
+          },
+          "title": "Directory Statuses",
+          "type": "object"
+        },
+        "slug": {
+          "const": "git-status",
+          "title": "Slug",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slug"
+      ],
+      "title": "GitStatus",
+      "type": "object"
+    },
+    "GitSwitch": {
+      "additionalProperties": false,
+      "description": "Creates a branch if missing. Re-verifies that you're on that branch during every run.",
+      "properties": {
+        "comment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment"
+        },
+        "directory_statuses": {
+          "additionalProperties": {
+            "enum": [
+              "not-started",
+              "failed",
+              "completed"
+            ],
+            "type": "string"
+          },
+          "default": {},
+          "propertyNames": {
+            "format": "directory-path"
+          },
+          "title": "Directory Statuses",
+          "type": "object"
+        },
+        "slug": {
+          "const": "switch-branch",
+          "title": "Slug",
+          "type": "string"
+        },
+        "config": {
+          "$ref": "#/$defs/potent__directives__git_switch__Config"
+        }
+      },
+      "required": [
+        "slug",
+        "config"
+      ],
+      "title": "GitSwitch",
       "type": "object"
     },
     "RawCommand": {
@@ -371,54 +420,6 @@
       "title": "RawCommand",
       "type": "object"
     },
-    "SwitchBranch": {
-      "additionalProperties": false,
-      "description": "Creates a branch if missing. Re-verifies that you're on that branch during every run.",
-      "properties": {
-        "comment": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Comment"
-        },
-        "directory_statuses": {
-          "additionalProperties": {
-            "enum": [
-              "not-started",
-              "failed",
-              "completed"
-            ],
-            "type": "string"
-          },
-          "default": {},
-          "propertyNames": {
-            "format": "directory-path"
-          },
-          "title": "Directory Statuses",
-          "type": "object"
-        },
-        "slug": {
-          "const": "switch-branch",
-          "title": "Slug",
-          "type": "string"
-        },
-        "config": {
-          "$ref": "#/$defs/potent__directives__switch_branch__Config"
-        }
-      },
-      "required": [
-        "slug",
-        "config"
-      ],
-      "title": "SwitchBranch",
-      "type": "object"
-    },
     "potent__directives__create_pr__Config": {
       "additionalProperties": false,
       "properties": {
@@ -456,6 +457,7 @@
         },
         "draft": {
           "default": false,
+          "description": "Whether to open the PR in draft mode.",
           "title": "Draft",
           "type": "boolean"
         },
@@ -469,6 +471,7 @@
             }
           ],
           "default": null,
+          "description": "The branch that you want to merge your changes into. Defaults to the repo's default branch.",
           "title": "Base Branch"
         }
       },
@@ -483,6 +486,7 @@
       "properties": {
         "mode": {
           "default": "squash",
+          "description": "Sets the merge strategy for the PR.",
           "enum": [
             "merge",
             "squash"
@@ -517,17 +521,40 @@
       "additionalProperties": false,
       "properties": {
         "message": {
+          "description": "Commit message, submitted as is.",
           "title": "Message",
           "type": "string"
         },
         "allow_empty": {
           "default": false,
+          "description": "If true, allows commits without changed/added files.",
           "title": "Allow Empty",
           "type": "boolean"
         }
       },
       "required": [
         "message"
+      ],
+      "title": "Config",
+      "type": "object"
+    },
+    "potent__directives__git_switch__Config": {
+      "additionalProperties": false,
+      "properties": {
+        "branch": {
+          "description": "branch name",
+          "title": "Branch",
+          "type": "string"
+        },
+        "create_if_missing": {
+          "default": false,
+          "description": "If true, tries creating the branch if switching to it fails",
+          "title": "Create If Missing",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "branch"
       ],
       "title": "Config",
       "type": "object"
@@ -546,27 +573,6 @@
       },
       "required": [
         "arguments"
-      ],
-      "title": "Config",
-      "type": "object"
-    },
-    "potent__directives__switch_branch__Config": {
-      "additionalProperties": false,
-      "properties": {
-        "branch": {
-          "description": "branch name",
-          "title": "Branch",
-          "type": "string"
-        },
-        "create_if_missing": {
-          "default": false,
-          "description": "If true, tries creating the branch if switching to it fails",
-          "title": "Create If Missing",
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "branch"
       ],
       "title": "Config",
       "type": "object"
@@ -596,15 +602,15 @@
       "items": {
         "discriminator": {
           "mapping": {
-            "clean-status": "#/$defs/CleanWorkdir",
             "create-pr": "#/$defs/CreatePR",
             "enable-automerge": "#/$defs/EnableAutomerge",
             "git-add": "#/$defs/GitAdd",
             "git-commit": "#/$defs/GitCommit",
             "git-pull": "#/$defs/GitPull",
             "git-push": "#/$defs/GitPush",
+            "git-status": "#/$defs/GitStatus",
             "raw-command": "#/$defs/RawCommand",
-            "switch-branch": "#/$defs/SwitchBranch"
+            "switch-branch": "#/$defs/GitSwitch"
           },
           "propertyName": "slug"
         },
@@ -613,10 +619,10 @@
             "$ref": "#/$defs/GitPull"
           },
           {
-            "$ref": "#/$defs/SwitchBranch"
+            "$ref": "#/$defs/GitSwitch"
           },
           {
-            "$ref": "#/$defs/CleanWorkdir"
+            "$ref": "#/$defs/GitStatus"
           },
           {
             "$ref": "#/$defs/GitAdd"

@@ -28,7 +28,14 @@ class Config(BaseConfig):
     """
 
     draft: bool = False
+    """
+    Whether to open the PR in draft mode.
+    """
+
     base_branch: Optional[str] = None
+    """
+    The branch that you want to merge your changes into. Defaults to the repo's default branch.
+    """
 
     @model_validator(mode="after")
     def check_body_source(self) -> Self:
@@ -43,7 +50,7 @@ class Config(BaseConfig):
 
 class CreatePR(BaseDirective):
     """
-    Creates a branch if missing. Re-verifies that you're on that branch during every run.
+    Creates a pull request using the `gh` CLI.
     """
 
     slug: Literal["create-pr"]

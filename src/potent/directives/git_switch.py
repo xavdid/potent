@@ -15,7 +15,7 @@ class Config(BaseConfig):
     """
 
 
-class SwitchBranch(BaseDirective):
+class GitSwitch(BaseDirective):
     """
     Creates a branch if missing. Re-verifies that you're on that branch during every run.
     """

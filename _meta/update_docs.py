@@ -30,8 +30,5 @@ lines = list(
     )
 )
 
-print(lines)
 
 readme.write_text("\n".join(lines))
-
-# print(GitAdd.to_markdown())

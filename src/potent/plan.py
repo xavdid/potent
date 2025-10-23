@@ -7,15 +7,15 @@ from rich.console import Group
 from rich.tree import Tree
 
 from potent.directives._base import AbsDirPath
-from potent.directives.clean_workdir import CleanStatus
 from potent.directives.create_pr import CreatePR
 from potent.directives.enable_automerge import EnableAutomerge
 from potent.directives.git_add import GitAdd
 from potent.directives.git_commit import GitCommit
 from potent.directives.git_pull import GitPull
 from potent.directives.git_push import GitPush
+from potent.directives.git_status import GitStatus
+from potent.directives.git_switch import GitSwitch
 from potent.directives.raw_command import RawCommand
-from potent.directives.switch_branch import SwitchBranch
 
 # DIRECTIVE IMPORTS ^
 
@@ -38,8 +38,8 @@ class Plan(BaseModel):
         Annotated[
             Union[
                 GitPull,
-                SwitchBranch,
-                CleanStatus,
+                GitSwitch,
+                GitStatus,
                 GitAdd,
                 GitCommit,
                 GitPush,
