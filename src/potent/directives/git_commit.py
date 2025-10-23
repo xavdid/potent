@@ -4,7 +4,6 @@ from typing import Literal, override
 from potent.directives._base import BaseConfig, BaseDirective, DirectiveResult
 
 
-# remove if unused:
 class Config(BaseConfig):
     message: str
     """

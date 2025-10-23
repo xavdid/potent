@@ -11,7 +11,6 @@ from potent.directives._base import (
 )
 
 
-# remove if unused:
 class Config(BaseConfig):
     title: str
     """

@@ -133,7 +133,7 @@ class BaseDirective(CommonBase):
                 "| name | type | description | default (if optional) |",
                 "|---|---|---|---|",
                 *[
-                    f"| `{conf_key}` | {v.annotation.__name__} | {v.description} | {f'`{v.default}`' if v.default else ''} |"
+                    f"| `{conf_key}` | {v.annotation.__name__} | {v.description} | {'' if v.is_required() else f'`{v.default}`'} |"
                     for conf_key, v in config.items()
                 ],
             ]
