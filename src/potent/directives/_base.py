@@ -42,7 +42,7 @@ class DirectiveResult(BaseModel):
         command = None
 
         if cmd:
-            command = " ".join(cmd)
+            command = " ".join(f'"{arg}"' if " " in arg else arg for arg in cmd)
 
         return DirectiveResult(
             success=result.returncode == 0, output=result.stdout, cmd=command
@@ -103,6 +103,10 @@ class BaseDirective(CommonBase):
             stderr=subprocess.STDOUT,
             text=True,
         )
+
+    def _wrap_run(self, directory: Path, cmd: list[str]) -> DirectiveResult:
+        result = self._run_cmd(directory, cmd)
+        return DirectiveResult.from_process(result, cmd=cmd)
 
     @classmethod
     def to_markdown(cls) -> list[str]:

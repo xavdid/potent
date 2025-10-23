@@ -7,6 +7,7 @@ from potent.directives._base import BaseConfig, BaseDirective, DirectiveResult
 # remove if unused:
 class Config(BaseConfig):
     message: str
+    allow_empty: bool = False
 
 
 class GitCommit(BaseDirective):
@@ -19,6 +20,13 @@ class GitCommit(BaseDirective):
 
     @override
     def _run(self, directory: Path) -> DirectiveResult:
-        result = self._run_cmd(directory, ["git", "commit", "-m", self.config.message])
+        cmd = [
+            "git",
+            "commit",
+            "-m",
+            self.config.message,
+            "--allow-empty" if self.config.allow_empty else "",
+        ]
+        result = self._run_cmd(directory, cmd)
 
-        return DirectiveResult.from_process(result)
+        return DirectiveResult.from_process(result, cmd=cmd)

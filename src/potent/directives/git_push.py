@@ -15,4 +15,4 @@ class GitPush(BaseDirective):
     def _run(self, directory: Path) -> DirectiveResult:
         result = self._run_cmd(directory, ["git", "push"])
 
-        return DirectiveResult.from_process(result)
+        return DirectiveResult.from_process(result, cmd=["git", "push"])

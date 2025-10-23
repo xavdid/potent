@@ -7,7 +7,7 @@ from rich.console import Group
 from rich.tree import Tree
 
 from potent.directives._base import AbsDirPath
-from potent.directives.clean_workdir import CleanWorkdir
+from potent.directives.clean_workdir import CleanStatus
 from potent.directives.create_pr import CreatePR
 from potent.directives.enable_automerge import EnableAutomerge
 from potent.directives.git_add import GitAdd
@@ -39,7 +39,7 @@ class Plan(BaseModel):
             Union[
                 GitPull,
                 SwitchBranch,
-                CleanWorkdir,
+                CleanStatus,
                 GitAdd,
                 GitCommit,
                 GitPush,
@@ -103,26 +103,51 @@ class Plan(BaseModel):
     def directory_pending(self, directory: Path) -> bool:
         return all(s.pending(directory) for s in self.steps)
 
-    def summarize(self, path: Path, *, short_plan=False) -> Tree:
+    def summarize(
+        self,
+        path: Path,
+        *,
+        short_plan=False,
+        verbose_success_dirs: Optional[list[Path]] = None,
+        current_run: Optional[list[tuple[Path, str]]] = None,
+    ) -> Tree:
         """
         Show this plan as plaintext
         """
+        # TODO: this is a mess
+        if verbose_success_dirs is None:
+            verbose_success_dirs = []
+        if current_run is None:
+            current_run = []
 
-        root = Tree(f"[yellow] {path.name if short_plan else path.absolute()}")
+        root = Tree(f"[yellow]{path.name if short_plan else path.absolute()}")
         # only print all steps if nothing has printed them yet
         should_print_all = True
 
         for d in self.directories:
-            # res.append("")
             if self.directory_complete(d):
-                root.add(f"✅ {d.name}", style="green", guide_style="green")
+                emoji = (
+                    "✅" if any(directory == d for directory, _ in current_run) else "☑️"
+                )
+                completed = root.add(
+                    f"{emoji} {d.name}", style="green", guide_style="green"
+                )
+                if d in verbose_success_dirs:
+                    for s in self.steps:
+                        step_emoji = "✅" if (d, s.slug) in current_run else "☑️"
+                        completed.add(f"{step_emoji} {s.slug}", style="green")
 
             elif self.directory_failed(d):
                 should_print_all = False
                 failed = root.add(f"❌ {d.name}", style="red", guide_style="red")
                 for s in self.steps:
                     if s.completed(d):
-                        failed.add(f"✅ {s.slug}", style="green")
+                        succeded_this_run = (d, s.slug) in current_run
+                        step_emoji = "✅" if succeded_this_run else "☑️"
+                        failed.add(
+                            f"{step_emoji} {s.slug}",
+                            style="green",
+                        )
                     elif s.failed(d):
                         failed.add(f"❌ {s.slug}", style="bold red")
                     else:

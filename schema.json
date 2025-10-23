@@ -1,6 +1,8 @@
 {
   "$defs": {
-    "CleanStatus": {
+    "CleanWorkdir": {
+      "additionalProperties": false,
+      "description": "asdf",
       "properties": {
         "comment": {
           "anyOf": [
@@ -14,9 +16,21 @@
           "default": null,
           "title": "Comment"
         },
-        "completed_directories": {
-          "$ref": "#/$defs/shellprints__directives___base__AbsPathList__1",
-          "default": []
+        "directory_statuses": {
+          "additionalProperties": {
+            "enum": [
+              "not-started",
+              "failed",
+              "completed"
+            ],
+            "type": "string"
+          },
+          "default": {},
+          "propertyNames": {
+            "format": "directory-path"
+          },
+          "title": "Directory Statuses",
+          "type": "object"
         },
         "slug": {
           "const": "clean-status",
@@ -27,10 +41,12 @@
       "required": [
         "slug"
       ],
-      "title": "CleanStatus",
+      "title": "CleanWorkdir",
       "type": "object"
     },
-    "GitPull": {
+    "CreatePR": {
+      "additionalProperties": false,
+      "description": "Creates a branch if missing. Re-verifies that you're on that branch during every run.",
       "properties": {
         "comment": {
           "anyOf": [
@@ -44,9 +60,212 @@
           "default": null,
           "title": "Comment"
         },
-        "completed_directories": {
-          "$ref": "#/$defs/shellprints__directives___base__AbsPathList__1",
-          "default": []
+        "directory_statuses": {
+          "additionalProperties": {
+            "enum": [
+              "not-started",
+              "failed",
+              "completed"
+            ],
+            "type": "string"
+          },
+          "default": {},
+          "propertyNames": {
+            "format": "directory-path"
+          },
+          "title": "Directory Statuses",
+          "type": "object"
+        },
+        "slug": {
+          "const": "create-pr",
+          "title": "Slug",
+          "type": "string"
+        },
+        "config": {
+          "$ref": "#/$defs/potent__directives__create_pr__Config"
+        }
+      },
+      "required": [
+        "slug",
+        "config"
+      ],
+      "title": "CreatePR",
+      "type": "object"
+    },
+    "EnableAutomerge": {
+      "additionalProperties": false,
+      "description": "Creates",
+      "properties": {
+        "comment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment"
+        },
+        "directory_statuses": {
+          "additionalProperties": {
+            "enum": [
+              "not-started",
+              "failed",
+              "completed"
+            ],
+            "type": "string"
+          },
+          "default": {},
+          "propertyNames": {
+            "format": "directory-path"
+          },
+          "title": "Directory Statuses",
+          "type": "object"
+        },
+        "slug": {
+          "const": "enable-automerge",
+          "title": "Slug",
+          "type": "string"
+        },
+        "config": {
+          "$ref": "#/$defs/potent__directives__enable_automerge__Config"
+        }
+      },
+      "required": [
+        "slug",
+        "config"
+      ],
+      "title": "EnableAutomerge",
+      "type": "object"
+    },
+    "GitAdd": {
+      "additionalProperties": false,
+      "description": "Creates a branch if missing. Re-verifies that you're on that branch during every run.",
+      "properties": {
+        "comment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment"
+        },
+        "directory_statuses": {
+          "additionalProperties": {
+            "enum": [
+              "not-started",
+              "failed",
+              "completed"
+            ],
+            "type": "string"
+          },
+          "default": {},
+          "propertyNames": {
+            "format": "directory-path"
+          },
+          "title": "Directory Statuses",
+          "type": "object"
+        },
+        "slug": {
+          "const": "git-add",
+          "title": "Slug",
+          "type": "string"
+        },
+        "config": {
+          "$ref": "#/$defs/potent__directives__git_add__Config"
+        }
+      },
+      "required": [
+        "slug",
+        "config"
+      ],
+      "title": "GitAdd",
+      "type": "object"
+    },
+    "GitCommit": {
+      "additionalProperties": false,
+      "description": "Creates a branch if missing. Re-verifies that you're on that branch during every run.",
+      "properties": {
+        "comment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment"
+        },
+        "directory_statuses": {
+          "additionalProperties": {
+            "enum": [
+              "not-started",
+              "failed",
+              "completed"
+            ],
+            "type": "string"
+          },
+          "default": {},
+          "propertyNames": {
+            "format": "directory-path"
+          },
+          "title": "Directory Statuses",
+          "type": "object"
+        },
+        "slug": {
+          "const": "git-commit",
+          "title": "Slug",
+          "type": "string"
+        },
+        "config": {
+          "$ref": "#/$defs/potent__directives__git_commit__Config"
+        }
+      },
+      "required": [
+        "slug",
+        "config"
+      ],
+      "title": "GitCommit",
+      "type": "object"
+    },
+    "GitPull": {
+      "additionalProperties": false,
+      "properties": {
+        "comment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment"
+        },
+        "directory_statuses": {
+          "additionalProperties": {
+            "enum": [
+              "not-started",
+              "failed",
+              "completed"
+            ],
+            "type": "string"
+          },
+          "default": {},
+          "propertyNames": {
+            "format": "directory-path"
+          },
+          "title": "Directory Statuses",
+          "type": "object"
         },
         "slug": {
           "const": "git-pull",
@@ -60,8 +279,9 @@
       "title": "GitPull",
       "type": "object"
     },
-    "UseBranch": {
-      "description": "Creates a branch if missing. Re-verifies you're on that branch every time",
+    "GitPush": {
+      "additionalProperties": false,
+      "description": "Creates a branch if missing. Re-verifies that you're on that branch during every run.",
       "properties": {
         "comment": {
           "anyOf": [
@@ -75,44 +295,291 @@
           "default": null,
           "title": "Comment"
         },
-        "completed_directories": {
-          "$ref": "#/$defs/shellprints__directives___base__AbsPathList__1",
-          "default": []
+        "directory_statuses": {
+          "additionalProperties": {
+            "enum": [
+              "not-started",
+              "failed",
+              "completed"
+            ],
+            "type": "string"
+          },
+          "default": {},
+          "propertyNames": {
+            "format": "directory-path"
+          },
+          "title": "Directory Statuses",
+          "type": "object"
         },
         "slug": {
-          "const": "git-checkout",
+          "const": "git-push",
           "title": "Slug",
-          "type": "string"
-        },
-        "branch": {
-          "title": "Branch",
           "type": "string"
         }
       },
       "required": [
-        "slug",
-        "branch"
+        "slug"
       ],
-      "title": "UseBranch",
+      "title": "GitPush",
       "type": "object"
     },
-    "shellprints__directives___base__AbsPathList__1": {
-      "items": {
-        "format": "directory-path",
-        "type": "string"
+    "RawCommand": {
+      "additionalProperties": false,
+      "description": "Runs a bash command. The step is successful if it exits 0 and fails otherwise.",
+      "properties": {
+        "comment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment"
+        },
+        "directory_statuses": {
+          "additionalProperties": {
+            "enum": [
+              "not-started",
+              "failed",
+              "completed"
+            ],
+            "type": "string"
+          },
+          "default": {},
+          "propertyNames": {
+            "format": "directory-path"
+          },
+          "title": "Directory Statuses",
+          "type": "object"
+        },
+        "slug": {
+          "const": "raw-command",
+          "title": "Slug",
+          "type": "string"
+        },
+        "config": {
+          "$ref": "#/$defs/potent__directives__raw_command__Config"
+        }
       },
-      "type": "array"
+      "required": [
+        "slug",
+        "config"
+      ],
+      "title": "RawCommand",
+      "type": "object"
     },
-    "shellprints__directives___base__AbsPathList__2": {
-      "items": {
-        "format": "directory-path",
-        "type": "string"
+    "SwitchBranch": {
+      "additionalProperties": false,
+      "description": "Creates a branch if missing. Re-verifies that you're on that branch during every run.",
+      "properties": {
+        "comment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment"
+        },
+        "directory_statuses": {
+          "additionalProperties": {
+            "enum": [
+              "not-started",
+              "failed",
+              "completed"
+            ],
+            "type": "string"
+          },
+          "default": {},
+          "propertyNames": {
+            "format": "directory-path"
+          },
+          "title": "Directory Statuses",
+          "type": "object"
+        },
+        "slug": {
+          "const": "switch-branch",
+          "title": "Slug",
+          "type": "string"
+        },
+        "config": {
+          "$ref": "#/$defs/potent__directives__switch_branch__Config"
+        }
       },
-      "minItems": 1,
-      "type": "array"
+      "required": [
+        "slug",
+        "config"
+      ],
+      "title": "SwitchBranch",
+      "type": "object"
+    },
+    "potent__directives__create_pr__Config": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "description": "The title of the PR.",
+          "title": "Title",
+          "type": "string"
+        },
+        "body_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "A string that will be used as the body of the PR. Exactly one of `body_text` or `body_file` is required.",
+          "title": "Body Text"
+        },
+        "body_file": {
+          "anyOf": [
+            {
+              "format": "file-path",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The path to a readable file containing the full body of the PR. Exactly one of `body_text` or `body_file` is required.",
+          "title": "Body File"
+        },
+        "draft": {
+          "default": false,
+          "title": "Draft",
+          "type": "boolean"
+        },
+        "base_branch": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Base Branch"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "title": "Config",
+      "type": "object"
+    },
+    "potent__directives__enable_automerge__Config": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "default": "squash",
+          "enum": [
+            "merge",
+            "squash"
+          ],
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "title": "Config",
+      "type": "object"
+    },
+    "potent__directives__git_add__Config": {
+      "additionalProperties": false,
+      "properties": {
+        "all": {
+          "default": false,
+          "description": "If `true`, add stage files. Exactly one of `all` or `pattern` must be specified.",
+          "title": "All",
+          "type": "boolean"
+        },
+        "pattern": {
+          "default": "",
+          "description": "The file(s) to stage. Exactly one of `all` or `pattern` must be specified.",
+          "title": "Pattern",
+          "type": "string"
+        }
+      },
+      "title": "Config",
+      "type": "object"
+    },
+    "potent__directives__git_commit__Config": {
+      "additionalProperties": false,
+      "properties": {
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "allow_empty": {
+          "default": false,
+          "title": "Allow Empty",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "message"
+      ],
+      "title": "Config",
+      "type": "object"
+    },
+    "potent__directives__raw_command__Config": {
+      "additionalProperties": false,
+      "properties": {
+        "arguments": {
+          "description": "The arguments that will be passed into Python's [subprocess.run](https://docs.python.org/3/library/subprocess.html#subprocess.run)",
+          "items": {
+            "type": "string"
+          },
+          "title": "Arguments",
+          "type": "array"
+        }
+      },
+      "required": [
+        "arguments"
+      ],
+      "title": "Config",
+      "type": "object"
+    },
+    "potent__directives__switch_branch__Config": {
+      "additionalProperties": false,
+      "properties": {
+        "branch": {
+          "description": "branch name",
+          "title": "Branch",
+          "type": "string"
+        },
+        "create_if_missing": {
+          "default": false,
+          "description": "If true, tries creating the branch if switching to it fails",
+          "title": "Create If Missing",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "branch"
+      ],
+      "title": "Config",
+      "type": "object"
     }
   },
+  "additionalProperties": false,
   "properties": {
+    "version": {
+      "const": "v1",
+      "default": "v1",
+      "title": "Version",
+      "type": "string"
+    },
     "comment": {
       "anyOf": [
         {
@@ -129,9 +596,15 @@
       "items": {
         "discriminator": {
           "mapping": {
-            "clean-status": "#/$defs/CleanStatus",
-            "git-checkout": "#/$defs/UseBranch",
-            "git-pull": "#/$defs/GitPull"
+            "clean-status": "#/$defs/CleanWorkdir",
+            "create-pr": "#/$defs/CreatePR",
+            "enable-automerge": "#/$defs/EnableAutomerge",
+            "git-add": "#/$defs/GitAdd",
+            "git-commit": "#/$defs/GitCommit",
+            "git-pull": "#/$defs/GitPull",
+            "git-push": "#/$defs/GitPush",
+            "raw-command": "#/$defs/RawCommand",
+            "switch-branch": "#/$defs/SwitchBranch"
           },
           "propertyName": "slug"
         },
@@ -140,10 +613,28 @@
             "$ref": "#/$defs/GitPull"
           },
           {
-            "$ref": "#/$defs/UseBranch"
+            "$ref": "#/$defs/SwitchBranch"
           },
           {
-            "$ref": "#/$defs/CleanStatus"
+            "$ref": "#/$defs/CleanWorkdir"
+          },
+          {
+            "$ref": "#/$defs/GitAdd"
+          },
+          {
+            "$ref": "#/$defs/GitCommit"
+          },
+          {
+            "$ref": "#/$defs/GitPush"
+          },
+          {
+            "$ref": "#/$defs/CreatePR"
+          },
+          {
+            "$ref": "#/$defs/EnableAutomerge"
+          },
+          {
+            "$ref": "#/$defs/RawCommand"
           }
         ]
       },
@@ -151,13 +642,19 @@
       "type": "array"
     },
     "directories": {
-      "$ref": "#/$defs/shellprints__directives___base__AbsPathList__2"
+      "items": {
+        "format": "directory-path",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Directories",
+      "type": "array"
     }
   },
   "required": [
     "steps",
     "directories"
   ],
-  "title": "Shellprint",
+  "title": "Plan",
   "type": "object"
 }

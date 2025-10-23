@@ -48,7 +48,20 @@ class SwitchBranch(BaseDirective):
                         "-c",
                         self.config.branch,
                     ],
-                )
+                ),
+                cmd=[
+                    "git",
+                    "switch",
+                    "-c",
+                    self.config.branch,
+                ],
             )
 
-        return DirectiveResult.from_process(switch_without_create)
+        return DirectiveResult.from_process(
+            switch_without_create,
+            cmd=[
+                "git",
+                "switch",
+                self.config.branch,
+            ],
+        )

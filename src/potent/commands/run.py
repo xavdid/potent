@@ -26,6 +26,8 @@ def run(path: PlanJson):
 
     console.print(f"Running [bold yellow]{str(path)}")
 
+    worked_dirs = []
+    current_run: list[tuple[Path, str]] = []
     with path.open("r+") as plan_file:
         for directory in plan.directories:
             console.print()
@@ -37,6 +39,7 @@ def run(path: PlanJson):
                 continue
 
             try:
+                worked_dirs.append(directory)
                 directory_header(console, directory)
 
                 for step in plan.steps:
@@ -52,13 +55,17 @@ def run(path: PlanJson):
                         if success := result.success:
                             style = "green"
                             subtitle = "Succeeded"
+                            current_run.append((directory, step.slug))
+
                         else:
                             style = "red"
                             subtitle = "Failed"
 
                         output = result.output or "[dim]no output"
                         if result.cmd:
-                            output = f"[dim white]ran:[/] `{result.cmd}`\n\n{output}"
+                            output = (
+                                f"[dim white]>>>[/] [cyan]{result.cmd}[/]\n\n{output}"
+                            )
 
                     console.print(
                         Panel(
@@ -81,4 +88,11 @@ def run(path: PlanJson):
 
     console.print()
     console.rule("Summary")
-    console.print(plan.summarize(path, short_plan=True))
+    console.print(
+        plan.summarize(
+            path,
+            short_plan=True,
+            verbose_success_dirs=worked_dirs,
+            current_run=current_run,
+        )
+    )
