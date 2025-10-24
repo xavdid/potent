@@ -272,6 +272,10 @@ pipx install potent
 
 Scripts are run as Plan files. They've got the extension `.plan.json`, but are standard json otherwise.
 
+### Authoring Plan files
+
+There's a schema available at TKTK.
+
 ## Directives
 
 <!-- BEGIN:DIRECTIVES -->
@@ -302,7 +306,7 @@ Enables automerge for the PR corresponding to the current branch.
 
 |name | type | description | default (if optional)|
 |--- | --- | --- | ---|
-|`mode` | `"merge", "squash"` | Sets the merge strategy for the PR. | `"squash"`|
+|`mode` | `"merge"` \| `"squash"` | Sets the merge strategy for the PR. | `"squash"`|
 
 ### GitAdd
 
@@ -315,7 +319,7 @@ Stages files in git.
 |name | type | description | default (if optional)|
 |--- | --- | --- | ---|
 |`all` | `bool` | If `true`, add stage files. Exactly one of `all` or `pattern` must be specified. | `False`|
-|`pattern` | `str` | The file(s) to stage. Exactly one of `all` or `pattern` must be specified. | ``|
+|`pattern` | `str` | The file(s) to stage. Exactly one of `all` or `pattern` must be specified. | `""`|
 
 ### GitCommit
 

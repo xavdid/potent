@@ -22,7 +22,7 @@ class Config(BaseConfig):
         if self.all ^ bool(self.pattern):
             return self
 
-        raise ValueError("set either `all` or `patterns`")
+        raise ValueError("set either `all` or `pattern`")
 
 
 class GitAdd(BaseDirective):

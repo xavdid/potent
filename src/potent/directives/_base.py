@@ -140,8 +140,7 @@ class BaseDirective(CommonBase):
                             v.description,
                             ""
                             if v.is_required()
-                            # wraps empty strings, but shouldn't
-                            else f"`{f'"{v.default}"' if v.default and isinstance(v.default, str) else v.default}`",
+                            else f"`{f'"{v.default}"' if isinstance(v.default, str) else v.default}`",
                         ]
                     )
                     for conf_key, v in config.items()
