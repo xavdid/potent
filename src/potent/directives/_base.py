@@ -4,7 +4,7 @@ from typing import Annotated, Literal, Optional, final, get_args
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, DirectoryPath, FilePath
 
-from potent.util import truthy_list
+from potent.util import format_annotation, table_row, truthy_list
 
 Status = Literal["not-started", "failed", "completed"]
 
@@ -130,10 +130,17 @@ class BaseDirective(CommonBase):
                 "",
                 "#### Config",
                 "",
-                "| name | type | description | default (if optional) |",
-                "|---|---|---|---|",
+                table_row(["name", "type", "description", "default (if optional)"]),
+                table_row(["---"] * 3),
                 *[
-                    f"| `{conf_key}` | {v.annotation.__name__} | {v.description} | {'' if v.is_required() else f'`{v.default}`'} |"
+                    table_row(
+                        [
+                            f"`{conf_key}`",
+                            format_annotation(v.annotation),
+                            v.description,
+                            "" if v.is_required() else f"`{v.default}`",
+                        ]
+                    )
                     for conf_key, v in config.items()
                 ],
             ]

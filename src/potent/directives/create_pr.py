@@ -23,7 +23,7 @@ class Config(BaseConfig):
     """
     body_file: Optional[AbsFilePath] = None
     """
-    The path to a readable file containing the full body of the PR. Exactly one of `body_text` or `body_file` is required.
+    The absolute path to a readable file containing the full body of the PR. Exactly one of `body_text` or `body_file` is required.
     """
 
     draft: bool = False

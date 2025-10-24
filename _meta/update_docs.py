@@ -2,6 +2,7 @@ from itertools import chain
 from pathlib import Path
 from typing import get_args
 
+from potent.directives._base import BaseDirective
 from potent.plan import Plan
 
 # the actual list of directives is fairly deeply nested
@@ -14,7 +15,7 @@ readme = Path(__file__, "..", "..", "README.md").resolve()
 
 annotated = get_args(Plan.model_fields["steps"].annotation)[0]
 union = get_args(annotated)[0]
-directives = get_args(union)
+directives: tuple[BaseDirective] = get_args(union)
 
 lines = readme.read_text().splitlines()
 

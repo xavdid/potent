@@ -4,6 +4,7 @@ _default:
   just --list
 
 # regenerate the autodocs
+[no-exit-message]
 update-docs:
   uv run -- _meta/update_docs.py
 
