@@ -27,7 +27,7 @@ class Config(BaseConfig):
 
 class GitAdd(BaseDirective):
     """
-    Creates a branch if missing. Re-verifies that you're on that branch during every run.
+    Stages files in git.
     """
 
     slug: Literal["git-add"]

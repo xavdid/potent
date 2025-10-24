@@ -120,7 +120,7 @@ class BaseDirective(CommonBase):
             "",
             (cls.__doc__ or "").strip(),
             "",
-            f"Slug: `{get_args(fields['slug'].annotation)[0]}`",
+            f"**Slug**: `{get_args(fields['slug'].annotation)[0]}`",
         ]
 
         if (config := fields.get("config")) and config.annotation:
@@ -138,7 +138,10 @@ class BaseDirective(CommonBase):
                             f"`{conf_key}`",
                             format_annotation(v.annotation),
                             v.description,
-                            "" if v.is_required() else f"`{v.default}`",
+                            ""
+                            if v.is_required()
+                            # wraps empty strings, but shouldn't
+                            else f"`{f'"{v.default}"' if v.default and isinstance(v.default, str) else v.default}`",
                         ]
                     )
                     for conf_key, v in config.items()

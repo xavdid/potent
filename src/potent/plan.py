@@ -120,10 +120,14 @@ class Plan(BaseModel):
         if current_run is None:
             current_run = []
 
+        if verbose_success_dirs or current_run:
+            print("☑️ Completed | ✅ Completed this run | ⌛ Pending | ❌ Failed\n")
+        else:
+            print("☑️ Completed | ⌛ Pending | ❌ Failed\n")
+
         root = Tree(f"[yellow]{path.name if short_plan else path.absolute()}")
         # only print all steps if nothing has printed them yet
         should_print_all = True
-
         for d in self.directories:
             if self.directory_complete(d):
                 emoji = (

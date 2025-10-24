@@ -13,7 +13,7 @@ class Config(BaseConfig):
 
 class RawCommand(BaseDirective):
     """
-    Runs a bash command. The step is successful if it exits 0 and fails otherwise.
+    Runs a shell command. The step succeeds if the command exits 0 and fails otherwise.
     """
 
     slug: Literal["raw-command"]

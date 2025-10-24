@@ -17,7 +17,7 @@ class Config(BaseConfig):
 
 class GitCommit(BaseDirective):
     """
-    Creates a branch if missing. Re-verifies that you're on that branch during every run.
+    Commits staged files in git.
     """
 
     slug: Literal["git-commit"]

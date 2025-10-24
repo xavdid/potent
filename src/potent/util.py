@@ -42,7 +42,7 @@ def format_annotation(a) -> str:
                 case _:
                     raise NotImplementedError(f"unable to format union: {a}")
         case typing.Literal:
-            return f"`{' | '.join(f'"{t}"' for t in typing.get_args(a))}`"
+            return f"`{', '.join(f'"{t}"' for t in typing.get_args(a))}`"
         case _:
             # match get_origin(a):
             raise NotImplementedError(f"unable to format: {a}")

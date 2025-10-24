@@ -280,7 +280,7 @@ Scripts are run as Plan files. They've got the extension `.plan.json`, but are s
 
 Creates a pull request using the `gh` CLI.
 
-Slug: `create-pr`
+**Slug**: `create-pr`
 
 #### Config
 
@@ -296,19 +296,19 @@ Slug: `create-pr`
 
 Enables automerge for the PR corresponding to the current branch.
 
-Slug: `enable-automerge`
+**Slug**: `enable-automerge`
 
 #### Config
 
 |name | type | description | default (if optional)|
 |--- | --- | --- | ---|
-|`mode` | `"merge" | "squash"` | Sets the merge strategy for the PR. | `squash`|
+|`mode` | `"merge", "squash"` | Sets the merge strategy for the PR. | `"squash"`|
 
 ### GitAdd
 
-Creates a branch if missing. Re-verifies that you're on that branch during every run.
+Stages files in git.
 
-Slug: `git-add`
+**Slug**: `git-add`
 
 #### Config
 
@@ -319,9 +319,9 @@ Slug: `git-add`
 
 ### GitCommit
 
-Creates a branch if missing. Re-verifies that you're on that branch during every run.
+Commits staged files in git.
 
-Slug: `git-commit`
+**Slug**: `git-commit`
 
 #### Config
 
@@ -334,25 +334,25 @@ Slug: `git-commit`
 
 Pull from the remote repository.
 
-Slug: `git-pull`
+**Slug**: `git-pull`
 
 ### GitPush
 
 Push to the remote repository.
 
-Slug: `git-push`
+**Slug**: `git-push`
 
 ### GitStatus
 
 Ensures that you have a clean working directory. If there are any modified or unstaged files, this step fails.
 
-Slug: `git-status`
+**Slug**: `git-status`
 
 ### GitSwitch
 
-Creates a branch if missing. Re-verifies that you're on that branch during every run.
+Switches the local git branch. Can optionally create it if it's missing.
 
-Slug: `switch-branch`
+**Slug**: `switch-branch`
 
 #### Config
 
@@ -363,9 +363,9 @@ Slug: `switch-branch`
 
 ### RawCommand
 
-Runs a bash command. The step is successful if it exits 0 and fails otherwise.
+Runs a shell command. The step succeeds if the command exits 0 and fails otherwise.
 
-Slug: `raw-command`
+**Slug**: `raw-command`
 
 #### Config
 

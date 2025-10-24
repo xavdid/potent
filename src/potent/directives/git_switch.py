@@ -17,7 +17,7 @@ class Config(BaseConfig):
 
 class GitSwitch(BaseDirective):
     """
-    Creates a branch if missing. Re-verifies that you're on that branch during every run.
+    Switches the local git branch. Can optionally create it if it's missing.
     """
 
     slug: Literal["switch-branch"]
