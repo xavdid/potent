@@ -131,7 +131,7 @@ class BaseDirective(CommonBase):
                 "#### Config",
                 "",
                 table_row(["name", "type", "description", "default (if optional)"]),
-                table_row(["---"] * 3),
+                table_row(["---"] * 4),
                 *[
                     table_row(
                         [
