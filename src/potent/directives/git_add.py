@@ -13,7 +13,7 @@ class Config(BaseConfig):
     """
     pattern: str = ""
     """
-    The file(s) to stage. Exactly one of `all` or `pattern` must be specified.
+    The file(s) to stage. Is processed as a [Python glob](https://docs.python.org/3/library/glob.html). Exactly one of `all` or `pattern` must be specified.
     """
 
     @model_validator(mode="after")

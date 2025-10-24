@@ -288,13 +288,13 @@ Creates a pull request using the `gh` CLI.
 
 #### Config
 
-|name | type | description | default (if optional)|
-|--- | --- | --- | ---|
-|`title` | `str` | The title of the PR. | |
-|`body_text` | `Optional[str]` | A string that will be used as the body of the PR. Exactly one of `body_text` or `body_file` is required. | `None`|
-|`body_file` | `Optional[str]` | The absolute path to a readable file containing the full body of the PR. Exactly one of `body_text` or `body_file` is required. | `None`|
-|`draft` | `bool` | Whether to open the PR in draft mode. | `False`|
-|`base_branch` | `Optional[str]` | The branch that you want to merge your changes into. Defaults to the repo's default branch. | `None`|
+| name          | type            | description                                                                                                                     | default (if optional) |
+| ------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `title`       | `str`           | The title of the PR.                                                                                                            |                       |
+| `body_text`   | `Optional[str]` | A string that will be used as the body of the PR. Exactly one of `body_text` or `body_file` is required.                        | `None`                |
+| `body_file`   | `Optional[str]` | The absolute path to a readable file containing the full body of the PR. Exactly one of `body_text` or `body_file` is required. | `None`                |
+| `draft`       | `bool`          | Whether to open the PR in draft mode.                                                                                           | `False`               |
+| `base_branch` | `Optional[str]` | The branch that you want to merge your changes into. Defaults to the repo's default branch.                                     | `None`                |
 
 ### EnableAutomerge
 
@@ -304,9 +304,9 @@ Enables automerge for the PR corresponding to the current branch.
 
 #### Config
 
-|name | type | description | default (if optional)|
-|--- | --- | --- | ---|
-|`mode` | `"merge"` \| `"squash"` | Sets the merge strategy for the PR. | `"squash"`|
+| name   | type                    | description                         | default (if optional) |
+| ------ | ----------------------- | ----------------------------------- | --------------------- |
+| `mode` | `"merge"` \| `"squash"` | Sets the merge strategy for the PR. | `"squash"`            |
 
 ### GitAdd
 
@@ -316,10 +316,10 @@ Stages files in git.
 
 #### Config
 
-|name | type | description | default (if optional)|
-|--- | --- | --- | ---|
-|`all` | `bool` | If `true`, add stage files. Exactly one of `all` or `pattern` must be specified. | `False`|
-|`pattern` | `str` | The file(s) to stage. Exactly one of `all` or `pattern` must be specified. | `""`|
+| name      | type   | description                                                                      | default (if optional) |
+| --------- | ------ | -------------------------------------------------------------------------------- | --------------------- |
+| `all`     | `bool` | If `true`, add stage files. Exactly one of `all` or `pattern` must be specified. | `False`               |
+| `pattern` | `str`  | The file(s) to stage. Exactly one of `all` or `pattern` must be specified.       | `""`                  |
 
 ### GitCommit
 
@@ -329,10 +329,10 @@ Commits staged files in git.
 
 #### Config
 
-|name | type | description | default (if optional)|
-|--- | --- | --- | ---|
-|`message` | `str` | Commit message, submitted as is. | |
-|`allow_empty` | `bool` | If true, allows commits without changed/added files. | `False`|
+| name          | type   | description                                          | default (if optional) |
+| ------------- | ------ | ---------------------------------------------------- | --------------------- |
+| `message`     | `str`  | Commit message, submitted as is.                     |                       |
+| `allow_empty` | `bool` | If true, allows commits without changed/added files. | `False`               |
 
 ### GitPull
 
@@ -360,10 +360,10 @@ Switches the local git branch. Can optionally create it if it's missing.
 
 #### Config
 
-|name | type | description | default (if optional)|
-|--- | --- | --- | ---|
-|`branch` | `str` | branch name | |
-|`create_if_missing` | `bool` | If true, tries creating the branch if switching to it fails | `False`|
+| name                | type   | description                                                 | default (if optional) |
+| ------------------- | ------ | ----------------------------------------------------------- | --------------------- |
+| `branch`            | `str`  | branch name                                                 |                       |
+| `create_if_missing` | `bool` | If true, tries creating the branch if switching to it fails | `False`               |
 
 ### RawCommand
 
@@ -373,10 +373,17 @@ Runs a shell command. The step succeeds if the command exits 0 and fails otherwi
 
 #### Config
 
-|name | type | description | default (if optional)|
-|--- | --- | --- | ---|
-|`arguments` | `list[str]` | The arguments that will be passed into Python's [subprocess.run](https://docs.python.org/3/library/subprocess.html#subprocess.run) | |
+| name        | type        | description                                                                                                                        | default (if optional) |
+| ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `arguments` | `list[str]` | The arguments that will be passed into Python's [subprocess.run](https://docs.python.org/3/library/subprocess.html#subprocess.run) |                       |
+
 <!-- END:DIRECTIVES -->
+
+## FAQ
+
+### Reading validation messages
+
+The error you get when you have an invalid plan file can take a little getting used to. TKTK.
 
 ## Project Status
 

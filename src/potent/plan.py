@@ -169,7 +169,7 @@ class Plan(BaseModel):
                 pending = root.add(f"⌛ {d.name}", style="yellow")
                 for s in self.steps:
                     if s.completed(d):
-                        pending.add(f"✅ {s.slug}", style="green")
+                        pending.add(f"☑️ {s.slug}", style="green")
                     elif s.failed(d):
                         pending.add(f"❌ {s.slug}", style="red")
                     else:

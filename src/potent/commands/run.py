@@ -2,6 +2,7 @@ from pathlib import Path
 
 import typer
 from rich.console import Console
+from rich.markup import escape
 from rich.panel import Panel
 
 # from rich.live import Live
@@ -61,11 +62,9 @@ def run(path: PlanJson):
                             style = "red"
                             subtitle = "Failed"
 
-                        output = result.output or "[dim]no output"
+                        output = result.output or "[dim]no output[/]"
                         if result.cmd:
-                            output = (
-                                f"[dim white]>>>[/] [cyan]{result.cmd}[/]\n\n{output}"
-                            )
+                            output = f"[dim white]>>>[/] [cyan]{result.cmd}[/]\n\n{escape(output)}"
 
                     console.print(
                         Panel(
