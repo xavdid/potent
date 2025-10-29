@@ -14,6 +14,10 @@ def is_plan_json(_ctx: typer.Context, _param: typer.CallbackParam, value: Path):
 PlanJson = Annotated[
     Path,
     typer.Argument(
-        exists=True, dir_okay=False, resolve_path=True, callback=is_plan_json
+        exists=True,
+        dir_okay=False,
+        resolve_path=True,
+        callback=is_plan_json,
+        help="The location of a `.plan.json` file",
     ),
 ]

@@ -9,7 +9,7 @@ app = typer.Typer()
 @app.command()
 def reset(path: PlanJson):
     """
-    Resets a plan file so it can be run again from scratch.
+    Reset the progress on a plan file so it can be run again from scratch.
     """
     with path.open("r+") as plan_file:
         plan = Plan.from_file(plan_file)

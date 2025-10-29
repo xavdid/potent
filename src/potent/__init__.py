@@ -19,5 +19,6 @@ app.add_typer(reset)
 # COMMANDS ^
 
 
+# main entrypoint for the CLI
 def main():
     app()

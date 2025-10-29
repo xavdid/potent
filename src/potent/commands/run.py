@@ -20,6 +20,9 @@ def directory_header(console: Console, directory: Path) -> None:
 
 @app.command()
 def run(path: PlanJson):
+    """
+    Execute a plan file and then summarize it.
+    """
     # TODO: probably make this internal to the class??
     # can maybe use a generator so the presentation is controlled in the CLI
     plan = Plan.from_path(path)
