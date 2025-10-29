@@ -7,6 +7,7 @@ _default:
 [no-exit-message]
 update-docs:
   uv run -- _meta/update_docs.py
+  prettier --write --log-level silent README.md
 
 # regenerate the json schema
 [no-exit-message]

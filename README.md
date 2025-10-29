@@ -31,12 +31,20 @@ example.plan.json
 
 ## Table of Contents
 
+- [Project Status](#project-status)
 - [Install](#install)
 - [Plans](#plans)
 - [Directives](#directives)
 - [FAQ](#faq)
-- [Project Status](#project-status)
 - [Demo](#demo)
+
+## Project Status
+
+`potent` is still under active development. It's ready for basic use, but not in production-critical systems.
+
+On the road to `v1.0.0`, expect breaking schema changes, new directives, small behavior changes, and general stability/productionalization improvements. Some concepts may also be renamed.
+
+Before we reach `1.0.0`, there may be breaking changes in any release; see the CHANGELOG for more details.
 
 ## Install
 
@@ -70,10 +78,10 @@ Scripts are run as Plan files. They've got the extension `.plan.json`, but are s
 
 Plans have two main components:
 
-- a list of directories
-- a list of steps
+- a list of folders the Plan will run in
+- a list of directives to run in those directories
 
-Each step is identified by its unique `slug` field.
+Each directive is identified by its unique `slug` field.
 
 ### Authoring Plan files
 
@@ -90,11 +98,11 @@ If you're handwriting, you can tell VSCode (or any other editor that supports JS
 ]
 ```
 
-Using the schema will help with autocomplete and flag any potential errors.
+Specifying the schema will help with autocomplete and flag potential errors.
 
 ## Directives
 
-Each of the directives below describes a single operation with well-defined arguments. If you need more flexibility, check out the [raw command](#rawcommand) directive.
+Each of the directives below describes a single operation with well-defined (and validated) arguments. If you need more flexibility, check out the [raw command](#rawcommand) directive.
 
 <!-- BEGIN:DIRECTIVES -->
 
@@ -106,13 +114,13 @@ Creates a pull request using the `gh` CLI.
 
 #### Config
 
-|name | type | description | default (if optional)|
-|--- | --- | --- | ---|
-|`title` | `str` | The title of the PR. | |
-|`body_text` | `Optional[str]` | A string that will be used as the body of the PR. Exactly one of `body_text` or `body_file` is required. | `None`|
-|`body_file` | `Optional[str]` | The absolute path to a readable file containing the full body of the PR. Exactly one of `body_text` or `body_file` is required. | `None`|
-|`draft` | `bool` | Whether to open the PR in draft mode. | `False`|
-|`base_branch` | `Optional[str]` | The branch that you want to merge your changes into. Defaults to the repo's default branch. | `None`|
+| name          | type            | description                                                                                                                     | default (if optional) |
+| ------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `title`       | `str`           | The title of the PR.                                                                                                            |                       |
+| `body_text`   | `Optional[str]` | A string that will be used as the body of the PR. Exactly one of `body_text` or `body_file` is required.                        | `None`                |
+| `body_file`   | `Optional[str]` | The absolute path to a readable file containing the full body of the PR. Exactly one of `body_text` or `body_file` is required. | `None`                |
+| `draft`       | `bool`          | Whether to open the PR in draft mode.                                                                                           | `False`               |
+| `base_branch` | `Optional[str]` | The branch that you want to merge your changes into. Defaults to the repo's default branch.                                     | `None`                |
 
 ### EnableAutomerge
 
@@ -122,9 +130,9 @@ Enables automerge for the PR corresponding to the current branch.
 
 #### Config
 
-|name | type | description | default (if optional)|
-|--- | --- | --- | ---|
-|`mode` | `"merge"` \| `"squash"` | Sets the merge strategy for the PR. | `"squash"`|
+| name   | type                    | description                         | default (if optional) |
+| ------ | ----------------------- | ----------------------------------- | --------------------- |
+| `mode` | `"merge"` \| `"squash"` | Sets the merge strategy for the PR. | `"squash"`            |
 
 ### GitAdd
 
@@ -134,10 +142,10 @@ Stages files in git.
 
 #### Config
 
-|name | type | description | default (if optional)|
-|--- | --- | --- | ---|
-|`all` | `bool` | If `true`, add stage files. Exactly one of `all` or `pattern` must be specified. | `False`|
-|`pattern` | `str` | The file(s) to stage. Is processed as a [Python glob](https://docs.python.org/3/library/glob.html). Exactly one of `all` or `pattern` must be specified. | `""`|
+| name      | type   | description                                                                                                                                              | default (if optional) |
+| --------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `all`     | `bool` | If `true`, add stage files. Exactly one of `all` or `pattern` must be specified.                                                                         | `False`               |
+| `pattern` | `str`  | The file(s) to stage. Is processed as a [Python glob](https://docs.python.org/3/library/glob.html). Exactly one of `all` or `pattern` must be specified. | `""`                  |
 
 ### GitCommit
 
@@ -147,10 +155,10 @@ Commits staged files in git.
 
 #### Config
 
-|name | type | description | default (if optional)|
-|--- | --- | --- | ---|
-|`message` | `str` | Commit message, submitted as is. | |
-|`allow_empty` | `bool` | If true, allows commits without changed/added files. | `False`|
+| name          | type   | description                                          | default (if optional) |
+| ------------- | ------ | ---------------------------------------------------- | --------------------- |
+| `message`     | `str`  | Commit message, submitted as is.                     |                       |
+| `allow_empty` | `bool` | If true, allows commits without changed/added files. | `False`               |
 
 ### GitPull
 
@@ -178,10 +186,10 @@ Switches the local git branch. Can optionally create it if it's missing.
 
 #### Config
 
-|name | type | description | default (if optional)|
-|--- | --- | --- | ---|
-|`branch` | `str` | branch name | |
-|`create_if_missing` | `bool` | If true, tries creating the branch if switching to it fails | `False`|
+| name                | type   | description                                                 | default (if optional) |
+| ------------------- | ------ | ----------------------------------------------------------- | --------------------- |
+| `branch`            | `str`  | branch name                                                 |                       |
+| `create_if_missing` | `bool` | If true, tries creating the branch if switching to it fails | `False`               |
 
 ### RawCommand
 
@@ -191,14 +199,24 @@ Runs a shell command. The step succeeds if the command exits 0 and fails otherwi
 
 #### Config
 
-|name | type | description | default (if optional)|
-|--- | --- | --- | ---|
-|`arguments` | `list[str]` | The arguments that will be passed into Python's [subprocess.run](https://docs.python.org/3/library/subprocess.html#subprocess.run) | |
+| name        | type        | description                                                                                                                        | default (if optional) |
+| ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `arguments` | `list[str]` | The arguments that will be passed into Python's [subprocess.run](https://docs.python.org/3/library/subprocess.html#subprocess.run) |                       |
+
 <!-- END:DIRECTIVES -->
 
 ## CLI Commands
 
 <!-- BEGIN:CLI -->
+
+### `init`
+
+Create an empty plan at the specified path.
+
+#### Arguments
+
+- `path` (FILE, required): The location in which to write a new `.plan.json` file
+
 ### `reset`
 
 Reset the progress on a plan file so it can be run again from scratch.
@@ -229,11 +247,46 @@ Summarize the current state of a plan file. Also validates the file for schema i
 
 ### Reading validation messages
 
-The error you get when you have an invalid plan file can take a little getting used to. TKTK.
+The error you get when you have an invalid plan file can take a little getting used to. But don't panic! It's actually pretty easy to read.
 
-## Project Status
+The most common error you'll get is an invalid slug. It looks like:
 
-`potent` is still under active development. Before we reach `1.0.0`, there may be breaking changes to existing schemas in any release.
+```
+ValidationError: 1 validation error for Plan
+steps.0
+  Input tag 'bad-slug' found using 'slug' does not match any of the expected tags: 'git-pull',
+'switch-branch', 'git-status', 'git-add', 'git-commit', 'git-push', 'create-pr',
+'enable-automerge', 'raw-command' [type=union_tag_invalid, input_value={'comment': None,
+'direct...', 'allow_empty': True}}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/union_tag_invalid
+```
+
+The lines tell you:
+
+1. what failed to validate
+2. its json path (in this case, `steps.0`, the first element of the `steps` array)
+3. the expected values (which the input doesn't match)
+
+The next most common is missing a required key, which follows a similar pattern:
+
+```
+ValidationError: 1 validation error for Plan
+steps.0.git-commit.config.message
+  Field required [type=missing, input_value={'allow_empty': True}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+```
+
+Line 2 is now even more descriptive: `steps[0].config.message` is an error of `type=missing`. More simply, a required key isn't there.
+
+The last common error is an extra key:
+
+```
+steps.0.git-commit.config.bad_key
+  Extra inputs are not permitted [type=extra_forbidden, input_value=True, input_type=bool]
+    For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden
+```
+
+Only expected keys are allowed, and `bad_key` is not expected.
 
 ## Demo
 

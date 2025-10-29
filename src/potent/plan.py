@@ -53,7 +53,7 @@ class Plan(BaseModel):
     ]
     directories: Annotated[
         list[AbsDirPath],
-        Len(min_length=1),
+        # Len(min_length=1), # we don't want to init plans with a directory that may not exist (or does exist, but has important things in it)
         AfterValidator(unique_items),
     ]
     _path: Optional[Path] = None
@@ -67,13 +67,6 @@ class Plan(BaseModel):
         plan = Plan.model_validate_json(f.read_text())
         plan._path = f
         return plan
-
-    # def run(self):
-    #     if not self._path:
-    #         raise ValueError("Can't run plan without path")
-
-    #     with self._path.open("r+") as fp:
-    #         pass
 
     def save(self, f: TextIO):
         """

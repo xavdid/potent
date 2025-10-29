@@ -5,7 +5,6 @@ from rich.console import Console
 from rich.markup import escape
 from rich.panel import Panel
 
-# from rich.live import Live
 from potent.commands._types import PlanJson
 from potent.plan import Plan
 
