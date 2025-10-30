@@ -45,7 +45,7 @@ def run(path: PlanJson):
                 worked_dirs.append(directory)
                 directory_header(console, directory)
 
-                for step in plan.steps:
+                for step in plan.operations:
                     success = None
                     output = ""
                     style = ""

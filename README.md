@@ -253,7 +253,7 @@ The most common error you'll get is an invalid slug. It looks like:
 
 ```
 ValidationError: 1 validation error for Plan
-steps.0
+operations.0
   Input tag 'bad-slug' found using 'slug' does not match any of the expected tags: 'git-pull',
 'switch-branch', 'git-status', 'git-add', 'git-commit', 'git-push', 'create-pr',
 'enable-automerge', 'raw-command' [type=union_tag_invalid, input_value={'comment': None,
@@ -264,24 +264,24 @@ steps.0
 The lines tell you:
 
 1. what failed to validate
-2. its json path (in this case, `steps.0`, the first element of the `steps` array)
+2. its json path (in this case, `operations.0`, the first element of the `steps` array)
 3. the expected values (which the input doesn't match)
 
 The next most common is missing a required key, which follows a similar pattern:
 
 ```
 ValidationError: 1 validation error for Plan
-steps.0.git-commit.config.message
+operations.0.git-commit.config.message
   Field required [type=missing, input_value={'allow_empty': True}, input_type=dict]
     For further information visit https://errors.pydantic.dev/2.11/v/missing
 ```
 
-Line 2 is now even more descriptive: `steps[0].config.message` is an error of `type=missing`. More simply, a required key isn't there.
+Line 2 is now even more descriptive: `operations[0].config.message` is an error of `type=missing`. More simply, a required key isn't there.
 
 The last common error is an extra key:
 
 ```
-steps.0.git-commit.config.bad_key
+operations.0.git-commit.config.bad_key
   Extra inputs are not permitted [type=extra_forbidden, input_value=True, input_type=bool]
     For further information visit https://errors.pydantic.dev/2.11/v/extra_forbidden
 ```
@@ -302,7 +302,7 @@ We can create a [plan](#plans) for that operation, `demo.plan.json`:
 ```json
 {
   "version": "v1",
-  "steps": [
+  "operations": [
     {
       "slug": "clean-status"
     },
@@ -520,4 +520,4 @@ The ✅ marks show what steps we completed this run, while ☑️ denotes a step
 
 `aardvark` was skipped since it was already done. We made progress in `badger` and `camel` despite erroring out because we can't switch branches without commits and there's nothing to push to.
 
-But, I could resume my script from the middle, skipping any completed steps. This is the power of `potent`!
+But, I could resume my script from the middle, skipping any completed operations. This is the power of `potent`!

@@ -28,5 +28,5 @@ def init(
         raise ValueError(f"A file already exists at {path}")
 
     path.write_text(
-        Plan(version="v1", steps=[], directories=[]).model_dump_json(indent=2)
+        Plan(version="v1", operations=[], directories=[]).model_dump_json(indent=2)
     )
