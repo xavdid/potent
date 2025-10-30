@@ -14,6 +14,8 @@ update-docs:
 dump-schema:
   uv run -- _meta/dump_schema.py
 
+docs: update-docs dump-schema
+
 # run unit tests against all supported versions
 [positional-arguments]
 test-versions *args:
