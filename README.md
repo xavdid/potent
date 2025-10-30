@@ -48,6 +48,8 @@ Before we reach `1.0.0`, there may be breaking changes in any release; see the C
 
 ## Install
 
+Potent is available on PyPI: https://pypi.org/project/potent/. It's typically installed as a CLI using one of these tools:
+
 [uv](https://docs.astral.sh/uv/guides/tools/):
 
 ```
