@@ -42,7 +42,7 @@ example.plan.json
 
 `potent` is still under active development. It's ready for basic use, but not in production-critical systems.
 
-On the road to `v1.0.0`, expect breaking schema changes, new Operations, small behavior changes, and general stability/productionalization improvements. Some concepts may also be renamed.
+On the road to `v1.0.0`, expect breaking schema changes, new Operations, small behavior changes, and general stability/productionalization improvements.
 
 Before we reach `1.0.0`, there may be breaking changes in any release; see the CHANGELOG for more details.
 

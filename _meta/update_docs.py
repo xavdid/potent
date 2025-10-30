@@ -122,7 +122,7 @@ def cli_docs() -> list[str]:
 
 def directives_markdown() -> list[str]:
     # the actual list of directives is fairly deeply nested
-    annotated = get_args(Plan.model_fields["steps"].annotation)[0]
+    annotated = get_args(Plan.model_fields["operations"].annotation)[0]
     union = get_args(annotated)[0]
     directives: tuple[BaseOperation] = get_args(union)
 

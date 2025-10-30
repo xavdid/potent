@@ -38,7 +38,7 @@
           "type": "string"
         },
         "config": {
-          "$ref": "#/$defs/potent__directives__create_pr__Config"
+          "$ref": "#/$defs/potent__operations__create_pr__Config"
         }
       },
       "required": [
@@ -86,7 +86,7 @@
           "type": "string"
         },
         "config": {
-          "$ref": "#/$defs/potent__directives__enable_automerge__Config"
+          "$ref": "#/$defs/potent__operations__enable_automerge__Config"
         }
       },
       "required": [
@@ -98,7 +98,7 @@
     },
     "GitAdd": {
       "additionalProperties": false,
-      "description": "Creates a branch if missing. Re-verifies that you're on that branch during every run.",
+      "description": "Stages files in git.",
       "properties": {
         "comment": {
           "anyOf": [
@@ -134,7 +134,7 @@
           "type": "string"
         },
         "config": {
-          "$ref": "#/$defs/potent__directives__git_add__Config"
+          "$ref": "#/$defs/potent__operations__git_add__Config"
         }
       },
       "required": [
@@ -146,7 +146,7 @@
     },
     "GitCommit": {
       "additionalProperties": false,
-      "description": "Creates a branch if missing. Re-verifies that you're on that branch during every run.",
+      "description": "Commits staged files in git.",
       "properties": {
         "comment": {
           "anyOf": [
@@ -182,7 +182,7 @@
           "type": "string"
         },
         "config": {
-          "$ref": "#/$defs/potent__directives__git_commit__Config"
+          "$ref": "#/$defs/potent__operations__git_commit__Config"
         }
       },
       "required": [
@@ -326,7 +326,7 @@
     },
     "GitSwitch": {
       "additionalProperties": false,
-      "description": "Creates a branch if missing. Re-verifies that you're on that branch during every run.",
+      "description": "Switches the local git branch. Can optionally create it if it's missing.",
       "properties": {
         "comment": {
           "anyOf": [
@@ -362,7 +362,7 @@
           "type": "string"
         },
         "config": {
-          "$ref": "#/$defs/potent__directives__git_switch__Config"
+          "$ref": "#/$defs/potent__operations__git_switch__Config"
         }
       },
       "required": [
@@ -374,7 +374,7 @@
     },
     "RawCommand": {
       "additionalProperties": false,
-      "description": "Runs a bash command. The step is successful if it exits 0 and fails otherwise.",
+      "description": "Runs a shell command. The step succeeds if the command exits 0 and fails otherwise.",
       "properties": {
         "comment": {
           "anyOf": [
@@ -410,7 +410,7 @@
           "type": "string"
         },
         "config": {
-          "$ref": "#/$defs/potent__directives__raw_command__Config"
+          "$ref": "#/$defs/potent__operations__raw_command__Config"
         }
       },
       "required": [
@@ -420,7 +420,7 @@
       "title": "RawCommand",
       "type": "object"
     },
-    "potent__directives__create_pr__Config": {
+    "potent__operations__create_pr__Config": {
       "additionalProperties": false,
       "properties": {
         "title": {
@@ -452,7 +452,7 @@
             }
           ],
           "default": null,
-          "description": "The path to a readable file containing the full body of the PR. Exactly one of `body_text` or `body_file` is required.",
+          "description": "The absolute path to a readable file containing the full body of the PR. Exactly one of `body_text` or `body_file` is required.",
           "title": "Body File"
         },
         "draft": {
@@ -481,7 +481,7 @@
       "title": "Config",
       "type": "object"
     },
-    "potent__directives__enable_automerge__Config": {
+    "potent__operations__enable_automerge__Config": {
       "additionalProperties": false,
       "properties": {
         "mode": {
@@ -498,7 +498,7 @@
       "title": "Config",
       "type": "object"
     },
-    "potent__directives__git_add__Config": {
+    "potent__operations__git_add__Config": {
       "additionalProperties": false,
       "properties": {
         "all": {
@@ -509,7 +509,7 @@
         },
         "pattern": {
           "default": "",
-          "description": "The file(s) to stage. Exactly one of `all` or `pattern` must be specified.",
+          "description": "The file(s) to stage. Is processed as a [Python glob](https://docs.python.org/3/library/glob.html). Exactly one of `all` or `pattern` must be specified.",
           "title": "Pattern",
           "type": "string"
         }
@@ -517,7 +517,7 @@
       "title": "Config",
       "type": "object"
     },
-    "potent__directives__git_commit__Config": {
+    "potent__operations__git_commit__Config": {
       "additionalProperties": false,
       "properties": {
         "message": {
@@ -538,7 +538,7 @@
       "title": "Config",
       "type": "object"
     },
-    "potent__directives__git_switch__Config": {
+    "potent__operations__git_switch__Config": {
       "additionalProperties": false,
       "properties": {
         "branch": {
@@ -559,7 +559,7 @@
       "title": "Config",
       "type": "object"
     },
-    "potent__directives__raw_command__Config": {
+    "potent__operations__raw_command__Config": {
       "additionalProperties": false,
       "properties": {
         "arguments": {
@@ -598,7 +598,7 @@
       "default": null,
       "title": "Comment"
     },
-    "steps": {
+    "operations": {
       "items": {
         "discriminator": {
           "mapping": {
@@ -644,7 +644,7 @@
           }
         ]
       },
-      "title": "Steps",
+      "title": "Operations",
       "type": "array"
     },
     "directories": {
@@ -652,13 +652,12 @@
         "format": "directory-path",
         "type": "string"
       },
-      "minItems": 1,
       "title": "Directories",
       "type": "array"
     }
   },
   "required": [
-    "steps",
+    "operations",
     "directories"
   ],
   "title": "Plan",
