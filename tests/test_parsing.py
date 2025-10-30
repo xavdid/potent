@@ -3,7 +3,7 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from potent import app
+from potent.cli import app
 
 runner = CliRunner()
 
