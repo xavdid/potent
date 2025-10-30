@@ -3,13 +3,13 @@ from typing import get_args
 
 import pytest
 
-from potent.directives._base import BaseDirective
-from potent.directives.enable_automerge import Config as AutomergeConfig
+from potent.operations._base import BaseOperation
+from potent.operations.enable_automerge import Config as AutomergeConfig
 
 
 @pytest.mark.skip("errors aren't caught")
-def test_directive_saves_on_fail(tmp_path: Path):
-    b = BaseDirective(directory_statuses={tmp_path: "not-started"})
+def test_operation_saves_on_fail(tmp_path: Path):
+    b = BaseOperation(directory_statuses={tmp_path: "not-started"})
 
     assert not b.completed(tmp_path)
     assert not b.failed(tmp_path)

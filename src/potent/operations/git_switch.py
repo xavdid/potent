@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Literal, override
 
-from potent.directives._base import BaseConfig, BaseDirective, DirectiveResult
+from potent.operations._base import BaseConfig, BaseOperation, OperationResult
 
 
 class Config(BaseConfig):
@@ -15,7 +15,7 @@ class Config(BaseConfig):
     """
 
 
-class GitSwitch(BaseDirective):
+class GitSwitch(BaseOperation):
     """
     Switches the local git branch. Can optionally create it if it's missing.
     """
@@ -24,7 +24,7 @@ class GitSwitch(BaseDirective):
     config: Config
 
     @override
-    def _run(self, directory: Path) -> DirectiveResult:
+    def _run(self, directory: Path) -> OperationResult:
         switch_without_create = self._run_cmd(
             directory,
             [
@@ -39,7 +39,7 @@ class GitSwitch(BaseDirective):
             and self.config.create_if_missing
             and "invalid reference" in switch_without_create.stdout
         ):
-            return DirectiveResult.from_process(
+            return OperationResult.from_process(
                 self._run_cmd(
                     directory,
                     [
@@ -57,7 +57,7 @@ class GitSwitch(BaseDirective):
                 ],
             )
 
-        return DirectiveResult.from_process(
+        return OperationResult.from_process(
             switch_without_create,
             cmd=[
                 "git",

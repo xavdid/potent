@@ -5,16 +5,16 @@ from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from rich.console import Group
 from rich.tree import Tree
 
-from potent.directives._base import AbsDirPath
-from potent.directives.create_pr import CreatePR
-from potent.directives.enable_automerge import EnableAutomerge
-from potent.directives.git_add import GitAdd
-from potent.directives.git_commit import GitCommit
-from potent.directives.git_pull import GitPull
-from potent.directives.git_push import GitPush
-from potent.directives.git_status import GitStatus
-from potent.directives.git_switch import GitSwitch
-from potent.directives.raw_command import RawCommand
+from potent.operations._base import AbsDirPath
+from potent.operations.create_pr import CreatePR
+from potent.operations.enable_automerge import EnableAutomerge
+from potent.operations.git_add import GitAdd
+from potent.operations.git_commit import GitCommit
+from potent.operations.git_pull import GitPull
+from potent.operations.git_push import GitPush
+from potent.operations.git_status import GitStatus
+from potent.operations.git_switch import GitSwitch
+from potent.operations.raw_command import RawCommand
 
 # DIRECTIVE IMPORTS ^
 
@@ -33,7 +33,7 @@ class Plan(BaseModel):
 
     version: Version = "v1"
     comment: Optional[str] = None
-    steps: list[
+    operations: list[
         Annotated[
             Union[
                 GitPull,
@@ -77,7 +77,7 @@ class Plan(BaseModel):
         f.flush()
 
     def reset(self):
-        for p in self.steps:
+        for p in self.operations:
             p.reset()
 
     def render(self) -> Group:
@@ -87,13 +87,13 @@ class Plan(BaseModel):
         raise NotImplementedError
 
     def directory_complete(self, directory: Path) -> bool:
-        return all(s.completed(directory) for s in self.steps)
+        return all(s.completed(directory) for s in self.operations)
 
     def directory_failed(self, directory: Path) -> bool:
-        return any(s.failed(directory) for s in self.steps)
+        return any(s.failed(directory) for s in self.operations)
 
     def directory_pending(self, directory: Path) -> bool:
-        return all(s.pending(directory) for s in self.steps)
+        return all(s.pending(directory) for s in self.operations)
 
     def summarize(
         self,
@@ -129,14 +129,14 @@ class Plan(BaseModel):
                     f"{emoji} {d.name}", style="green", guide_style="green"
                 )
                 if d in verbose_success_dirs:
-                    for s in self.steps:
+                    for s in self.operations:
                         step_emoji = "✅" if (d, s.slug) in current_run else "☑️"
                         completed.add(f"{step_emoji} {s.slug}", style="green")
 
             elif self.directory_failed(d):
                 should_print_all = False
                 failed = root.add(f"❌ {d.name}", style="red", guide_style="red")
-                for s in self.steps:
+                for s in self.operations:
                     if s.completed(d):
                         succeded_this_run = (d, s.slug) in current_run
                         step_emoji = "✅" if succeded_this_run else "☑️"
@@ -152,14 +152,14 @@ class Plan(BaseModel):
                 pending = root.add(f"⌛ {d.name}", style="yellow")
                 if should_print_all:
                     should_print_all = False
-                    for s in self.steps:
+                    for s in self.operations:
                         pending.add(f"⌛ {s.slug}", style="dim white")
                 else:
                     pending.add("same steps as above", style="dim white")
             else:
                 # plan was modified or something, so a previously-complete plan could now be incomplete
                 pending = root.add(f"⌛ {d.name}", style="yellow")
-                for s in self.steps:
+                for s in self.operations:
                     if s.completed(d):
                         pending.add(f"☑️ {s.slug}", style="green")
                     elif s.failed(d):

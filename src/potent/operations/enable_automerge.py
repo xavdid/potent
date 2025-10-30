@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Literal, override
 
-from potent.directives._base import BaseConfig, BaseDirective, DirectiveResult
+from potent.operations._base import BaseConfig, BaseOperation, OperationResult
 
 
 class Config(BaseConfig):
@@ -11,7 +11,7 @@ class Config(BaseConfig):
     """
 
 
-class EnableAutomerge(BaseDirective):
+class EnableAutomerge(BaseOperation):
     """
     Enables automerge for the PR corresponding to the current branch.
     """
@@ -20,7 +20,7 @@ class EnableAutomerge(BaseDirective):
     config: Config
 
     @override
-    def _run(self, directory: Path) -> DirectiveResult:
+    def _run(self, directory: Path) -> OperationResult:
         result = self._run_cmd(
             directory,
             [
@@ -32,4 +32,4 @@ class EnableAutomerge(BaseDirective):
             ],
         )
 
-        return DirectiveResult.from_process(result)
+        return OperationResult.from_process(result)

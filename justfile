@@ -34,10 +34,10 @@ init-command name: (_is_valid_python_identifier name) && (lint "src/potent/cli.p
   sed -i '' $'/# COMMAND IMPORTS/i\\\nfrom potent.commands.{{ name }} import app as {{ name }}\\\n' src/potent/cli.py
   sed -i '' $'/# COMMANDS/i\\\napp.add_typer({{ name }})\\\n' src/potent/cli.py
 
-# create new directive
+# create new operation
 init-directrive name: (_is_valid_python_identifier name) && (lint "src/potent/plan.py" "--fix" "--quiet")
-  {{ assert(path_exists("src/potent/directives/" + name + ".py") == "false", "directive `" + name + "` already exists") }}
-  cp _meta/directive.py.tmpl src/potent/directives/{{ name }}.py
-  sed -i '' $'/# DIRECTIVE IMPORTS/i\\\nfrom potent.directives.{{ name }} import TKTK\\\n' src/potent/plan.py
+  {{ assert(path_exists("src/potent/operationss/" + name + ".py") == "false", "operation `" + name + "` already exists") }}
+  cp _meta/operations.py.tmpl src/potent/operationss/{{ name }}.py
+  sed -i '' $'/# DIRECTIVE IMPORTS/i\\\nfrom potent.operations.{{ name }} import TKTK\\\n' src/potent/plan.py
   sed -i '' $'/# DIRECTIVES/i\\\n                TKTK,\\\n' src/potent/plan.py
 

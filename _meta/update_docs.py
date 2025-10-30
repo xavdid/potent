@@ -9,8 +9,9 @@ from potent.cli import app as CLI
 from potent.plan import Plan
 
 if TYPE_CHECKING:
-    from potent.directives._base import BaseDirective
+    from potent.operations._base import BaseOperation
 
+# must match the line in readme, so update those together
 type DocBlock = Literal["DIRECTIVES", "CLI"]
 
 
@@ -123,7 +124,7 @@ def directives_markdown() -> list[str]:
     # the actual list of directives is fairly deeply nested
     annotated = get_args(Plan.model_fields["steps"].annotation)[0]
     union = get_args(annotated)[0]
-    directives: tuple[BaseDirective] = get_args(union)
+    directives: tuple[BaseOperation] = get_args(union)
 
     return list(
         chain.from_iterable(

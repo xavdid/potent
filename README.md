@@ -34,7 +34,7 @@ example.plan.json
 - [Project Status](#project-status)
 - [Install](#install)
 - [Plans](#plans)
-- [Directives](#directives)
+- [Operations](#operations)
 - [FAQ](#faq)
 - [Demo](#demo)
 
@@ -42,7 +42,7 @@ example.plan.json
 
 `potent` is still under active development. It's ready for basic use, but not in production-critical systems.
 
-On the road to `v1.0.0`, expect breaking schema changes, new directives, small behavior changes, and general stability/productionalization improvements. Some concepts may also be renamed.
+On the road to `v1.0.0`, expect breaking schema changes, new Operations, small behavior changes, and general stability/productionalization improvements. Some concepts may also be renamed.
 
 Before we reach `1.0.0`, there may be breaking changes in any release; see the CHANGELOG for more details.
 
@@ -79,9 +79,9 @@ Scripts are run as Plan files. They've got the extension `.plan.json`, but are s
 Plans have two main components:
 
 - a list of folders the Plan will run in
-- a list of directives to run in those directories
+- a list of Operations to perform in those directories
 
-Each directive is identified by its unique `slug` field.
+Each Operation is identified by its unique `slug` field.
 
 ### Authoring Plan files
 
@@ -100,9 +100,9 @@ If you're handwriting, you can tell VSCode (or any other editor that supports JS
 
 Specifying the schema will help with autocomplete and flag potential errors.
 
-## Directives
+## Operations
 
-Each of the directives below describes a single operation with well-defined (and validated) arguments. If you need more flexibility, check out the [raw command](#rawcommand) directive.
+Each of the Operations below describes a single bash command with well-defined (and validated) arguments. If you need more flexibility, check out the [raw command](#rawcommand) Operation.
 
 <!-- BEGIN:DIRECTIVES -->
 

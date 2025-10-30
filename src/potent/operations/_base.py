@@ -30,7 +30,7 @@ AbsFilePath cool comment?
 """
 
 
-class DirectiveResult(BaseModel):
+class OperationResult(BaseModel):
     success: bool
     output: str
     cmd: Optional[str] = None
@@ -44,7 +44,7 @@ class DirectiveResult(BaseModel):
         if cmd:
             command = " ".join(f'"{arg}"' if " " in arg else arg for arg in cmd)
 
-        return DirectiveResult(
+        return OperationResult(
             success=result.returncode == 0, output=result.stdout, cmd=command
         )
 
@@ -57,12 +57,12 @@ class BaseConfig(CommonBase):
     model_config = ConfigDict(use_attribute_docstrings=True)
 
 
-class BaseDirective(CommonBase):
+class BaseOperation(CommonBase):
     comment: Optional[str] = None
     directory_statuses: dict[AbsDirPath, Status] = {}
 
     @final
-    def run(self, directory: Path) -> DirectiveResult:
+    def run(self, directory: Path) -> OperationResult:
         # try:
         result = self._run(directory)
         # except Exception:  # noqa: BLE001
@@ -71,7 +71,7 @@ class BaseDirective(CommonBase):
         self.directory_statuses[directory] = "completed" if result.success else "failed"
         return result
 
-    def _run(self, directory: Path) -> DirectiveResult:
+    def _run(self, directory: Path) -> OperationResult:
         raise NotImplementedError
 
     def reset(self) -> None:
@@ -104,9 +104,9 @@ class BaseDirective(CommonBase):
             text=True,
         )
 
-    def _wrap_run(self, directory: Path, cmd: list[str]) -> DirectiveResult:
+    def _wrap_run(self, directory: Path, cmd: list[str]) -> OperationResult:
         result = self._run_cmd(directory, cmd)
-        return DirectiveResult.from_process(result, cmd=cmd)
+        return OperationResult.from_process(result, cmd=cmd)
 
     @classmethod
     def to_markdown(cls) -> list[str]:

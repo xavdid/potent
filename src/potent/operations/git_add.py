@@ -3,7 +3,7 @@ from typing import Literal, Self, override
 
 from pydantic import model_validator
 
-from potent.directives._base import BaseConfig, BaseDirective, DirectiveResult
+from potent.operations._base import BaseConfig, BaseOperation, OperationResult
 
 
 class Config(BaseConfig):
@@ -25,7 +25,7 @@ class Config(BaseConfig):
         raise ValueError("set either `all` or `pattern`")
 
 
-class GitAdd(BaseDirective):
+class GitAdd(BaseOperation):
     """
     Stages files in git.
     """
@@ -34,7 +34,7 @@ class GitAdd(BaseDirective):
     config: Config
 
     @override
-    def _run(self, directory: Path) -> DirectiveResult:
+    def _run(self, directory: Path) -> OperationResult:
         if self.config.all:
             suffix = ["--all"]
         elif self.config.pattern:
@@ -48,4 +48,4 @@ class GitAdd(BaseDirective):
             cmd,
         )
 
-        return DirectiveResult.from_process(result, cmd=cmd)
+        return OperationResult.from_process(result, cmd=cmd)

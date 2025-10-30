@@ -2,8 +2,8 @@
 
 ## 0.2.0
 
-_released `TBD`_
+_released `2025-10-30`_
 
 - Initial public release!
-- You can author, run, init, and reset plan files
-- There are a small but powerful set of directives available
+- Introduce a CLI to run, init, and reset Plan files
+- Add the initial set of Operations

@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Literal, override
 
-from potent.directives._base import BaseConfig, BaseDirective, DirectiveResult
+from potent.operations._base import BaseConfig, BaseOperation, OperationResult
 
 
 class Config(BaseConfig):
@@ -11,7 +11,7 @@ class Config(BaseConfig):
     """
 
 
-class RawCommand(BaseDirective):
+class RawCommand(BaseOperation):
     """
     Runs a shell command. The step succeeds if the command exits 0 and fails otherwise.
     """
@@ -20,7 +20,7 @@ class RawCommand(BaseDirective):
     config: Config
 
     @override
-    def _run(self, directory: Path) -> DirectiveResult:
+    def _run(self, directory: Path) -> OperationResult:
         result = self._run_cmd(directory, self.config.arguments)
 
-        return DirectiveResult.from_process(result, cmd=self.config.arguments)
+        return OperationResult.from_process(result, cmd=self.config.arguments)

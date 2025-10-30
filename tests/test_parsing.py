@@ -21,6 +21,6 @@ def test_needs_plan_json(tmp_path: Path):
 
 def test_validates_files(tmp_path: Path):
     f = tmp_path / "blah.plan.json"
-    f.write_text(json.dumps({"steps": [], "directories": [str(tmp_path)]}))
+    f.write_text(json.dumps({"operations": [], "directories": [str(tmp_path)]}))
     result = runner.invoke(app, ["summarize", str(f)])
     assert result.exit_code == 0

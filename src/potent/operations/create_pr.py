@@ -3,11 +3,11 @@ from typing import Literal, Optional, Self, override
 
 from pydantic import model_validator
 
-from potent.directives._base import (
+from potent.operations._base import (
     AbsFilePath,
     BaseConfig,
-    BaseDirective,
-    DirectiveResult,
+    BaseOperation,
+    OperationResult,
 )
 
 
@@ -47,7 +47,7 @@ class Config(BaseConfig):
         return self
 
 
-class CreatePR(BaseDirective):
+class CreatePR(BaseOperation):
     """
     Creates a pull request using the `gh` CLI.
     """
@@ -56,7 +56,7 @@ class CreatePR(BaseDirective):
     config: Config
 
     @override
-    def _run(self, directory: Path) -> DirectiveResult:
+    def _run(self, directory: Path) -> OperationResult:
         cmd = ["gh", "pr", "create", "--title", self.config.title]
 
         if self.config.body_file:
@@ -77,4 +77,4 @@ class CreatePR(BaseDirective):
             cmd,
         )
 
-        return DirectiveResult.from_process(result)
+        return OperationResult.from_process(result)

@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Literal, override
 
-from potent.directives._base import BaseConfig, BaseDirective, DirectiveResult
+from potent.operations._base import BaseConfig, BaseOperation, OperationResult
 
 
 class Config(BaseConfig):
@@ -15,7 +15,7 @@ class Config(BaseConfig):
     """
 
 
-class GitCommit(BaseDirective):
+class GitCommit(BaseOperation):
     """
     Commits staged files in git.
     """
@@ -24,7 +24,7 @@ class GitCommit(BaseDirective):
     config: Config
 
     @override
-    def _run(self, directory: Path) -> DirectiveResult:
+    def _run(self, directory: Path) -> OperationResult:
         cmd = [
             "git",
             "commit",
@@ -34,4 +34,4 @@ class GitCommit(BaseDirective):
         ]
         result = self._run_cmd(directory, cmd)
 
-        return DirectiveResult.from_process(result, cmd=cmd)
+        return OperationResult.from_process(result, cmd=cmd)
