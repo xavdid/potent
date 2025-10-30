@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Callable, Literal, get_args
 import typer
 from click import Command, Group, Option
 
-from potent import app as CLI
+from potent.cli import app as CLI
 from potent.plan import Plan
 
 if TYPE_CHECKING:
