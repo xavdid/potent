@@ -5,7 +5,8 @@ description = "Add your description here"
 readme = "README.md"
 authors = [{ name = "David Brownman", email = "oss@xavd.id" }]
 # https://endoflife.date/python
-requires-python = ">=3.10"
+# but also there's some typing stuff I don't want to backport
+requires-python = ">=3.12"
 dependencies = ["pydantic == 2.11.9", "rich == 14.1.0", "typer == 0.19.2"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -61,9 +62,4 @@ unfixable = [
 ]
 
 [dependency-groups]
-dev = [
-    "pytest >= 8.4.2",
-    "ruff == 0.13.3",
-    "tox>=4.32.0",
-    "tox-uv>=1.29.0",
-]
+dev = ["pytest >= 8.4.2", "ruff == 0.13.3", "tox>=4.32.0", "tox-uv>=1.29.0"]

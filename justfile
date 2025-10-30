@@ -15,9 +15,10 @@ dump-schema:
   uv run -- _meta/dump_schema.py
 
 # run unit tests against all supported versions
-test-versions:
+[positional-arguments]
+test-versions *args:
   # this handles the build and installs magically - it's very cool
-  uv run -- tox -p
+  uv run -- tox -p "$@"
 
 lint *args:
   uv run -- ruff check {{ args }}
