@@ -2,8 +2,6 @@ import builtins
 import pathlib
 import typing
 
-# import typing
-
 
 def truthy_list[T](l: list[T]) -> list[T]:
     """
@@ -44,5 +42,4 @@ def format_annotation(a) -> str:
         case typing.Literal:
             return f"{' \\| '.join(f'`"{t}"`' for t in typing.get_args(a))}"
         case _:
-            # match get_origin(a):
             raise NotImplementedError(f"unable to format: {a}")

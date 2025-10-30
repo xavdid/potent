@@ -14,10 +14,10 @@ update-docs:
 dump-schema:
   uv run -- _meta/dump_schema.py
 
-# used for running the CLI locally
-[positional-arguments]
-run *args:
-  uv run -- potent "$@" example.plan.json
+# run unit tests against all supported versions
+test-versions:
+  # this handles the build and installs magically - it's very cool
+  uv run -- tox -p
 
 lint *args:
   uv run -- ruff check {{ args }}
