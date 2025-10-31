@@ -7,10 +7,15 @@ authors = [{ name = "David Brownman", email = "oss@xavd.id" }]
 # https://endoflife.date/python
 # but also there's some typing stuff I don't want to backport
 requires-python = ">=3.12"
-dependencies = ["pydantic == 2.11.9", "rich == 14.1.0", "typer == 0.19.2"]
+dependencies = ["pydantic ~= 2.12", "rich", "typer == 0.20.0"]
+license-files = ["LICENSE"]
+keywords = ["automation", "shell-scripting", "idempotency", "CLI tool"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development",
     "Topic :: System :: Shells",
     "Topic :: Utilities",
