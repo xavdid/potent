@@ -5,6 +5,8 @@ from potent.operations._base import BaseConfig, BaseOperation, OperationResult
 
 
 class Config(BaseConfig):
+    # these are fed right into the `gh` command, so they need to match the corresponding flags exactly
+    # see: https://cli.github.com/manual/gh_pr_merge
     mode: Literal["merge", "squash"] = "squash"
     """
     Sets the merge strategy for the PR.
@@ -26,13 +28,7 @@ class EnableAutomerge(BaseOperation):
     def _run(self, directory: Path) -> OperationResult:
         result = self._run_cmd(
             directory,
-            [
-                "gh",
-                "pr",
-                "merge",
-                "--auto",
-                "--merge" if self.config.mode == "merge" else "squash",
-            ],
+            ["gh", "pr", "merge", "--auto", f"--{self.config.mode}"],
         )
 
         return OperationResult.from_process(result)
