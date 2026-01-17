@@ -118,17 +118,17 @@ class BaseOperation(CommonBase):
             "",
             f"### {cls.__name__}",
             "",
-            (cls.__doc__ or "").strip(),
+            "\n".join(l.strip() for l in (cls.__doc__ or "").splitlines()),
             "",
             f"**Slug**: `{get_args(fields['slug'].annotation)[0]}`",
         ]
 
-        if (config := fields.get("config")) and config.annotation:
-            config = config.annotation.model_fields
+        if (raw_config := fields.get("config")) and raw_config.annotation:
+            config = raw_config.annotation.model_fields
 
             lines += [
                 "",
-                "#### Config",
+                f"#### Config{'' if raw_config.is_required() else ' (optional)'}",
                 "",
                 table_row(["name", "type", "description", "default (if optional)"]),
                 table_row(["---"] * 4),

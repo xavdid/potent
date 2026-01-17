@@ -130,7 +130,7 @@ Enables automerge for the PR corresponding to the current branch.
 
 **Slug**: `enable-automerge`
 
-#### Config
+#### Config (optional)
 
 | name   | type                    | description                         | default (if optional) |
 | ------ | ----------------------- | ----------------------------------- | --------------------- |

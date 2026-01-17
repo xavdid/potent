@@ -13,11 +13,14 @@ class Config(BaseConfig):
 
 class EnableAutomerge(BaseOperation):
     """
-    Enables automerge for the PR corresponding to the current branch.
+    Enables auto-merge for the PR corresponding to the current branch.
+
+    > [!IMPORTANT]
+    > Requires the `gh` CLI installed.
     """
 
     slug: Literal["enable-automerge"]
-    config: Config
+    config: Config = Config()
 
     @override
     def _run(self, directory: Path) -> OperationResult:
