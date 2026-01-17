@@ -16,7 +16,7 @@ dump-schema:
 
 docs: update-docs dump-schema
 
-# run unit tests against all supported versions
+# run unit tests against all supported Python versions
 [positional-arguments]
 test-versions *args:
   # this handles the build and installs magically - it's very cool

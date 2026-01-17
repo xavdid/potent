@@ -126,7 +126,10 @@ Creates a pull request using the `gh` CLI.
 
 ### EnableAutomerge
 
-Enables automerge for the PR corresponding to the current branch.
+Enables auto-merge for the PR corresponding to the current branch.
+
+> [!IMPORTANT]
+> Requires the `gh` CLI installed.
 
 **Slug**: `enable-automerge`
 
@@ -201,9 +204,9 @@ Runs a shell command. The step succeeds if the command exits 0 and fails otherwi
 
 #### Config
 
-| name        | type        | description                                                                                                                        | default (if optional) |
-| ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `arguments` | `list[str]` | The arguments that will be passed into Python's [subprocess.run](https://docs.python.org/3/library/subprocess.html#subprocess.run) |                       |
+| name        | type        | description                                                                                                                          | default (if optional) |
+| ----------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
+| `arguments` | `list[str]` | The arguments that will be passed into Python's [subprocess.run()](https://docs.python.org/3/library/subprocess.html#subprocess.run) |                       |
 
 <!-- END:DIRECTIVES -->
 
