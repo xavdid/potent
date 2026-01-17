@@ -63,10 +63,11 @@ class BaseOperation(CommonBase):
 
     @final
     def run(self, directory: Path) -> OperationResult:
-        # try:
-        result = self._run(directory)
-        # except Exception:  # noqa: BLE001
-        #     success = False
+        try:
+            result = self._run(directory)
+        # Could be anything, but I saw `FileNotFoundError` from subprocess.run when running non-existent commands
+        except OSError as e:
+            result = OperationResult(success=False, output=str(e))
 
         self.directory_statuses[directory] = "completed" if result.success else "failed"
         return result
