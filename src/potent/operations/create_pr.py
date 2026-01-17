@@ -50,6 +50,9 @@ class Config(BaseConfig):
 class CreatePR(BaseOperation):
     """
     Creates a pull request using the `gh` CLI.
+
+    > [!IMPORTANT]
+    > Requires the `gh` CLI to be installed.
     """
 
     slug: Literal["create-pr"]

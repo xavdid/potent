@@ -16,7 +16,7 @@ class EnableAutomerge(BaseOperation):
     Enables auto-merge for the PR corresponding to the current branch.
 
     > [!IMPORTANT]
-    > Requires the `gh` CLI installed.
+    > Requires the `gh` CLI to be installed.
     """
 
     slug: Literal["enable-automerge"]

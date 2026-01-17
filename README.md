@@ -112,6 +112,9 @@ Each of the Operations below describes a single bash command with well-defined (
 
 Creates a pull request using the `gh` CLI.
 
+> [!IMPORTANT]
+> Requires the `gh` CLI to be installed.
+
 **Slug**: `create-pr`
 
 #### Config
@@ -129,7 +132,7 @@ Creates a pull request using the `gh` CLI.
 Enables auto-merge for the PR corresponding to the current branch.
 
 > [!IMPORTANT]
-> Requires the `gh` CLI installed.
+> Requires the `gh` CLI to be installed.
 
 **Slug**: `enable-automerge`
 

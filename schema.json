@@ -2,7 +2,7 @@
   "$defs": {
     "CreatePR": {
       "additionalProperties": false,
-      "description": "Creates a pull request using the `gh` CLI.",
+      "description": "Creates a pull request using the `gh` CLI.\n\n> [!IMPORTANT]\n> Requires the `gh` CLI to be installed.",
       "properties": {
         "comment": {
           "anyOf": [
@@ -50,7 +50,7 @@
     },
     "EnableAutomerge": {
       "additionalProperties": false,
-      "description": "Enables automerge for the PR corresponding to the current branch.",
+      "description": "Enables auto-merge for the PR corresponding to the current branch.\n\n> [!IMPORTANT]\n> Requires the `gh` CLI to be installed.",
       "properties": {
         "comment": {
           "anyOf": [
@@ -86,12 +86,14 @@
           "type": "string"
         },
         "config": {
-          "$ref": "#/$defs/potent__operations__enable_automerge__Config"
+          "$ref": "#/$defs/potent__operations__enable_automerge__Config",
+          "default": {
+            "mode": "squash"
+          }
         }
       },
       "required": [
-        "slug",
-        "config"
+        "slug"
       ],
       "title": "EnableAutomerge",
       "type": "object"
@@ -563,7 +565,7 @@
       "additionalProperties": false,
       "properties": {
         "arguments": {
-          "description": "The arguments that will be passed into Python's [subprocess.run](https://docs.python.org/3/library/subprocess.html#subprocess.run)",
+          "description": "The arguments that will be passed into Python's [subprocess.run()](https://docs.python.org/3/library/subprocess.html#subprocess.run)",
           "items": {
             "type": "string"
           },
