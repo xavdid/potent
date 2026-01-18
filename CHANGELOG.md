@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.1
+
+_released `2026-01-17`_
+
+- fix Python 3.14 support
+- fix `enable-automerge`'s "squash" option
+- correctly mark `enable-automerge`'s `config` as optional
+- more gracefully handle trying to run missing commands
+- fix surfacing unescaped text when a command has no output
+
 ## 0.2.0
 
 _released `2025-10-30`_
