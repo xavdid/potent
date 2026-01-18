@@ -10,7 +10,7 @@ def test_os_errors_handled(mock_run, tmp_path: Path):
         "[Errno 2] No such file or directory: 'cool'"
     )
 
-    result = RawCommand(slug="raw-command", config=Config(arguments=[])).run(tmp_path)
+    result = RawCommand(config=Config(arguments=[])).run(tmp_path)
 
     # should fail, but not throw
     assert result.success is False

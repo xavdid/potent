@@ -21,7 +21,7 @@ class EnableAutomerge(BaseOperation):
     > Requires the `gh` CLI to be installed.
     """
 
-    slug: Literal["enable-automerge"]
+    slug: Literal["enable-automerge"] = "enable-automerge"
     config: Config = Config()
 
     @override

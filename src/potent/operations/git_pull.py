@@ -9,7 +9,7 @@ class GitPull(BaseOperation):
     Pull from the remote repository.
     """
 
-    slug: Literal["git-pull"]
+    slug: Literal["git-pull"] = "git-pull"
 
     def _run(self, directory: Path) -> OperationResult:
         result = self._run_cmd(directory, ["git", "pull"])

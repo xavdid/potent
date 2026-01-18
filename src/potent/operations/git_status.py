@@ -6,10 +6,10 @@ from potent.operations._base import BaseOperation, OperationResult
 
 class GitStatus(BaseOperation):
     """
-    Ensures that you have a clean working directory. If there are any modified or unstaged files, this step fails.
+    Ensures that you have a clean working directory. If there are any modified or un-staged files, this step fails.
     """
 
-    slug: Literal["git-status"]
+    slug: Literal["git-status"] = "git-status"
 
     @override
     def _run(self, directory: Path) -> OperationResult:

@@ -16,7 +16,7 @@ class RawCommand(BaseOperation):
     Runs a shell command. The step succeeds if the command exits 0 and fails otherwise.
     """
 
-    slug: Literal["raw-command"]
+    slug: Literal["raw-command"] = "raw-command"
     config: Config
 
     @override

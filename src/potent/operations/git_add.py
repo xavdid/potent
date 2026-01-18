@@ -30,7 +30,7 @@ class GitAdd(BaseOperation):
     Stages files in git.
     """
 
-    slug: Literal["git-add"]
+    slug: Literal["git-add"] = "git-add"
     config: Config
 
     @override

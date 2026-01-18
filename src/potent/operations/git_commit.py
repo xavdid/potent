@@ -20,7 +20,7 @@ class GitCommit(BaseOperation):
     Commits staged files in git.
     """
 
-    slug: Literal["git-commit"]
+    slug: Literal["git-commit"] = "git-commit"
     config: Config
 
     @override

@@ -24,20 +24,19 @@ def run(path: PlanJson):
     """
     # TODO: probably make this internal to the class??
     # can maybe use a generator so the presentation is controlled in the CLI
-    plan = Plan.from_path(path)
+    # update 2026-01-17; don't see a good way forward here. The plan is only occasionally invoked and most of the logic is presentational.
     console = Console()
 
     console.print(f"Running [bold yellow]{str(path)}")
 
     worked_dirs = []
     current_run: list[tuple[Path, str]] = []
-    with path.open("r+") as plan_file:
+    with Plan.open(path) as plan:
         for directory in plan.directories:
             console.print()
             if plan.directory_complete(directory):
                 directory_header(console, directory)
 
-                # directory_spinner.ok(f"☑️ {directory.name}")
                 console.print("☑️ [green]already finished")
                 continue
 
@@ -54,7 +53,7 @@ def run(path: PlanJson):
                         subtitle = "skipped"
                     else:
                         result = step.run(directory)
-                        plan.save(plan_file)
+                        plan.save()
                         if success := result.success:
                             style = "green"
                             subtitle = "Succeeded"
@@ -86,17 +85,16 @@ def run(path: PlanJson):
                         break
 
             except NotImplementedError:
-                # directory_spinner.fail("ERR")
                 print("    err!")
                 continue
 
-    console.print()
-    console.rule("Summary")
-    console.print(
-        plan.summarize(
-            path,
-            short_plan=True,
-            verbose_success_dirs=worked_dirs,
-            current_run=current_run,
+        console.print()
+        console.rule("Summary")
+        console.print(
+            plan.summarize(
+                path,
+                short_plan=True,
+                verbose_success_dirs=worked_dirs,
+                current_run=current_run,
+            )
         )
-    )

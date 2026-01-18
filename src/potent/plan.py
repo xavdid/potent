@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Annotated, Literal, Optional, TextIO, Union
 
@@ -55,36 +56,41 @@ class Plan(BaseModel):
         # Len(min_length=1), # we don't want to init plans with a directory that may not exist (or does exist, but has important things in it)
         AfterValidator(unique_items),
     ]
-    _path: Optional[Path] = None
+    _fp: Optional[TextIO] = None
 
     @staticmethod
-    def from_file(f: TextIO) -> "Plan":
-        return Plan.model_validate_json(f.read())
+    @contextmanager
+    def open(path: Path):
+        """
+        Open a plan at `path` for reading & writing. Stores the pointer on the plan.
+        """
+        with path.open("r+") as fp:
+            plan = Plan.model_validate_json(fp.read())
+            plan._fp = fp
+            try:
+                yield plan
+            finally:
+                plan._fp = None
 
     @staticmethod
     def from_path(f: Path) -> "Plan":
-        plan = Plan.model_validate_json(f.read_text())
-        plan._path = f
-        return plan
+        return Plan.model_validate_json(f.read_text())
 
-    def save(self, f: TextIO):
+    def save(self):
         """
         Operates on an open file for performance reasons
         """
-        f.seek(0)
-        f.truncate()
-        f.write(self.model_dump_json(indent=2))
-        f.flush()
+        if self._fp is None:
+            raise ValueError("Can't do file operations without a file pointer")
+
+        self._fp.seek(0)
+        self._fp.truncate()
+        self._fp.write(self.model_dump_json(indent=2))
+        self._fp.flush()
 
     def reset(self):
         for p in self.operations:
             p.reset()
-
-    def render(self) -> Group:
-        """
-        Outputs a task tree suitable for Rich to show progress (w/ spinners)
-        """
-        raise NotImplementedError
 
     def directory_complete(self, directory: Path) -> bool:
         return all(s.completed(directory) for s in self.operations)
@@ -104,7 +110,7 @@ class Plan(BaseModel):
         current_run: Optional[list[tuple[Path, str]]] = None,
     ) -> Tree:
         """
-        Show this plan as plaintext
+        Show this plan as plaintext. Takes a path to print the plan's location, but not for actual file operations
         """
         # TODO: this is a mess
         if verbose_success_dirs is None:

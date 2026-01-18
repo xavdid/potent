@@ -20,7 +20,7 @@ class GitSwitch(BaseOperation):
     Switches the local git branch. Can optionally create it if it's missing.
     """
 
-    slug: Literal["switch-branch"]
+    slug: Literal["switch-branch"] = "switch-branch"
     config: Config
 
     @override

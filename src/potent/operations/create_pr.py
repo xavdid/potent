@@ -55,7 +55,7 @@ class CreatePR(BaseOperation):
     > Requires the `gh` CLI to be installed.
     """
 
-    slug: Literal["create-pr"]
+    slug: Literal["create-pr"] = "create-pr"
     config: Config
 
     @override

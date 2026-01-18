@@ -9,7 +9,7 @@ class GitPush(BaseOperation):
     Push to the remote repository.
     """
 
-    slug: Literal["git-push"]
+    slug: Literal["git-push"] = "git-push"
 
     @override
     def _run(self, directory: Path) -> OperationResult:
