@@ -64,9 +64,12 @@ def run(path: PlanJson):
                             style = "red"
                             subtitle = "Failed"
 
-                        output = result.output or "[dim]no output[/]"
+                        output = escape(result.output) or "[dim]no output[/]"
+
                         if result.cmd:
-                            output = f"[dim white]>>>[/] [cyan]{result.cmd}[/]\n\n{escape(output)}"
+                            output = (
+                                f"[dim white]>>>[/] [cyan]{result.cmd}[/]\n\n{output}"
+                            )
 
                     console.print(
                         Panel(

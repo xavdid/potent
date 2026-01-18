@@ -43,9 +43,6 @@ class GitAdd(BaseOperation):
             raise RuntimeError("model validation should have prevented hitting this")
 
         cmd = ["git", "add", *suffix]
-        result = self._run_cmd(
-            directory,
-            cmd,
-        )
+        result = self._run_cmd(directory, cmd)
 
         return OperationResult.from_process(result, cmd=cmd)
