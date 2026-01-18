@@ -43,7 +43,10 @@ init-directrive name: (_is_valid_python_identifier name) && (lint "src/potent/pl
   sed -i '' $'/# DIRECTIVE IMPORTS/i\\\nfrom potent.operations.{{ name }} import TKTK\\\n' src/potent/plan.py
   sed -i '' $'/# DIRECTIVES/i\\\n                TKTK,\\\n' src/potent/plan.py
 
-[confirm("This will release the package as written. Have you already run `uv version --bump`? (yN)")]
+bump level: docs
+  uv version --bump {{ level }}
+
+[confirm("This will release the package as written. Have you already run `just bump LEVEL`? (yN)")]
 release:
   rm -rf dist
   uv build
