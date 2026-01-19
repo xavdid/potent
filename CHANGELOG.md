@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+_released `TBD`_
+
+- Add support for paths under a home directory (`~/...`) for easier sharing of plans
+
 ## 0.2.1
 
 _released `2026-01-17`_

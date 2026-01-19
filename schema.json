@@ -27,13 +27,14 @@
           },
           "default": {},
           "propertyNames": {
-            "format": "directory-path"
+            "format": "path"
           },
           "title": "Directory Statuses",
           "type": "object"
         },
         "slug": {
           "const": "create-pr",
+          "default": "create-pr",
           "title": "Slug",
           "type": "string"
         },
@@ -42,7 +43,6 @@
         }
       },
       "required": [
-        "slug",
         "config"
       ],
       "title": "CreatePR",
@@ -75,13 +75,14 @@
           },
           "default": {},
           "propertyNames": {
-            "format": "directory-path"
+            "format": "path"
           },
           "title": "Directory Statuses",
           "type": "object"
         },
         "slug": {
           "const": "enable-automerge",
+          "default": "enable-automerge",
           "title": "Slug",
           "type": "string"
         },
@@ -92,9 +93,6 @@
           }
         }
       },
-      "required": [
-        "slug"
-      ],
       "title": "EnableAutomerge",
       "type": "object"
     },
@@ -125,13 +123,14 @@
           },
           "default": {},
           "propertyNames": {
-            "format": "directory-path"
+            "format": "path"
           },
           "title": "Directory Statuses",
           "type": "object"
         },
         "slug": {
           "const": "git-add",
+          "default": "git-add",
           "title": "Slug",
           "type": "string"
         },
@@ -140,7 +139,6 @@
         }
       },
       "required": [
-        "slug",
         "config"
       ],
       "title": "GitAdd",
@@ -173,13 +171,14 @@
           },
           "default": {},
           "propertyNames": {
-            "format": "directory-path"
+            "format": "path"
           },
           "title": "Directory Statuses",
           "type": "object"
         },
         "slug": {
           "const": "git-commit",
+          "default": "git-commit",
           "title": "Slug",
           "type": "string"
         },
@@ -188,7 +187,6 @@
         }
       },
       "required": [
-        "slug",
         "config"
       ],
       "title": "GitCommit",
@@ -221,20 +219,18 @@
           },
           "default": {},
           "propertyNames": {
-            "format": "directory-path"
+            "format": "path"
           },
           "title": "Directory Statuses",
           "type": "object"
         },
         "slug": {
           "const": "git-pull",
+          "default": "git-pull",
           "title": "Slug",
           "type": "string"
         }
       },
-      "required": [
-        "slug"
-      ],
       "title": "GitPull",
       "type": "object"
     },
@@ -265,26 +261,24 @@
           },
           "default": {},
           "propertyNames": {
-            "format": "directory-path"
+            "format": "path"
           },
           "title": "Directory Statuses",
           "type": "object"
         },
         "slug": {
           "const": "git-push",
+          "default": "git-push",
           "title": "Slug",
           "type": "string"
         }
       },
-      "required": [
-        "slug"
-      ],
       "title": "GitPush",
       "type": "object"
     },
     "GitStatus": {
       "additionalProperties": false,
-      "description": "Ensures that you have a clean working directory. If there are any modified or unstaged files, this step fails.",
+      "description": "Ensures that you have a clean working directory. If there are any modified or un-staged files, this step fails.",
       "properties": {
         "comment": {
           "anyOf": [
@@ -309,20 +303,18 @@
           },
           "default": {},
           "propertyNames": {
-            "format": "directory-path"
+            "format": "path"
           },
           "title": "Directory Statuses",
           "type": "object"
         },
         "slug": {
           "const": "git-status",
+          "default": "git-status",
           "title": "Slug",
           "type": "string"
         }
       },
-      "required": [
-        "slug"
-      ],
       "title": "GitStatus",
       "type": "object"
     },
@@ -353,13 +345,14 @@
           },
           "default": {},
           "propertyNames": {
-            "format": "directory-path"
+            "format": "path"
           },
           "title": "Directory Statuses",
           "type": "object"
         },
         "slug": {
           "const": "switch-branch",
+          "default": "switch-branch",
           "title": "Slug",
           "type": "string"
         },
@@ -368,7 +361,6 @@
         }
       },
       "required": [
-        "slug",
         "config"
       ],
       "title": "GitSwitch",
@@ -401,13 +393,14 @@
           },
           "default": {},
           "propertyNames": {
-            "format": "directory-path"
+            "format": "path"
           },
           "title": "Directory Statuses",
           "type": "object"
         },
         "slug": {
           "const": "raw-command",
+          "default": "raw-command",
           "title": "Slug",
           "type": "string"
         },
@@ -416,7 +409,6 @@
         }
       },
       "required": [
-        "slug",
         "config"
       ],
       "title": "RawCommand",
@@ -651,7 +643,7 @@
     },
     "directories": {
       "items": {
-        "format": "directory-path",
+        "format": "path",
         "type": "string"
       },
       "title": "Directories",

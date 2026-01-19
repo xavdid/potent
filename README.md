@@ -80,10 +80,14 @@ Scripts are run as Plan files. They've got the extension `.plan.json`, but are s
 
 Plans have two main components:
 
-- a list of folders the Plan will run in
+- a list of directories the Plan will run in
 - a list of Operations to perform in those directories
 
 Each Operation is identified by its unique `slug` field.
+
+### Directories
+
+Potent support both absolute directories (`/Users/somename/path/to/dir`) and directories with a leading `~` (`~/path/to/dir`). In both cases, the **directory must exist** on the filesystem.
 
 ### Authoring Plan files
 
@@ -182,7 +186,7 @@ Push to the remote repository.
 
 ### GitStatus
 
-Ensures that you have a clean working directory. If there are any modified or unstaged files, this step fails.
+Ensures that you have a clean working directory. If there are any modified or un-staged files, this step fails.
 
 **Slug**: `git-status`
 

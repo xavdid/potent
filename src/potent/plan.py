@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Annotated, Literal, Optional, TextIO, Union
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
-from rich.console import Group
 from rich.tree import Tree
 
 from potent.operations._base import AbsDirPath

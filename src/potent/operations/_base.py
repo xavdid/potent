@@ -2,28 +2,52 @@ import subprocess
 from pathlib import Path
 from typing import Annotated, Literal, Optional, final, get_args
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, DirectoryPath, FilePath
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    ConfigDict,
+    FilePath,
+)
 
 from potent.util import format_annotation, table_row, truthy_list
 
 Status = Literal["not-started", "failed", "completed"]
 
 
+def ensure_directory(value: Path) -> Path:
+    """
+    Supports both absolute path and paths with a leading `~`.
+    """
+
+    # we want to validate the incoming path, but not modify it.
+    # So if validation passes, we still return the original value
+    path_to_validate = value
+
+    # relative paths
+    str_path = str(value)
+    if str_path.startswith("~"):
+        path_to_validate = value.expanduser()
+
+    # absolute paths must exist, just like before
+    if not (path_to_validate.is_absolute() and path_to_validate.is_dir()):
+        raise ValueError("path must be an absolute path to a directory that exists")
+
+    return value
+
+
+AbsDirPath = Annotated[Path, AfterValidator(ensure_directory)]
+
+
 # useful for writing back absolute paths, which is good for portability
-def make_abs_path(value: Path) -> Path:
+def ensure_abs_path(value: Path) -> Path:
     if not value.is_absolute():
         raise ValueError("path is not absolute")
     return value
 
 
-AbsDirPath = Annotated[
-    DirectoryPath,
-    AfterValidator(make_abs_path),
-]
-
 AbsFilePath = Annotated[
     FilePath,
-    AfterValidator(make_abs_path),
+    AfterValidator(ensure_abs_path),
 ]
 """
 AbsFilePath cool comment?
@@ -64,7 +88,8 @@ class BaseOperation(CommonBase):
     @final
     def run(self, directory: Path) -> OperationResult:
         try:
-            result = self._run(directory)
+            # we know the path exists, but it may need to be expanded before use
+            result = self._run(directory.expanduser())
         # Could be anything, but I saw `FileNotFoundError` from subprocess.run when running non-existent commands
         except OSError as e:
             result = OperationResult(success=False, output=str(e))
