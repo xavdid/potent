@@ -90,7 +90,8 @@ class BaseOperation(CommonBase):
         try:
             # we know the path exists, but it may need to be expanded before use
             result = self._run(directory.expanduser())
-        # Could be anything, but I saw `FileNotFoundError` from subprocess.run when running non-existent commands
+        # Could be lots of errors, but mostly I saw `FileNotFoundError` from subprocess.run()
+        # when running non-existent commands
         except OSError as e:
             result = OperationResult(success=False, output=str(e))
 
@@ -114,6 +115,11 @@ class BaseOperation(CommonBase):
 
     def initialize_dirs(self, directories: list[Path]) -> None:
         self.directory_statuses |= dict.fromkeys(directories, "not-started")
+
+    @property
+    def name(self) -> str:
+        # children will provide this
+        return self.slug  # type: ignore
 
     def _run_cmd(
         self, directory: Path, cmd: list[str]

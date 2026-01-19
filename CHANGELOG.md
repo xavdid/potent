@@ -5,6 +5,7 @@
 _released `TBD`_
 
 - Add support for paths under a home directory (`~/...`) for easier sharing of plans
+- Add support for specifying a name for `raw-command` operations for use in summaries. Useful for differentiating lots of raw commands from each other.
 
 ## 0.2.1
 

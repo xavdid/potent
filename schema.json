@@ -563,6 +563,19 @@
           },
           "title": "Arguments",
           "type": "array"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "A name used to disambiguate this step in summaries. Useful if you have many `raw-command`s.",
+          "title": "Name"
         }
       },
       "required": [

@@ -135,30 +135,30 @@ class Plan(BaseModel):
                 )
                 if d in verbose_success_dirs:
                     for s in self.operations:
-                        step_emoji = "✅" if (d, s.slug) in current_run else "☑️"
-                        completed.add(f"{step_emoji} {s.slug}", style="green")
+                        step_emoji = "✅" if (d, s.name) in current_run else "☑️"
+                        completed.add(f"{step_emoji} {s.name}", style="green")
 
             elif self.directory_failed(d):
                 should_print_all = False
                 failed = root.add(f"❌ {d.name}", style="red", guide_style="red")
                 for s in self.operations:
                     if s.completed(d):
-                        succeded_this_run = (d, s.slug) in current_run
+                        succeded_this_run = (d, s.name) in current_run
                         step_emoji = "✅" if succeded_this_run else "☑️"
                         failed.add(
-                            f"{step_emoji} {s.slug}",
+                            f"{step_emoji} {s.name}",
                             style="green",
                         )
                     elif s.failed(d):
-                        failed.add(f"❌ {s.slug}", style="bold red")
+                        failed.add(f"❌ {s.name}", style="bold red")
                     else:
-                        failed.add(f"⌛ {s.slug}", style="dim white")
+                        failed.add(f"⌛ {s.name}", style="dim white")
             elif self.directory_pending(d):
                 pending = root.add(f"⌛ {d.name}", style="yellow")
                 if should_print_all:
                     should_print_all = False
                     for s in self.operations:
-                        pending.add(f"⌛ {s.slug}", style="dim white")
+                        pending.add(f"⌛ {s.name}", style="dim white")
                 else:
                     pending.add("same steps as above", style="dim white")
             else:
@@ -166,10 +166,10 @@ class Plan(BaseModel):
                 pending = root.add(f"⌛ {d.name}", style="yellow")
                 for s in self.operations:
                     if s.completed(d):
-                        pending.add(f"☑️ {s.slug}", style="green")
+                        pending.add(f"☑️ {s.name}", style="green")
                     elif s.failed(d):
-                        pending.add(f"❌ {s.slug}", style="red")
+                        pending.add(f"❌ {s.name}", style="red")
                     else:
-                        pending.add(f"⌛ {s.slug}", style="bold white")
+                        pending.add(f"⌛ {s.name}", style="bold white")
 
         return root
