@@ -1,6 +1,6 @@
 [project]
 name = "potent"
-version = "0.2.1"
+version = "0.2.2"
 description = "An idempotent way to run shell scripts."
 readme = "README.md"
 authors = [{ name = "David Brownman", email = "oss@xavd.id" }]

@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.2.2
 
-_released `TBD`_
+_released `2026-01-19`_
 
 - Add support for paths under a home directory (`~/...`) for easier sharing of plans
 - Add support for specifying a name for `raw-command` operations for use in summaries. Useful for differentiating lots of raw commands from each other.
