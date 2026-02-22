@@ -351,8 +351,8 @@
           "type": "object"
         },
         "slug": {
-          "const": "switch-branch",
-          "default": "switch-branch",
+          "const": "git-switch",
+          "default": "git-switch",
           "title": "Slug",
           "type": "string"
         },
@@ -616,8 +616,8 @@
             "git-pull": "#/$defs/GitPull",
             "git-push": "#/$defs/GitPush",
             "git-status": "#/$defs/GitStatus",
-            "raw-command": "#/$defs/RawCommand",
-            "switch-branch": "#/$defs/GitSwitch"
+            "git-switch": "#/$defs/GitSwitch",
+            "raw-command": "#/$defs/RawCommand"
           },
           "propertyName": "slug"
         },

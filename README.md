@@ -123,7 +123,7 @@ Each of the Operations below describes a single bash command with well-defined (
 | [`git-pull`](#GitPull)                 |
 | [`git-push`](#GitPush)                 |
 | [`git-status`](#GitStatus)             |
-| [`switch-branch`](#GitSwitch)          | ☑️               |
+| [`git-switch`](#GitSwitch)             | ☑️               |
 | [`raw-command`](#RawCommand)           | ☑️               |
 
 ### CreatePR
@@ -208,7 +208,7 @@ Ensures that you have a clean working directory. If there are any modified or un
 
 Switches the local git branch. Can optionally create it if it's missing.
 
-**Slug**: `switch-branch`
+**Slug**: `git-switch`
 
 #### Config
 
