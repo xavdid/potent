@@ -17,7 +17,7 @@ def init(
             dir_okay=False,
             resolve_path=True,
             callback=is_plan_json,
-            help="The location in which to write a new `.plan.json` file. Must not exist",
+            help="The location in which to write a new `.plan.json` file. Must not exist.",
         ),
     ],
 ):

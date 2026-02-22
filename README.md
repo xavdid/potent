@@ -228,7 +228,7 @@ Create an empty plan at the specified path.
 
 #### Arguments
 
-- `path` (FILE, required): The location in which to write a new `.plan.json` file. Must not exist
+- `path` (FILE, required): The location in which to write a new `.plan.json` file. Must not exist.
 
 ### `reset`
 
