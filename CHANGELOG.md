@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add the `--version` cli flag to the root CLI command
+
 ## 0.2.2
 
 _released `2026-01-19`_

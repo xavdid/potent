@@ -112,6 +112,20 @@ Each of the Operations below describes a single bash command with well-defined (
 
 <!-- BEGIN:DIRECTIVES -->
 
+### Available Operations
+
+| Slug                                   | Requires Config? |
+| -------------------------------------- | ---------------- |
+| [`create-pr`](#CreatePR)               | ☑️               |
+| [`enable-automerge`](#EnableAutomerge) | ☑️               |
+| [`git-add`](#GitAdd)                   | ☑️               |
+| [`git-commit`](#GitCommit)             | ☑️               |
+| [`git-pull`](#GitPull)                 |
+| [`git-push`](#GitPush)                 |
+| [`git-status`](#GitStatus)             |
+| [`switch-branch`](#GitSwitch)          | ☑️               |
+| [`raw-command`](#RawCommand)           | ☑️               |
+
 ### CreatePR
 
 Creates a pull request using the `gh` CLI.

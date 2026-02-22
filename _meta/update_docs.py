@@ -124,13 +124,17 @@ def directives_markdown() -> list[str]:
     # the actual list of directives is fairly deeply nested
     annotated = get_args(Plan.model_fields["operations"].annotation)[0]
     union = get_args(annotated)[0]
-    directives: tuple[BaseOperation] = get_args(union)
+    directives: list[BaseOperation] = sorted(get_args(union), key=lambda d: d.__name__)
 
-    return list(
-        chain.from_iterable(
-            d.to_markdown() for d in sorted(directives, key=lambda d: d.__name__)
-        )
-    )
+    return [
+        # markdown table with directive names and slugs
+        "### Available Operations",
+        "|Slug|Requires Config?|",
+        "|---|---|",
+        *("|".join(d.to_markdown_summary()) for d in directives),
+        # full docs
+        *chain.from_iterable(d.to_markdown() for d in directives),
+    ]
 
 
 BUILDERS: dict[DocBlock, Callable[[], list[str]]] = {
