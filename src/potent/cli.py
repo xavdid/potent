@@ -5,6 +5,7 @@ import typer
 from potent.commands.init import app as init
 from potent.commands.reset import app as reset
 from potent.commands.run import app as run
+from potent.commands.schema import app as schema
 from potent.commands.summarize import app as summarize
 
 # COMMAND IMPORTS ^
@@ -32,6 +33,7 @@ app.add_typer(summarize)
 app.add_typer(run)
 app.add_typer(reset)
 app.add_typer(init)
+app.add_typer(schema)
 # COMMANDS ^
 
 

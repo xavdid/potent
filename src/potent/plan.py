@@ -85,6 +85,8 @@ class Plan(BaseModel):
         self._fp.seek(0)
         self._fp.truncate()
         self._fp.write(self.model_dump_json(indent=2))
+        # without this, files may not actually be written right away
+        # but we want to store incremental progress as soon as possible in case something goes wrong
         self._fp.flush()
 
     def reset(self):

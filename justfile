@@ -12,7 +12,7 @@ update-docs:
 # regenerate the json schema
 [no-exit-message]
 dump-schema:
-  uv run -- _meta/dump_schema.py
+  uv run -- potent schema dump schema.json
 
 docs: update-docs dump-schema
 

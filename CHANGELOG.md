@@ -4,6 +4,7 @@
 
 - ‼️ change the `switch-branch` slug to `git-switch` to be more in line with other commands
 - Add the `--version` cli flag to the root CLI command
+- add the `schema` command to make it easier to access the underlying plan schema
 
 ## 0.2.2
 
