@@ -3,8 +3,11 @@ from unittest.mock import patch
 
 import pytest
 
-from potent.operations._base import ensure_directory
-from potent.operations.raw_command import Config, RawCommand
+from potent.operations._base import BaseOperation, ensure_directory
+from potent.operations.git_add import GitAdd
+from potent.operations.git_commit import GitCommit
+from potent.operations.git_switch import GitSwitch
+from potent.operations.raw_command import RawCommand
 from potent.plan import Plan
 
 
@@ -22,7 +25,7 @@ def test_os_errors_handled(mock_run, tmp_path: Path):
         "[Errno 2] No such file or directory: 'cool'"
     )
 
-    result = RawCommand(config=Config(arguments=[])).run(tmp_path)
+    result = RawCommand(config=RawCommand.OpConfig(arguments=[])).run(tmp_path)
 
     # should fail, but not throw
     assert result.success is False
@@ -50,3 +53,54 @@ def test_tile_paths_are_retained_when_dumping_plan(path_with_tilde: Path):
     print(plan)
 
     assert str(path_with_tilde) in plan.model_dump_json()
+
+
+@pytest.mark.parametrize(
+    ["op", "expected"],
+    [
+        [GitAdd(config=GitAdd.OpConfig(all=True)), "git add (all)"],
+        [GitAdd(config=GitAdd.OpConfig(pattern="*.txt")), "git add (*.txt)"],
+        [
+            GitCommit(config=GitCommit.OpConfig(message="Short msg")),
+            'git commit -m "Short msg"',
+        ],
+        [
+            GitCommit(
+                config=GitCommit.OpConfig(
+                    message="A longer message that gets truncated"
+                )
+            ),
+            'git commit -m "A longer m..."',
+        ],
+        [GitSwitch(config=GitSwitch.OpConfig(branch="asdf")), "git switch -> asdf"],
+        [
+            RawCommand(config=RawCommand.OpConfig(arguments=["npm", "run", "start"])),
+            "npm run start (raw-command)",
+        ],
+        [
+            RawCommand(
+                config=RawCommand.OpConfig(
+                    arguments=["npm", "run", "start", "--some", "arg"]
+                )
+            ),
+            "npm run start... (raw-command)",
+        ],
+        [
+            RawCommand(
+                config=RawCommand.OpConfig(
+                    name="start server",
+                    arguments=["npm", "run", "start", "--some", "arg"],
+                )
+            ),
+            "start server (raw-command)",
+        ],
+        [
+            RawCommand(
+                config=RawCommand.OpConfig(name="start server", arguments=["npm"])
+            ),
+            "start server (raw-command)",
+        ],
+    ],
+)
+def test_summary(op: BaseOperation, expected: str):
+    assert op.summary == expected

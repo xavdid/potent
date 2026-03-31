@@ -117,7 +117,10 @@ class BaseOperation(CommonBase):
         self.directory_statuses |= dict.fromkeys(directories, "not-started")
 
     @property
-    def name(self) -> str:
+    def summary(self) -> str:
+        """
+        A human-readable description of this step, used for disambiguating multiple steps of the same type (especially if they can be configured).
+        """
         # children will provide this
         return self.slug  # type: ignore
 

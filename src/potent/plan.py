@@ -102,7 +102,31 @@ class Plan(BaseModel):
     def directory_pending(self, directory: Path) -> bool:
         return all(s.pending(directory) for s in self.operations)
 
-    def summarize(
+    def outline(self, path: Path) -> Tree:
+        """
+        Show this plan's step as plaintext. Doesn't show status information, just an overview of the whole plan.
+        """
+        root = Tree(f"[yellow]{path.absolute()}")
+
+        if self.comment:
+            info_leaf = root.add("info", style="bold")
+            info_leaf.add(self.comment, style="not bold")
+
+        steps_leaf = root.add("operations:", style="bold")
+
+        for op in self.operations:
+            op_leaf = steps_leaf.add(op.summary, style="not bold")
+            if op.comment:
+                op_leaf.add(op.comment)
+
+        dir_leaf = root.add("directories:", style="bold")
+
+        for d in self.directories:
+            dir_leaf.add(str(d), style="not bold")
+
+        return root
+
+    def status(
         self,
         path: Path,
         *,
@@ -137,30 +161,33 @@ class Plan(BaseModel):
                 )
                 if d in verbose_success_dirs:
                     for s in self.operations:
-                        step_emoji = "✅" if (d, s.name) in current_run else "☑️"
-                        completed.add(f"{step_emoji} {s.name}", style="green")
+                        step_emoji = "✅" if (d, s.summary) in current_run else "☑️"
+                        completed.add(
+                            f"{step_emoji} {s.summary}",
+                            style="green",
+                        )
 
             elif self.directory_failed(d):
                 should_print_all = False
                 failed = root.add(f"❌ {d.name}", style="red", guide_style="red")
                 for s in self.operations:
                     if s.completed(d):
-                        succeded_this_run = (d, s.name) in current_run
+                        succeded_this_run = (d, s.summary) in current_run
                         step_emoji = "✅" if succeded_this_run else "☑️"
                         failed.add(
-                            f"{step_emoji} {s.name}",
+                            f"{step_emoji} {s.summary}",
                             style="green",
                         )
                     elif s.failed(d):
-                        failed.add(f"❌ {s.name}", style="bold red")
+                        failed.add(f"❌ {s.summary}", style="bold red")
                     else:
-                        failed.add(f"⌛ {s.name}", style="dim white")
+                        failed.add(f"⌛ {s.summary}", style="dim white")
             elif self.directory_pending(d):
                 pending = root.add(f"⌛ {d.name}", style="yellow")
                 if should_print_all:
                     should_print_all = False
                     for s in self.operations:
-                        pending.add(f"⌛ {s.name}", style="dim white")
+                        pending.add(f"⌛ {s.summary}", style="dim white")
                 else:
                     pending.add("same steps as above", style="dim white")
             else:
@@ -168,10 +195,10 @@ class Plan(BaseModel):
                 pending = root.add(f"⌛ {d.name}", style="yellow")
                 for s in self.operations:
                     if s.completed(d):
-                        pending.add(f"☑️ {s.name}", style="green")
+                        pending.add(f"☑️ {s.summary}", style="green")
                     elif s.failed(d):
-                        pending.add(f"❌ {s.name}", style="red")
+                        pending.add(f"❌ {s.summary}", style="red")
                     else:
-                        pending.add(f"⌛ {s.name}", style="bold white")
+                        pending.add(f"⌛ {s.summary}", style="bold white")
 
         return root

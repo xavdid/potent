@@ -73,7 +73,7 @@ def run(path: PlanJson):
                     console.print(
                         Panel(
                             f"\n{output.strip()}\n",
-                            title=f"[dim white]step[not dim]: {step.slug}",
+                            title=f"[dim white]step[not dim]: {step.summary}",
                             title_align="left",
                             border_style=style,
                             subtitle=f"[dim white]result:[/] {subtitle}",
@@ -91,7 +91,7 @@ def run(path: PlanJson):
         console.print()
         console.rule("Summary")
         console.print(
-            plan.summarize(
+            plan.status(
                 path,
                 short_plan=True,
                 verbose_success_dirs=worked_dirs,

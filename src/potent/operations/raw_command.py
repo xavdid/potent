@@ -4,24 +4,23 @@ from typing import Literal, Optional, override
 from potent.operations._base import BaseConfig, BaseOperation, OperationResult
 
 
-class Config(BaseConfig):
-    arguments: list[str]
-    """
-    The arguments that will be passed into Python's [subprocess.run()](https://docs.python.org/3/library/subprocess.html#subprocess.run)
-    """
-    name: Optional[str] = None
-    """
-    A name used to disambiguate this step in summaries. Useful if you have many `raw-command`s.
-    """
-
-
 class RawCommand(BaseOperation):
     """
     Runs a shell command. The step succeeds if the command exits 0 and fails otherwise.
     """
 
+    class OpConfig(BaseConfig):
+        arguments: list[str]
+        """
+        The arguments that will be passed into Python's [subprocess.run()](https://docs.python.org/3/library/subprocess.html#subprocess.run)
+        """
+        name: Optional[str] = None
+        """
+        A name used to disambiguate this step in summaries. Useful if you have many `raw-command`s.
+        """
+
     slug: Literal["raw-command"] = "raw-command"
-    config: Config
+    config: OpConfig
 
     @override
     def _run(self, directory: Path) -> OperationResult:
@@ -31,8 +30,16 @@ class RawCommand(BaseOperation):
 
     @property
     @override
-    def name(self) -> str:
+    def summary(self) -> str:
         if self.config.name:
             return f"{self.config.name} ({self.slug})"
 
-        return super().name
+        LIMIT = 3
+
+        msg = (
+            f"{' '.join(self.config.arguments[:LIMIT])}..."
+            if len(self.config.arguments) > LIMIT
+            else " ".join(self.config.arguments)
+        )
+
+        return f"{msg} ({self.slug})"

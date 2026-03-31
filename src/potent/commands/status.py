@@ -8,8 +8,8 @@ app = typer.Typer()
 
 
 @app.command()
-def summarize(path: PlanJson):
+def status(path: PlanJson):
     """
     Summarize the current state of a plan file. Also validates the file for schema issues.
     """
-    rich.print(Plan.from_path(path).summarize(path))
+    rich.print(Plan.from_path(path).status(path))

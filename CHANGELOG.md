@@ -2,9 +2,18 @@
 
 ## Unreleased
 
-- ‼️ change the `switch-branch` slug to `git-switch` to be more in line with other commands
+### CLI
+
+- ‼️ rename the `summarize` command to `status`
 - Add the `--version` cli flag to the root CLI command
+- add the `info` command to print an overview of a plan
 - add the `schema` command to make it easier to access the underlying plan schema
+
+### Operations
+
+- ‼️ change the `switch-branch` slug to `git-switch` to be more in line with other commands
+- ‼️ rename the `name` property to `summary`
+- add better summaries to most operations
 
 ## 0.2.2
 

@@ -4,24 +4,28 @@ from typing import Literal, override
 from potent.operations._base import BaseConfig, BaseOperation, OperationResult
 
 
-class Config(BaseConfig):
-    branch: str
-    """
-    branch name
-    """
-    create_if_missing: bool = False
-    """
-    If true, tries creating the branch if switching to it fails
-    """
-
-
 class GitSwitch(BaseOperation):
     """
     Switches the local git branch. Can optionally create it if it's missing.
     """
 
+    class OpConfig(BaseConfig):
+        branch: str
+        """
+        branch name
+        """
+        create_if_missing: bool = False
+        """
+        If true, tries creating the branch if switching to it fails
+        """
+
     slug: Literal["git-switch"] = "git-switch"
-    config: Config
+    config: OpConfig
+
+    @property
+    @override
+    def summary(self) -> str:
+        return f"git switch -> {self.config.branch}"
 
     @override
     def _run(self, directory: Path) -> OperationResult:

@@ -4,9 +4,6 @@ from typing import Literal, override
 from potent.operations._base import BaseConfig, BaseOperation, OperationResult
 
 
-# remove if unused:
-class Config(BaseConfig):
-    pass
 
 
 class TKTK(BaseOperation):
@@ -14,8 +11,17 @@ class TKTK(BaseOperation):
     TKTK Docs
     """
 
+    # remove if unused:
+    class OpConfig(BaseConfig):
+        pass
+
     slug: Literal["TKTK"] = "TKTK"
-    config: Config
+    config: OpConfig
+
+    @property
+    @override
+    def summary(self) -> str:
+        return f"FIXME"
 
     @override
     def _run(self, directory: Path) -> OperationResult:
