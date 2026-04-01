@@ -93,13 +93,16 @@ Potent support both absolute directories (`/Users/somename/path/to/dir`) and dir
 
 Plans are just JSON, so you can write them by hand or generate them using other programs.
 
-If you're handwriting, you can tell VSCode (or any other editor that supports JSON Schema) that `*.plan.json` files must match the schema by adding the following to your settings:
+If you'd like in-editor hints, you can tell VSCode (or any other editor that supports JSON Schema) that `*.plan.json` files must conform to the schema by:
+
+1. running `potent schema url` and copying the output
+2. adding the following to your VSCode settings:
 
 ```json
 "json.schemas": [
   {
     "fileMatch": ["*.plan.json"],
-    "url": "https://raw.githubusercontent.com/xavdid/potent/refs/heads/main/schema.json"
+    "url": "<URL GOES HERE>"
   }
 ]
 ```
@@ -236,6 +239,14 @@ Runs a shell command. The step succeeds if the command exits 0 and fails otherwi
 
 <!-- BEGIN:CLI -->
 
+### `info`
+
+Print basic info about the plan, including the directories it acts on and the steps involved.
+
+#### Arguments
+
+- `path` (FILE, required): The location of a `.plan.json` file
+
 ### `init`
 
 Create an empty plan at the specified path.
@@ -260,7 +271,28 @@ Execute a plan file and then summarize it.
 
 - `path` (FILE, required): The location of a `.plan.json` file
 
-### `summarize`
+### `schema`
+
+Tools to programmatically access the plan schema.
+
+It includes the following subcommands:
+
+- `url`
+- `dump`
+
+### `schema url`
+
+Print the versioned url of Potent's JSON schema. Useful for getting in-editor completions or performing external validations.
+
+### `schema dump`
+
+Dump the current. While the versioned url is simpler to use, this schema will include any plugins you have, making it more complete & accurate for your use case.
+
+#### Arguments
+
+- `path` (FILE, required):
+
+### `status`
 
 Summarize the current state of a plan file. Also validates the file for schema issues.
 

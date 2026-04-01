@@ -56,12 +56,23 @@ def _document_params(params: list[Any]) -> list[dict[str, str]]:
     return documented_params
 
 
-def _generate_command_doc(cmd: Command) -> list[str]:
-    doc = [f"### `{cmd.name}`", ""]
+def _generate_command_doc(cmd: Command, parent_name=None) -> list[str]:
+    doc = [f"### `{f'{parent_name} ' if parent_name else ''}{cmd.name}`", ""]
 
     if cmd.help:
         doc.append(f"{cmd.help}")
         doc.append("")
+
+    if hasattr(cmd, "commands"):
+        doc.extend(
+            [
+                "It includes the following subcommands:",
+                "",
+                *(f"- `{name}`" for name in cmd.commands),  # type:ignore
+            ]
+        )
+        for subcommand in cmd.commands.values():  # type:ignore
+            doc.extend(_generate_command_doc(subcommand, parent_name=cmd.name))
 
     if hasattr(cmd, "params") and cmd.params:
         params = _document_params(cmd.params)

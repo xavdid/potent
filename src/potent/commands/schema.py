@@ -7,7 +7,7 @@ import typer
 from potent.plan import Plan
 
 app = typer.Typer(
-    name="schema", help="Tools to programatically access the plan schema."
+    name="schema", help="Tools to programmatically access the plan schema."
 )
 
 

@@ -135,7 +135,7 @@
           "type": "string"
         },
         "config": {
-          "$ref": "#/$defs/potent__operations__git_add__Config"
+          "$ref": "#/$defs/potent__operations__git_add__GitAdd__OpConfig"
         }
       },
       "required": [
@@ -183,7 +183,7 @@
           "type": "string"
         },
         "config": {
-          "$ref": "#/$defs/potent__operations__git_commit__Config"
+          "$ref": "#/$defs/potent__operations__git_commit__GitCommit__OpConfig"
         }
       },
       "required": [
@@ -357,7 +357,7 @@
           "type": "string"
         },
         "config": {
-          "$ref": "#/$defs/potent__operations__git_switch__Config"
+          "$ref": "#/$defs/potent__operations__git_switch__GitSwitch__OpConfig"
         }
       },
       "required": [
@@ -405,7 +405,7 @@
           "type": "string"
         },
         "config": {
-          "$ref": "#/$defs/potent__operations__raw_command__Config"
+          "$ref": "#/$defs/potent__operations__raw_command__RawCommand__OpConfig"
         }
       },
       "required": [
@@ -492,7 +492,7 @@
       "title": "Config",
       "type": "object"
     },
-    "potent__operations__git_add__Config": {
+    "potent__operations__git_add__GitAdd__OpConfig": {
       "additionalProperties": false,
       "properties": {
         "all": {
@@ -508,10 +508,10 @@
           "type": "string"
         }
       },
-      "title": "Config",
+      "title": "OpConfig",
       "type": "object"
     },
-    "potent__operations__git_commit__Config": {
+    "potent__operations__git_commit__GitCommit__OpConfig": {
       "additionalProperties": false,
       "properties": {
         "message": {
@@ -529,10 +529,10 @@
       "required": [
         "message"
       ],
-      "title": "Config",
+      "title": "OpConfig",
       "type": "object"
     },
-    "potent__operations__git_switch__Config": {
+    "potent__operations__git_switch__GitSwitch__OpConfig": {
       "additionalProperties": false,
       "properties": {
         "branch": {
@@ -550,10 +550,10 @@
       "required": [
         "branch"
       ],
-      "title": "Config",
+      "title": "OpConfig",
       "type": "object"
     },
-    "potent__operations__raw_command__Config": {
+    "potent__operations__raw_command__RawCommand__OpConfig": {
       "additionalProperties": false,
       "properties": {
         "arguments": {
@@ -581,7 +581,7 @@
       "required": [
         "arguments"
       ],
-      "title": "Config",
+      "title": "OpConfig",
       "type": "object"
     }
   },
