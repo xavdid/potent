@@ -2,7 +2,7 @@ from typing import Annotated
 
 import typer
 
-from potent.commands.info import app as info
+from potent.commands.describe import app as describe
 from potent.commands.init import app as init
 from potent.commands.reset import app as reset
 from potent.commands.run import app as run
@@ -30,9 +30,9 @@ def version_callback(print_version: bool):
     raise typer.Exit
 
 
-app.add_typer(status)
-app.add_typer(info)
 app.add_typer(run)
+app.add_typer(status)
+app.add_typer(describe)
 app.add_typer(reset)
 app.add_typer(init)
 app.add_typer(schema)

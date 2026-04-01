@@ -8,9 +8,9 @@ app = typer.Typer()
 
 
 @app.command()
-def info(path: PlanJson):
+def describe(path: PlanJson):
     """
-    Print basic info about the plan, including the directories it acts on and the steps involved.
+    Print basic info about the plan, including the directories on which it acts and the steps involved.
     """
 
     rich.print(Plan.from_path(path).outline(path))

@@ -249,9 +249,9 @@ Runs a shell command. The step succeeds if the command exits 0 and fails otherwi
 
 <!-- BEGIN:CLI -->
 
-### `info`
+### `describe`
 
-Print basic info about the plan, including the directories it acts on and the steps involved.
+Print basic info about the plan, including the directories on which it acts and the steps involved.
 
 #### Arguments
 
@@ -304,7 +304,7 @@ Dump the current. While the versioned url is simpler to use, this schema will in
 
 ### `status`
 
-Summarize the current state of a plan file. Also validates the file for schema issues.
+Print the current state of a plan file, including the progress through each directory.
 
 #### Arguments
 

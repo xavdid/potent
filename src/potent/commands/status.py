@@ -10,6 +10,6 @@ app = typer.Typer()
 @app.command()
 def status(path: PlanJson):
     """
-    Summarize the current state of a plan file. Also validates the file for schema issues.
+    Print the current state of a plan file, including the progress through each directory.
     """
     rich.print(Plan.from_path(path).status(path))

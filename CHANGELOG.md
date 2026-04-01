@@ -6,7 +6,7 @@
 
 - ‼️ rename the `summarize` command to `status`
 - Add the `--version` cli flag to the root CLI command
-- add the `info` command to print an overview of a plan
+- add the `describe` command to print an overview of a plan
 - add the `schema` command to make it easier to access the underlying plan schema
 
 ### Operations
