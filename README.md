@@ -117,17 +117,18 @@ Each of the Operations below describes a single bash command with well-defined (
 
 ### Available Operations
 
-| Slug                                   | Requires Config? |
-| -------------------------------------- | ---------------- |
-| [`create-pr`](#CreatePR)               | ☑️               |
-| [`enable-automerge`](#EnableAutomerge) | ☑️               |
-| [`git-add`](#GitAdd)                   | ☑️               |
-| [`git-commit`](#GitCommit)             | ☑️               |
-| [`git-pull`](#GitPull)                 |
-| [`git-push`](#GitPush)                 |
-| [`git-status`](#GitStatus)             |
-| [`git-switch`](#GitSwitch)             | ☑️               |
-| [`raw-command`](#RawCommand)           | ☑️               |
+| Slug                                         | Requires Config? |
+| -------------------------------------------- | ---------------- |
+| [`create-pr`](#CreatePR)                     | ☑️               |
+| [`enable-automerge`](#EnableAutomerge)       | ☑️               |
+| [`git-add`](#GitAdd)                         | ☑️               |
+| [`git-commit`](#GitCommit)                   | ☑️               |
+| [`git-pull`](#GitPull)                       |
+| [`git-push`](#GitPush)                       |
+| [`git-status`](#GitStatus)                   |
+| [`git-switch`](#GitSwitch)                   | ☑️               |
+| [`manual-confirmation`](#ManualConfirmation) |
+| [`raw-command`](#RawCommand)                 | ☑️               |
 
 ### CreatePR
 
@@ -219,6 +220,14 @@ Switches the local git branch. Can optionally create it if it's missing.
 | ------------------- | ------ | ----------------------------------------------------------- | --------------------- |
 | `branch`            | `str`  | branch name                                                 |                       |
 | `create_if_missing` | `bool` | If true, tries creating the branch if switching to it fails | `False`               |
+
+### ManualConfirmation
+
+A step that always fails. To advance your plan, manually edit the plan file so each directory succeeds.
+
+Useful for putting pauses into a multi-phase plan.
+
+**Slug**: `manual-confirmation`
 
 ### RawCommand
 

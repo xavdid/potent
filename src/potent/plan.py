@@ -14,6 +14,7 @@ from potent.operations.git_pull import GitPull
 from potent.operations.git_push import GitPush
 from potent.operations.git_status import GitStatus
 from potent.operations.git_switch import GitSwitch
+from potent.operations.manual_confirmation import ManualConfirmation
 from potent.operations.raw_command import RawCommand
 
 # OPERATION IMPORTS ^
@@ -45,6 +46,7 @@ class Plan(BaseModel):
                 CreatePR,
                 EnableAutomerge,
                 RawCommand,
+                ManualConfirmation,
                 # OPERATIONS ^
             ],
             Field(discriminator="slug"),

@@ -11,9 +11,10 @@
 
 ### Operations
 
-- ‼️ change the `switch-branch` slug to `git-switch` to be more in line with other commands
+- ‼️ rename the `switch-branch` slug to `git-switch` to be more in line with other commands
 - ‼️ rename the `name` property to `summary`
 - add better summaries to most operations
+- add `manual-confirmation` step
 
 ## 0.2.2
 
