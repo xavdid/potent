@@ -6,7 +6,7 @@ from potent.operations._base import BaseConfig, BaseOperation, OperationResult
 
 class RawCommand(BaseOperation):
     """
-    Runs a shell command. The step succeeds if the command exits 0 and fails otherwise.
+    Runs a shell command. The step succeeds if the command exits 0 and fails otherwise. Useful for operations that potent doesn't support natively.
     """
 
     class OpConfig(BaseConfig):

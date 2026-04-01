@@ -83,7 +83,7 @@ Plans have two main components:
 - a list of directories the Plan will run in
 - a list of Operations to perform in those directories
 
-Each Operation is identified by its unique `slug` field.
+Plan files must conform to The Schema so that the invalid operations are surfaced early and loudly.
 
 ### Directories
 
@@ -93,25 +93,26 @@ Potent support both absolute directories (`/Users/somename/path/to/dir`) and dir
 
 Plans are just JSON, so you can write them by hand or generate them using other programs.
 
-If you'd like in-editor hints, you can tell VSCode (or any other editor that supports JSON Schema) that `*.plan.json` files must conform to the schema by:
-
-1. running `potent schema url` and copying the output
-2. adding the following to your VSCode settings:
+If you'd like in-editor hints, you can tell VSCode (or any other editor that supports JSON Schema) that `*.plan.json` files must conform to the schema by first adding the following to your VSCode settings:
 
 ```json
-"json.schemas": [
-  {
-    "fileMatch": ["*.plan.json"],
-    "url": "<URL GOES HERE>"
-  }
-]
+{
+  "json.schemas": [
+    {
+      "fileMatch": ["*.plan.json"],
+      "url": "TBD"
+    }
+  ]
+}
 ```
+
+Then, run `potent schema url` and paste the result into the `url` field above.
 
 Specifying the schema will help with autocomplete and flag potential errors.
 
 ## Operations
 
-Each of the Operations below describes a single bash command with well-defined (and validated) arguments. If you need more flexibility, check out the [raw command](#rawcommand) Operation.
+Each Operation is identified by its unique `slug` field. Each of the Operations below describes a single bash command with well-defined (and validated) arguments. If you need more flexibility, check out the [raw command](#rawcommand) Operation.
 
 <!-- BEGIN:OPERATIONS -->
 
@@ -231,7 +232,7 @@ Useful for putting pauses into a multi-phase plan.
 
 ### RawCommand
 
-Runs a shell command. The step succeeds if the command exits 0 and fails otherwise.
+Runs a shell command. The step succeeds if the command exits 0 and fails otherwise. Useful for operations that potent doesn't support natively.
 
 **Slug**: `raw-command`
 
