@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from potent.operations._base import BaseOperation
 
 # must match the line in readme, so update those together
-type DocBlock = Literal["DIRECTIVES", "CLI"]
+type DocBlock = Literal["OPERATIONS", "CLI"]
 
 
 def _get_type_name(param_type: Any) -> str:
@@ -131,25 +131,25 @@ def cli_docs() -> list[str]:
     )
 
 
-def directives_markdown() -> list[str]:
-    # the actual list of directives is fairly deeply nested
+def operations_markdown() -> list[str]:
+    # the actual list of operations is fairly deeply nested
     annotated = get_args(Plan.model_fields["operations"].annotation)[0]
     union = get_args(annotated)[0]
-    directives: list[BaseOperation] = sorted(get_args(union), key=lambda d: d.__name__)
+    operations: list[BaseOperation] = sorted(get_args(union), key=lambda d: d.__name__)
 
     return [
-        # markdown table with directive names and slugs
+        # markdown table with operations names and slugs
         "### Available Operations",
         "|Slug|Requires Config?|",
         "|---|---|",
-        *("|".join(d.to_markdown_summary()) for d in directives),
+        *("|".join(o.to_markdown_summary()) for o in operations),
         # full docs
-        *chain.from_iterable(d.to_markdown() for d in directives),
+        *chain.from_iterable(o.to_markdown() for o in operations),
     ]
 
 
 BUILDERS: dict[DocBlock, Callable[[], list[str]]] = {
-    "DIRECTIVES": directives_markdown,
+    "OPERATIONS": operations_markdown,
     "CLI": cli_docs,
 }
 

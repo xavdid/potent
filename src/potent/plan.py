@@ -16,7 +16,7 @@ from potent.operations.git_status import GitStatus
 from potent.operations.git_switch import GitSwitch
 from potent.operations.raw_command import RawCommand
 
-# DIRECTIVE IMPORTS ^
+# OPERATION IMPORTS ^
 
 
 def unique_items(v):
@@ -45,7 +45,7 @@ class Plan(BaseModel):
                 CreatePR,
                 EnableAutomerge,
                 RawCommand,
-                # DIRECTIVES ^
+                # OPERATIONS ^
             ],
             Field(discriminator="slug"),
         ]
