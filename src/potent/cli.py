@@ -1,6 +1,7 @@
 from typing import Annotated
 
 import typer
+from cyclopts import App
 
 from potent.commands.describe import app as describe
 from potent.commands.init import app as init
@@ -12,11 +13,11 @@ from potent.commands.status import app as status
 # COMMAND IMPORTS ^
 
 
-app = typer.Typer(
-    no_args_is_help=True,
+app = App(
+    # no_args_is_help=True,
     help="Idempotently run commands across folders.",
     # hide the completion args
-    add_completion=False,
+    # add_completion=False,
 )
 
 
@@ -30,29 +31,13 @@ def version_callback(print_version: bool):
     raise typer.Exit
 
 
-app.add_typer(run)
-app.add_typer(status)
-app.add_typer(describe)
-app.add_typer(reset)
-app.add_typer(init)
-app.add_typer(schema)
+# app.add_typer(run)
+# app.add_typer(status)
+app.command(describe)
+# app.add_typer(reset)
+# app.add_typer(init)
+# app.add_typer(schema)
 # COMMANDS ^
-
-
-@app.callback()
-# this func name doesn't matter
-def version_flag(
-    # this name also doesn't matter since all we care about is that there's an arg and its callback is evaluated
-    _: Annotated[
-        bool | None,
-        typer.Option(
-            "--version",
-            callback=version_callback,
-            help="Print version information and exit.",
-        ),
-    ] = None,
-):
-    pass
 
 
 if __name__ == "__main__":
