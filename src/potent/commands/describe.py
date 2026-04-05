@@ -16,5 +16,6 @@ def describe(path: PlanJson, /):
     """
     Print basic info about the plan, including the directories on which it acts and the steps involved.
     """
+    raise ValueError("blah")
 
     rich.print(Plan.from_path(path).outline(path))
