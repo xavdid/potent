@@ -8,7 +8,7 @@ from cyclopts.types import ExistingJsonPath
 
 def is_plan_json(_, path: Path) -> None:
     if path.suffixes != [".plan", ".json"]:
-        raise ValueError("File must have .plan.json extension")
+        raise ValueError("File must have a `.plan.json` extension")
 
 
 def _get_command_dir() -> Path:

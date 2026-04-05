@@ -1,7 +1,8 @@
+import sys
 from typing import Annotated
 
 import typer
-from cyclopts import App
+from cyclopts import App, CycloptsError
 
 from potent.commands.describe import app as describe
 from potent.commands.init import app as init
@@ -33,12 +34,16 @@ def version_callback(print_version: bool):
 
 # app.add_typer(run)
 # app.add_typer(status)
-app.command(describe)
+app.command(describe, name="*")
 # app.add_typer(reset)
 # app.add_typer(init)
 # app.add_typer(schema)
 # COMMANDS ^
 
 
-if __name__ == "__main__":
+def main():
     app()
+
+
+if __name__ == "__main__":
+    main()
