@@ -1,8 +1,5 @@
-import sys
-from typing import Annotated
-
 import typer
-from cyclopts import App, CycloptsError
+from cyclopts import App
 
 from potent.commands.describe import app as describe
 from potent.commands.init import app as init
@@ -15,7 +12,6 @@ from potent.commands.status import app as status
 
 
 app = App(
-    # no_args_is_help=True,
     help="Idempotently run commands across folders.",
     # hide the completion args
     # add_completion=False,
@@ -32,12 +28,12 @@ def version_callback(print_version: bool):
     raise typer.Exit
 
 
-# app.add_typer(run)
-# app.add_typer(status)
+app.command(run, name="*")
+app.command(status, name="*")
 app.command(describe, name="*")
-# app.add_typer(reset)
-# app.add_typer(init)
-# app.add_typer(schema)
+app.command(reset, name="*")
+app.command(init, name="*")
+app.command(schema)
 # COMMANDS ^
 
 

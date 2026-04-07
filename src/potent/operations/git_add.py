@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Literal, Never, Self, override
+from typing import Literal, Self, override
 
 from pydantic import model_validator
 

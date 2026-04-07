@@ -1,14 +1,11 @@
 import json
-from pathlib import Path
-from typing import Annotated
 
-import typer
+from cyclopts import App
+from cyclopts.types import JsonPath
 
 from potent.plan import Plan
 
-app = typer.Typer(
-    name="schema", help="Tools to programmatically access the plan schema."
-)
+app = App(name="schema", help="Tools to programmatically access the plan schema.")
 
 
 @app.command()
@@ -26,8 +23,9 @@ def url():
 
 
 @app.command()
-def dump(path: Annotated[Path, typer.Argument(dir_okay=False, resolve_path=True)]):
+def dump(path: JsonPath, /):
     """
-    Dump the current. While the versioned url is simpler to use, this schema will include any plugins you have, making it more complete & accurate for your use case.
+    Dump the current schema. While the versioned url is simpler to use, this schema will include any plugins you have, making it more complete & accurate for your use case.
     """
+    # TODO: just write to stdout - let the user redirect
     path.write_text(json.dumps(Plan.model_json_schema(), indent=2))

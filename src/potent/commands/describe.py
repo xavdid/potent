@@ -1,9 +1,5 @@
-from typing import Annotated
-
 import rich
-import typer
-from cyclopts import App, Parameter
-from cyclopts.types import ExistingJsonPath
+from cyclopts import App
 
 from potent.commands._types import PlanJson
 from potent.plan import Plan

@@ -44,6 +44,6 @@ type PlanJson = Annotated[
             is_plan_json,
             validators.Path(ext="json", exists=True, dir_okay=False),
         ],
-        help="The location of a `.plan.json` file",
+        help="The location of a `.plan.json` file. Can be a full path or a name. If a name, the named file must exist in the configured command directory.",
     ),
 ]

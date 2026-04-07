@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import typer
+from cyclopts import App
 from rich.console import Console
 from rich.markup import escape
 from rich.panel import Panel
@@ -8,7 +8,7 @@ from rich.panel import Panel
 from potent.commands._types import PlanJson
 from potent.plan import Plan
 
-app = typer.Typer()
+app = App()
 
 
 def directory_header(console: Console, directory: Path) -> None:
@@ -18,7 +18,7 @@ def directory_header(console: Console, directory: Path) -> None:
 
 
 @app.command()
-def run(path: PlanJson):
+def run(path: PlanJson, /):
     """
     Execute a plan file and then summarize it.
     """
