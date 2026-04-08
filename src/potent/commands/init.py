@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Annotated
 
 from cyclopts import App, Parameter, validators
-from cyclopts.types import NonExistentJsonPath
 
 from potent.commands._types import is_plan_json, pathify
 from potent.plan import Plan

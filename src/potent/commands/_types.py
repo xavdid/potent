@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Annotated, Sequence
 
 from cyclopts import Parameter, Token, validators
-from cyclopts.types import ExistingJsonPath
 
 
 def is_plan_json(_, path: Path) -> None:
