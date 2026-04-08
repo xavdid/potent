@@ -4,7 +4,7 @@ from cyclopts import App
 from potent.commands._types import PlanJson
 from potent.plan import Plan
 
-app = App(name="describe")
+app = App()
 
 
 @app.command()

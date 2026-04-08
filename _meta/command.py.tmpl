@@ -1,11 +1,11 @@
-import typer
+from cyclopts import App
 
 from potent.commands._types import PlanJson
 from potent.plan import Plan
 
-app = typer.Typer()
+app = App()
 
 
 @app.command()
-def <NAME>(path: PlanJson):
+def <NAME>(path: PlanJson, /):
     plan = Plan.model_validate_json(path.read_text())

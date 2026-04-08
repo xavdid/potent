@@ -3,11 +3,8 @@ import re
 import pytest
 from cyclopts import CycloptsError
 from pydantic import ValidationError
-from typer.testing import CliRunner
 
 from potent.cli import app as cli
-
-runner = CliRunner()
 
 
 def test_version(capsys):
