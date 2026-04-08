@@ -36,9 +36,11 @@ def pathify(_, tokens: Sequence[Token]) -> Path:
     return _get_command_dir() / f"{token}.plan.json"
 
 
-type PlanJson = Annotated[
-    ExistingJsonPath,
+# this must not be a type= annotation and you must not use a special cyclopts type, like ExistingJsonPath, since it shadows my parameter
+PlanJson = Annotated[
+    Path,
     Parameter(
+        name="FILE",
         converter=pathify,
         validator=[
             is_plan_json,

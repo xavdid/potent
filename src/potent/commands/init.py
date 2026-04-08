@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Annotated
 
 from cyclopts import App, Parameter, validators
@@ -12,7 +13,7 @@ app = App()
 @app.command()
 def init(
     path: Annotated[
-        NonExistentJsonPath,
+        Path,
         Parameter(
             converter=pathify,
             validator=[

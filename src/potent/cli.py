@@ -1,4 +1,3 @@
-import typer
 from cyclopts import App
 
 from potent.commands.describe import app as describe
@@ -16,16 +15,6 @@ app = App(
     # hide the completion args
     # add_completion=False,
 )
-
-
-def version_callback(print_version: bool):
-    if not print_version:
-        return
-
-    from importlib.metadata import version  # noqa: PLC0415
-
-    print(f"v{version('potent')}")
-    raise typer.Exit
 
 
 app.command(run, name="*")
