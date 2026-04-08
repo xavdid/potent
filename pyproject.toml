@@ -7,7 +7,7 @@ authors = [{ name = "David Brownman", email = "oss@xavd.id" }]
 # https://endoflife.date/python
 # but also there's some typing stuff I don't want to backport
 requires-python = ">=3.12"
-dependencies = ["pydantic ~= 2.12", "rich", "typer == 0.20.0"]
+dependencies = ["cyclopts>=4.10.1", "pydantic ~= 2.12", "rich"]
 license-files = ["LICENSE"]
 keywords = ["automation", "shell-scripting", "idempotency", "CLI tool"]
 classifiers = [
@@ -27,7 +27,7 @@ Issues = "https://github.com/xavdid/potent/issues"
 Changelog = "https://github.com/xavdid/potent/blob/main/CHANGELOG.md"
 
 [project.scripts]
-potent = "potent.cli:app"
+potent = "potent.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.8.4,<0.9.0"]

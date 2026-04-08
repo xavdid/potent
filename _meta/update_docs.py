@@ -1,9 +1,19 @@
+import inspect
 from itertools import chain
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Literal, get_args
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+    Callable,
+    Literal,
+    Union,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
-import typer
-from click import Command, Group, Option
+from cyclopts import App, Parameter
 
 from potent.cli import app as CLI
 from potent.plan import Plan
@@ -15,119 +25,167 @@ if TYPE_CHECKING:
 type DocBlock = Literal["OPERATIONS", "CLI"]
 
 
-def _get_type_name(param_type: Any) -> str:
-    if param_type is None:
-        return "TEXT"
+_SKIP_COMMANDS = {"--help", "-h", "--version"}
 
-    type_name = getattr(param_type, "name", str(param_type))
-    if isinstance(type_name, str):
-        return type_name.upper()
-    return str(type_name).upper()
+
+def _get_command_help(sub_app: App) -> str:
+    """Return the short help string for a cyclopts sub-app."""
+    if sub_app.help:
+        return sub_app.help
+
+    if (fn := sub_app.default_command) and fn.__doc__:
+        # First non-empty line of the docstring is the short description.
+        return fn.__doc__.strip().splitlines()[0].strip()
+    return ""
+
+
+def _unwrap_annotated(annotation) -> tuple[Any, list[str]]:
+    """Split Annotated[T, ...] into (T, [metadata, ...]), or (annotation, [])."""
+    if get_origin(annotation) is Annotated:
+        args = get_args(annotation)
+        return args[0], list(args[1:])
+    return annotation, []
+
+
+def _format_type(annotation) -> str:
+    """Render a type annotation as a compact string, e.g. Literal['a','b'] or str."""
+    raw, args = _unwrap_annotated(annotation)
+
+    # special handling for named parameters, like PlanJson being a FILE
+    if args and (name := getattr(args[0], "name")):
+        return name[0]
+
+    origin = get_origin(raw)
+
+    # Literal['a', 'b'] -> `"a"` | `"b"`
+    if origin is type(None):
+        return "None"
+
+    if origin is Union:
+        inner = get_args(raw)
+        parts = [_format_type(t) for t in inner if t is not type(None)]
+        return " | ".join(parts)
+
+    if origin is Literal:
+        choices = get_args(raw)
+        return " | ".join(
+            f'`"{c}"`' if isinstance(c, str) else f"`{c}`" for c in choices
+        )
+
+    # plain builtins
+    if hasattr(raw, "__name__"):
+        return raw.__name__
+
+    return str(raw)
+
+
+def _is_flag(annotation, default) -> bool:
+    """A bool param with a bool default is a flag."""
+    raw, _ = _unwrap_annotated(annotation)
+    return raw is bool or (get_origin(raw) is None and isinstance(default, bool))
 
 
 def _format_default(default: Any) -> str:
-    if default is None or default == ():
+    if default is inspect.Parameter.empty or default is None:
         return ""
     if isinstance(default, str):
-        return f'"{default}"'
-    return str(default)
+        return f'`"{default}"`'
+    return f"`{default}`"
 
 
-def _document_params(params: list[Any]) -> list[dict[str, str]]:
-    documented_params = []
+def _document_command_params(fn) -> list[dict[str, Any]]:
+    """Return structured param info for a cyclopts command function."""
+    if fn is None:
+        return []
 
-    for param in params:
-        param_info = {
-            "name": param.name,
-            "type": _get_type_name(param.type),
-            "required": param.required,
-            "default": _format_default(param.default),
-            "help": param.help or "",
-            "is_flag": isinstance(param, Option) and param.is_flag,
-            "is_option": isinstance(param, Option),
-        }
+    hints = get_type_hints(fn, include_extras=True)
 
-        if isinstance(param, Option):
-            param_info["opts"] = param.opts
-            param_info["secondary_opts"] = param.secondary_opts
+    sig = inspect.signature(fn)
+    result = []
 
-        documented_params.append(param_info)
+    for name, param in sig.parameters.items():
+        if name in ("self", "cls"):
+            continue
 
-    return documented_params
+        annotation = hints.get(name, param.annotation)
+        default = param.default
+        has_default = default is not inspect.Parameter.empty
+
+        # keyword-only params (after *) are options; positional are arguments
+        is_option = param.kind in (inspect.Parameter.KEYWORD_ONLY,)
+        _, metadata = _unwrap_annotated(annotation)
+        cyclopts_param = next((m for m in metadata if isinstance(m, Parameter)), None)
+        annotated_help = (
+            cyclopts_param.help if cyclopts_param and cyclopts_param.help else ""
+        )
+
+        result.append(
+            {
+                "name": name,
+                "type": _format_type(annotation),
+                "required": not has_default,
+                "default": _format_default(default) if has_default else "",
+                "help": annotated_help,
+                "is_flag": _is_flag(annotation, default) and is_option,
+                "is_option": is_option,
+            }
+        )
+
+    return result
 
 
-def _generate_command_doc(cmd: Command, parent_name=None) -> list[str]:
-    doc = [f"### `{f'{parent_name} ' if parent_name else ''}{cmd.name}`", ""]
+def _generate_command_doc(sub_app: App, parent_name: str | None = None) -> list[str]:
+    name = sub_app.name[0]
 
-    if cmd.help:
-        doc.append(f"{cmd.help}")
+    heading = f"`{parent_name} {name}`" if parent_name else f"`{name}`"
+    doc: list[str] = [f"### {heading}", ""]
+
+    if help_text := _get_command_help(sub_app):
+        doc += [help_text.strip(), ""]
+
+    # Sub-commands (nested apps)
+    if real_children := [k for k in sub_app if k not in _SKIP_COMMANDS]:
+        doc += ["It includes the following subcommands:", ""]
+        doc += [f"- `{c}`" for c in real_children]
+        doc.append("")
+        for child_name in real_children:
+            doc.extend(_generate_command_doc(sub_app[child_name], parent_name=name))
+
+    # Parameters for this command's default_command function
+    params = _document_command_params(sub_app.default_command)
+
+    if arguments := [p for p in params if not p["is_option"]]:
+        doc += ["#### Arguments", ""]
+        for arg in arguments:
+            req = "required" if arg["required"] else "optional"
+            line = f"- `{arg['name']}` ({arg['type']}, {req})"
+            if arg["help"]:
+                line += f": {arg['help']}"
+            doc.append(line)
         doc.append("")
 
-    if hasattr(cmd, "commands"):
-        doc.extend(
-            [
-                "It includes the following subcommands:",
-                "",
-                *(f"- `{name}`" for name in cmd.commands),  # type:ignore
-            ]
-        )
-        for subcommand in cmd.commands.values():  # type:ignore
-            doc.extend(_generate_command_doc(subcommand, parent_name=cmd.name))
-
-    if hasattr(cmd, "params") and cmd.params:
-        params = _document_params(cmd.params)
-
-        # Arguments
-        arguments = [p for p in params if not p["is_option"]]
-        if arguments:
-            doc.append("#### Arguments")
+    if options := [p for p in params if p["is_option"]]:
+        doc += ["#### Options", ""]
+        for opt in options:
+            cli_name = f"--{opt['name'].replace('_', '-')}"
+            if opt["is_flag"]:
+                line = f"- `{cli_name}`"
+            else:
+                line = f"- `{cli_name} {opt['type']}`"
+            if opt["help"]:
+                line += f": {opt['help']}"
+            if opt["default"] and not opt["is_flag"]:
+                line += f" (default: {opt['default']})"
+            doc.append(line)
             doc.append("")
-            for arg in arguments:
-                required_text = "required" if arg["required"] else "optional"
-                doc.append(
-                    f"- `{arg['name']}` ({arg['type']}, {required_text}): {arg['help']}"
-                )
-            doc.append("")
-
-        # Options
-        options = [p for p in params if p["is_option"]]
-        if options:
-            doc.append("#### Options")
-            doc.append("")
-            for opt in options:
-                opt_flags = ", ".join(opt.get("opts", []))
-                if not opt_flags:
-                    opt_flags = f"--{opt['name']}"
-
-                if opt["is_flag"]:
-                    opt_line = f"- `{opt_flags}`"
-                else:
-                    opt_line = f"- `{opt_flags} {opt['type']}`"
-
-                if opt["help"]:
-                    opt_line += f": {opt['help']}"
-
-                if opt["default"] and not opt["is_flag"]:
-                    opt_line += f" (default: {opt['default']})"
-
-                doc.append(opt_line)
-                doc.append("")
 
     return doc
 
 
 def cli_docs() -> list[str]:
-    click_group = typer.main.get_command(CLI)
-
-    if not isinstance(click_group, Group):
-        # this is sort of silly. all of my commands are actually sub-apps, but they don't really need to be. I could hoist them as a non-breaking change.
-        raise ValueError("Expected a root group")
-
+    real_commands = sorted(k for k in CLI if k not in _SKIP_COMMANDS)
     return list(
-        chain.from_iterable(
-            _generate_command_doc(cmd)
-            for _, cmd in sorted(click_group.commands.items())
-        )
+        chain.from_iterable(_generate_command_doc(CLI[name]) for name in real_commands)
     )
 
 

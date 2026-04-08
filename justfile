@@ -34,7 +34,7 @@ init-command name: (_is_valid_python_identifier name) && (lint "src/potent/cli.p
   cp _meta/command.py.tmpl src/potent/commands/{{ name }}.py
   sed -i '' 's/<NAME>/{{ name }}/g' src/potent/commands/{{ name }}.py
   sed -i '' $'/# COMMAND IMPORTS/i\\\nfrom potent.commands.{{ name }} import app as {{ name }}\\\n' src/potent/cli.py
-  sed -i '' $'/# COMMANDS/i\\\napp.add_typer({{ name }})\\\n' src/potent/cli.py
+  sed -i '' $'/# COMMANDS/i\\\napp.command({{ name }}, name="*")\\\n' src/potent/cli.py
 
 # create new operation
 init-operation name: (_is_valid_python_identifier name) && (lint "src/potent/plan.py" "--fix" "--quiet")

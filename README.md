@@ -255,7 +255,7 @@ Print basic info about the plan, including the directories on which it acts and 
 
 #### Arguments
 
-- `path` (FILE, required): The location of a `.plan.json` file
+- `path` (FILE, required): The location of a `.plan.json` file. Can be a full path or a name. If a name, the named file must exist in the configured command directory.
 
 ### `init`
 
@@ -263,7 +263,7 @@ Create an empty plan at the specified path.
 
 #### Arguments
 
-- `path` (FILE, required): The location in which to write a new `.plan.json` file. Must not exist.
+- `path` (Path, required): The location in which to to create a blank plan file. Can be a full path or a name. If a name, the named file must not exist in the configured command directory.
 
 ### `reset`
 
@@ -271,7 +271,7 @@ Reset the progress on a plan file so it can be run again from scratch.
 
 #### Arguments
 
-- `path` (FILE, required): The location of a `.plan.json` file
+- `path` (FILE, required): The location of a `.plan.json` file. Can be a full path or a name. If a name, the named file must exist in the configured command directory.
 
 ### `run`
 
@@ -279,7 +279,7 @@ Execute a plan file and then summarize it.
 
 #### Arguments
 
-- `path` (FILE, required): The location of a `.plan.json` file
+- `path` (FILE, required): The location of a `.plan.json` file. Can be a full path or a name. If a name, the named file must exist in the configured command directory.
 
 ### `schema`
 
@@ -296,11 +296,11 @@ Print the versioned url of Potent's JSON schema. Useful for getting in-editor co
 
 ### `schema dump`
 
-Dump the current. While the versioned url is simpler to use, this schema will include any plugins you have, making it more complete & accurate for your use case.
+Dump the current schema. While the versioned url is simpler to use, this schema will include any plugins you have, making it more complete & accurate for your use case.
 
 #### Arguments
 
-- `path` (FILE, required):
+- `path` (Path, required)
 
 ### `status`
 
@@ -308,7 +308,7 @@ Print the current state of a plan file, including the progress through each dire
 
 #### Arguments
 
-- `path` (FILE, required): The location of a `.plan.json` file
+- `path` (FILE, required): The location of a `.plan.json` file. Can be a full path or a name. If a name, the named file must exist in the configured command directory.
 
 <!-- END:CLI -->
 
