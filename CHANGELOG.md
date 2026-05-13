@@ -1,11 +1,13 @@
 # Changelog
 
-## Unreleased
+## 0.3.0
+
+_released `2026-05-12`_
 
 ### CLI
 
 - ‼️ rename the `summarize` command to `status`
-- Add the `--version` cli flag to the root CLI command
+- Add the `--version` cli flag to the root CLI command (& migrate to `cyclopts` from `typer`)
 - add the `describe` command to print an overview of a plan
 - add the `schema` command to make it easier to access the underlying plan schema
 

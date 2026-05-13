@@ -157,7 +157,7 @@ wheels = [
 
 [[package]]
 name = "potent"
-version = "0.2.2"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "cyclopts" },

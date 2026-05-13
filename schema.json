@@ -366,9 +366,51 @@
       "title": "GitSwitch",
       "type": "object"
     },
+    "ManualConfirmation": {
+      "additionalProperties": false,
+      "description": "A step that always fails. To advance your plan, manually edit the plan file so each directory succeeds.\n\nUseful for putting pauses into a multi-phase plan.",
+      "properties": {
+        "comment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment"
+        },
+        "directory_statuses": {
+          "additionalProperties": {
+            "enum": [
+              "not-started",
+              "failed",
+              "completed"
+            ],
+            "type": "string"
+          },
+          "default": {},
+          "propertyNames": {
+            "format": "path"
+          },
+          "title": "Directory Statuses",
+          "type": "object"
+        },
+        "slug": {
+          "const": "manual-confirmation",
+          "default": "manual-confirmation",
+          "title": "Slug",
+          "type": "string"
+        }
+      },
+      "title": "ManualConfirmation",
+      "type": "object"
+    },
     "RawCommand": {
       "additionalProperties": false,
-      "description": "Runs a shell command. The step succeeds if the command exits 0 and fails otherwise.",
+      "description": "Runs a shell command. The step succeeds if the command exits 0 and fails otherwise. Useful for operations that potent doesn't support natively.",
       "properties": {
         "comment": {
           "anyOf": [
@@ -617,6 +659,7 @@
             "git-push": "#/$defs/GitPush",
             "git-status": "#/$defs/GitStatus",
             "git-switch": "#/$defs/GitSwitch",
+            "manual-confirmation": "#/$defs/ManualConfirmation",
             "raw-command": "#/$defs/RawCommand"
           },
           "propertyName": "slug"
@@ -648,6 +691,9 @@
           },
           {
             "$ref": "#/$defs/RawCommand"
+          },
+          {
+            "$ref": "#/$defs/ManualConfirmation"
           }
         ]
       },
