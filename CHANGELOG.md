@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.4.0
+
+_released `2026-05-13`_
 
 - add support for re-runnable "command plans", which track when they were last run and automatically reset once per calendar day
 - add support for specifying a plan name instead of a full path. If you pass a name, `potent` will look for the corresponding plan in the config directory (e.g. `potent run my-script` tries to run the plan at `~/.config/potent/commands/my-script.plan.json`).
