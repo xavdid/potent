@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from datetime import date
 from pathlib import Path
 from typing import Annotated, Literal, Optional, TextIO, Union
 
@@ -29,8 +30,29 @@ def unique_items(v):
 Version = Literal["v1"]
 
 
+class PlanConfig(BaseModel):
+    mode: Literal["plan"] = "plan"
+    """
+    plans are run as one-off operations (that can be manually reset)
+    """
+
+
+class CommandConfig(BaseModel):
+    mode: Literal["command"] = "command"
+    """
+    commands are auto-resetting plans
+    """
+    last_run: Optional[date] = None
+    """
+    the iso date (`YYYY-MM-DD`) on which this command was last run. If a command is run and `date.today()` doesn't match this value, the command is reset before proceeding. Otherwise, it runs as normal (maybe as a no-op). The plan can still be manually reset; this value only affects auto-resetting behavior.
+    """
+
+
 class Plan(BaseModel):
     model_config = ConfigDict(extra="forbid")
+    config: Annotated[Union[PlanConfig, CommandConfig], Field(discriminator="mode")] = (
+        PlanConfig()
+    )
 
     version: Version = "v1"
     comment: Optional[str] = None
@@ -111,7 +133,7 @@ class Plan(BaseModel):
         root = Tree(f"[yellow]{path.absolute()}")
 
         if self.comment:
-            info_leaf = root.add("info", style="bold")
+            info_leaf = root.add("summary", style="bold")
             info_leaf.add(self.comment, style="not bold")
 
         steps_leaf = root.add("operations:", style="bold")

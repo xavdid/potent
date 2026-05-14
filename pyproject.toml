@@ -63,6 +63,7 @@ ignore = [
     "PLR0911", # too many returns
     "PLR0912", # too many branches
     "PLR0913", # too many arguments
+    "PLR0915", # too many statements
     'Q000',    # single quotes; handled by formatter
 ]
 

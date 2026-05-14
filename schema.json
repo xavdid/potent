@@ -1,5 +1,30 @@
 {
   "$defs": {
+    "CommandConfig": {
+      "properties": {
+        "mode": {
+          "const": "command",
+          "default": "command",
+          "title": "Mode",
+          "type": "string"
+        },
+        "last_run": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Run"
+        }
+      },
+      "title": "CommandConfig",
+      "type": "object"
+    },
     "CreatePR": {
       "additionalProperties": false,
       "description": "Creates a pull request using the `gh` CLI.\n\n> [!IMPORTANT]\n> Requires the `gh` CLI to be installed.",
@@ -408,6 +433,18 @@
       "title": "ManualConfirmation",
       "type": "object"
     },
+    "PlanConfig": {
+      "properties": {
+        "mode": {
+          "const": "plan",
+          "default": "plan",
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "title": "PlanConfig",
+      "type": "object"
+    },
     "RawCommand": {
       "additionalProperties": false,
       "description": "Runs a shell command. The step succeeds if the command exits 0 and fails otherwise. Useful for operations that potent doesn't support natively.",
@@ -629,6 +666,27 @@
   },
   "additionalProperties": false,
   "properties": {
+    "config": {
+      "default": {
+        "mode": "plan"
+      },
+      "discriminator": {
+        "mapping": {
+          "command": "#/$defs/CommandConfig",
+          "plan": "#/$defs/PlanConfig"
+        },
+        "propertyName": "mode"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/PlanConfig"
+        },
+        {
+          "$ref": "#/$defs/CommandConfig"
+        }
+      ],
+      "title": "Config"
+    },
     "version": {
       "const": "v1",
       "default": "v1",

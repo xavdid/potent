@@ -120,8 +120,10 @@ class BaseOperation(CommonBase):
     def summary(self) -> str:
         """
         A human-readable description of this step, used for disambiguating multiple steps of the same type (especially if they can be configured).
+
+        Result string should probably include the underlying command, plus any important config values.
         """
-        # children will provide this
+        # children will provide this if needed
         return self.slug  # type: ignore
 
     def _run_cmd(

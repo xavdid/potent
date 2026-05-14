@@ -110,6 +110,16 @@ Then, run `potent schema url` and paste the result into the `url` field above.
 
 Specifying the schema will help with autocomplete and flag potential errors.
 
+### Command Plans
+
+Command plans are special plan variant that will auto-reset themselves once a day. They're useful for plans you want to run periodically but are still idempotent within a daily window.
+
+### Plans as input
+
+Most CLI commands accept a plan as their main argument. You can pass either a path to a plan file (like `~/Desktop/my-plan.plan.json`) or a simple string. In the latter case, `potent` will look in its config directory for a plan with the corresponding name. For example, `potent run my-script` tries to run the plan at `~/.config/potent/commands/my-script.plan.json`.
+
+The config directory respects the `XDG_CONFIG_HOME` environment variable.
+
 ## Operations
 
 Each Operation is identified by its unique `slug` field. Each of the Operations below describes a single bash command with well-defined (and validated) arguments. If you need more flexibility, check out the [raw command](#rawcommand) Operation.
@@ -259,7 +269,7 @@ Print basic info about the plan, including the directories on which it acts and 
 
 ### `init`
 
-Create an empty plan at the specified path.
+Create an empty plan at the specified path. If the path resolves to the config directory, then it defaults to `command` mode. Otherwise, the default of `plan` is used.
 
 #### Arguments
 
@@ -280,6 +290,7 @@ Execute a plan file and then summarize it.
 #### Arguments
 
 - `path` (FILE, required): The location of a `.plan.json` file. Can be a full path or a name. If a name, the named file must exist in the configured command directory.
+- `skip_reset` (bool, optional): If supplied, don't automatically reset a command plan. Ignored for non-command plans.
 
 ### `schema`
 

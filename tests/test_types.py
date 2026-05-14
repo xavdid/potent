@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from potent.commands._types import _get_command_dir, is_plan_json
+from potent.commands._types import get_command_dir, is_plan_json
 
 
 @pytest.mark.parametrize(
@@ -17,10 +17,10 @@ def test_is_plan_json(path: Path, success: bool):
 
 
 def test_get_command_dir_default():
-    assert _get_command_dir() == Path().home() / ".config" / "potent" / "commands"
+    assert get_command_dir() == Path().home() / ".config" / "potent" / "commands"
 
 
 def test_get_command_dir_xdg(tmp_path, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
 
-    assert _get_command_dir() == tmp_path / "potent" / "commands"
+    assert get_command_dir() == tmp_path / "potent" / "commands"

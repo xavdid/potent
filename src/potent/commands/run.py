@@ -1,6 +1,8 @@
+from datetime import date
 from pathlib import Path
+from typing import Annotated
 
-from cyclopts import App
+from cyclopts import App, Parameter
 from rich.console import Console
 from rich.markup import escape
 from rich.panel import Panel
@@ -18,7 +20,17 @@ def directory_header(console: Console, directory: Path) -> None:
 
 
 @app.command()
-def run(path: PlanJson, /):
+def run(
+    path: PlanJson,
+    /,
+    skip_reset: Annotated[
+        bool,
+        Parameter(
+            negative="",
+            help="If supplied, don't automatically reset a command plan. Ignored for non-command plans.",
+        ),
+    ] = False,
+):
     """
     Execute a plan file and then summarize it.
     """
@@ -32,6 +44,19 @@ def run(path: PlanJson, /):
     worked_dirs = []
     current_run: list[tuple[Path, str]] = []
     with Plan.open(path) as plan:
+        if plan.config.mode == "command":
+            if skip_reset:
+                pass
+            elif plan.config.last_run != (today := date.today()):
+                if plan.config.last_run:
+                    console.print("Resetting plan")
+                plan.reset()
+                plan.config.last_run = today
+        elif plan.config.mode == "plan" and skip_reset:
+            console.print(
+                "[magenta]WARN: [bold cyan]--skip-reset[/] has no effect on non-command plans; ignoring.[/]"
+            )
+
         for directory in plan.directories:
             console.print()
             if plan.directory_complete(directory):

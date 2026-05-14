@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- add support for re-runnable "command plans", which track when they were last run and automatically reset once per calendar day
+- add support for specifying a plan name instead of a full path. If you pass a name, `potent` will look for the corresponding plan in the config directory (e.g. `potent run my-script` tries to run the plan at `~/.config/potent/commands/my-script.plan.json`).
+
 ## 0.3.0
 
 _released `2026-05-12`_
@@ -13,7 +18,7 @@ _released `2026-05-12`_
 
 ### Operations
 
-- ‼️ rename the `switch-branch` slug to `git-switch` to be more in line with other commands
+- ‼️ rename the `switch-branch` slug to `git-switch` to be more in line with other operations
 - ‼️ rename the `name` property to `summary`
 - add better summaries to most operations
 - add `manual-confirmation` step
@@ -32,7 +37,7 @@ _released `2026-01-17`_
 - fix Python 3.14 support
 - fix `enable-automerge`'s "squash" option
 - correctly mark `enable-automerge`'s `config` as optional
-- more gracefully handle trying to run missing commands
+- more gracefully handle trying to run non-existent shell commands
 - fix surfacing unescaped text when a command has no output
 
 ## 0.2.0

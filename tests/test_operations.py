@@ -19,12 +19,11 @@ def path_with_tilde():
     return Path(dir_in_home.replace(str(Path.home()), "~"))
 
 
-@patch("subprocess.run")
+@patch(
+    "subprocess.run",
+    side_effect=FileNotFoundError("[Errno 2] No such file or directory: 'cool'"),
+)
 def test_os_errors_handled(mock_run, tmp_path: Path):
-    mock_run.side_effect = FileNotFoundError(
-        "[Errno 2] No such file or directory: 'cool'"
-    )
-
     result = RawCommand(config=RawCommand.OpConfig(arguments=[])).run(tmp_path)
 
     # should fail, but not throw

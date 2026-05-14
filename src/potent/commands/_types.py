@@ -10,7 +10,7 @@ def is_plan_json(_, path: Path) -> None:
         raise ValueError("File must have a `.plan.json` extension")
 
 
-def _get_command_dir() -> Path:
+def get_command_dir() -> Path:
     # from: https://github.com/srstevenson/xdg-base-dirs/blob/ee1b8c41a29bc21f727c7bba54ad56788127f19b/src/xdg_base_dirs/__init__.py#L51
     config_root = Path.home() / ".config"
     if (value := os.environ.get("XDG_CONFIG_HOME")) and (
@@ -32,7 +32,7 @@ def pathify(_, tokens: Sequence[Token]) -> Path:
         return Path(token)
 
     # assume it's a shortcut to a command
-    return _get_command_dir() / f"{token}.plan.json"
+    return get_command_dir() / f"{token}.plan.json"
 
 
 # this must not be a type= annotation and you must not use a special cyclopts type, like ExistingJsonPath, since it shadows my parameter
