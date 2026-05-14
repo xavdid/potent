@@ -38,7 +38,7 @@ def test_invalid_json(tmp_path):
 
 
 @patch("subprocess.run", return_value=MagicMock(stdout="", returncode=0))
-def test_auto_reset_plans(mock_run: MagicMock, tmp_path):
+def test_auto_reset_commands(mock_run: MagicMock, tmp_path):
     plan_path = tmp_path / "example.plan.json"
 
     sub_path = tmp_path / "cool"
@@ -84,3 +84,36 @@ def test_auto_reset_plans(mock_run: MagicMock, tmp_path):
     assert mock_run.call_count == 2
 
     p = Plan.from_path(plan_path).config.last_run == date.today()  # type:ignore
+
+
+@patch("subprocess.run", return_value=MagicMock(stdout="", returncode=0))
+def test_auto_reset_plans_ignored(mock_run: MagicMock, tmp_path):
+    plan_path = tmp_path / "example.plan.json"
+
+    sub_path = tmp_path / "cool"
+    sub_path.mkdir()
+
+    plan_path.write_text(
+        Plan(
+            operations=[RawCommand(config=RawCommand.OpConfig(arguments=["pwd"]))],
+            directories=[sub_path],
+        ).model_dump_json()
+    )
+
+    result = cli(
+        ["run", str(plan_path)], result_action="return_int_as_exit_code_else_zero"
+    )
+    assert result == 0
+    # runs normally
+    assert mock_run.call_count == 1
+
+    p = Plan.from_path(plan_path)
+    assert p.config.mode == "plan"
+    assert list(p.operations[0].directory_statuses.values()) == ["completed"]
+
+    result = cli(
+        ["run", str(plan_path)], result_action="return_int_as_exit_code_else_zero"
+    )
+    assert result == 0
+    # doesn't get run again
+    assert mock_run.call_count == 1
