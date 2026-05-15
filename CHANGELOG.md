@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Print the plan path when creating a command plan using only a filename
+
 ## 0.4.0
 
 _released `2026-05-13`_

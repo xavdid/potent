@@ -39,3 +39,6 @@ def init(
             config=CommandConfig() if is_command else PlanConfig(),
         ).model_dump_json(indent=2)
     )
+
+    if is_command:
+        print(f"Created {path}")
