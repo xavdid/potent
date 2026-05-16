@@ -42,7 +42,7 @@ def run(
     console.print(f"Running [bold yellow]{str(path)}")
 
     worked_dirs = []
-    current_run: list[tuple[Path, str]] = []
+    just_completed_steps: list[tuple[int, Path]] = []
     with Plan.open(path) as plan:
         if plan.config.mode == "command":
             if skip_reset:
@@ -57,7 +57,8 @@ def run(
                 "[magenta]WARN: [bold cyan]--skip-reset[/] has no effect on non-command plans; ignoring.[/]"
             )
 
-        for directory in plan.directories:
+        for unique_step in enumerate(plan.directories):
+            _, directory = unique_step
             console.print()
             if plan.directory_complete(directory):
                 directory_header(console, directory)
@@ -82,7 +83,7 @@ def run(
                         if success := result.success:
                             style = "green"
                             subtitle = "Succeeded"
-                            current_run.append((directory, step.slug))
+                            just_completed_steps.append(unique_step)
 
                         else:
                             style = "red"
@@ -120,6 +121,6 @@ def run(
                 path,
                 short_plan=True,
                 verbose_success_dirs=worked_dirs,
-                current_run=current_run,
+                just_completed_steps=just_completed_steps,
             )
         )

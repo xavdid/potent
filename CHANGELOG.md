@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Print the plan path when creating a command plan using only a filename
+- fix a bug that caused the wrong emoji to sometimes be used when reporting a plan run result
 
 ## 0.4.0
 
