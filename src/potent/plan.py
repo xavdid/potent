@@ -3,6 +3,7 @@ from datetime import date
 from pathlib import Path
 from typing import Annotated, Literal, Optional, TextIO, Union
 
+import rich
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from rich.tree import Tree
 
@@ -56,13 +57,34 @@ class CommandConfig(BaseModel):
     """
 
 
+def status_styling(s: Status, changed_this_run: bool) -> tuple[str, str, str, str]:
+    """
+    returns (emoji, title_style, text_style, guide_style)
+    """
+    match s, changed_this_run:
+        case "completed", True:
+            return "✅", "green", "green", "green"
+        case "completed", False:
+            return "☑️", "green", "green", "green"
+        case "not-started", _:
+            return "⏳", "yellow", "dim white", "dim white"
+        case "failed", _:
+            return "❌", "red", "red", "red"
+
+    raise NotImplementedError
+
+
 class OperationResult(BaseModel):
     status: Status
     details: str
     """
-    printed inline, after the emoji
+    printed inline, after the emoji. Probably the result of `op.summary()`
     """
     changed_this_run: bool = False
+
+    def to_tree(self) -> tuple[str, str | None]:
+        emoji, _, text_color, _ = status_styling(self.status, self.changed_this_run)
+        return (f"{emoji} {self.details}", text_color)
 
 
 class DirectoryStatus(BaseModel):
@@ -72,11 +94,23 @@ class DirectoryStatus(BaseModel):
 
     name: Path
     status: Status
-    operations: list[OperationResult]
+    op_results: list[OperationResult]
     """
-    whether all steps should be printed. True if it's the first directory or one of the steps had an error.
+    the steps that should be printed. Some results omit this for brevity
     """
     completed_this_run: bool = False
+
+    def add_to_tree(self, tree: Tree):
+        emoji, title_color, _, guide_style = status_styling(
+            self.status, self.completed_this_run
+        )
+        folder = tree.add(
+            f"{emoji} {self.name.name}", style=title_color, guide_style=guide_style
+        )
+
+        for o in self.op_results:
+            text, text_color = o.to_tree()
+            folder.add(text, style=text_color)
 
 
 class PlanStatus(BaseModel):
@@ -87,9 +121,12 @@ class PlanStatus(BaseModel):
     filename: str
     directories: list[DirectoryStatus]
 
-    def print(self):
-        # print to a rich console
-        raise NotImplementedError
+    def to_tree(self) -> Tree:
+        root = Tree(f"[yellow]{self.filename}")
+        for d in self.directories:
+            d.add_to_tree(root)
+
+        return root
 
 
 class Plan(BaseModel):
@@ -239,6 +276,7 @@ class Plan(BaseModel):
             completed_this_run = False
 
             if self.directory_complete(d):
+                status = "completed"
                 completed_this_run = any(
                     directory == d for _, directory in just_completed_steps
                 )
@@ -280,6 +318,7 @@ class Plan(BaseModel):
 
             else:
                 # plan was modified or something, so a previously-complete plan could now be incomplete
+                # i probably only need this branch? it's sort of the base case
                 status = "not-started"
                 operations = [
                     OperationResult(
@@ -293,65 +332,9 @@ class Plan(BaseModel):
                 DirectoryStatus(
                     name=d,
                     status=status,
-                    operations=operations,
+                    op_results=operations,
                     completed_this_run=completed_this_run,
                 )
             )
 
         return result
-
-
-# only print all steps if nothing has printed them yet
-# should_print_all = True
-# for d in self.directories:
-#     if self.directory_complete(d):
-#         emoji = (
-#             # TODO: fix!
-#             "✅" if any(directory == d for directory, _ in current_run) else "☑️"
-#         )
-#         completed = root.add(
-#             f"{emoji} {d.name}", style="green", guide_style="green"
-#         )
-#         if d in verbose_success_dirs:
-#             for s in self.operations:
-#                 # TODO: fix!
-#                 step_emoji = "✅" if (d, s.summary) in current_run else "☑️"
-#                 completed.add(
-#                     f"{step_emoji} {s.summary}",
-#                     style="green",
-#                 )
-
-#     elif self.directory_failed(d):
-#         should_print_all = False
-#         failed = root.add(f"❌ {d.name}", style="red", guide_style="red")
-#         for s in self.operations:
-#             if s.completed(d):
-#                 # TODO: fix!
-#                 succeded_this_run = (d, s.summary) in current_run
-#                 step_emoji = "✅" if succeded_this_run else "☑️"
-#                 failed.add(
-#                     f"{step_emoji} {s.summary}",
-#                     style="green",
-#                 )
-#             elif s.failed(d):
-#                 failed.add(f"❌ {s.summary}", style="bold red")
-#             else:
-#                 failed.add(f"⌛ {s.summary}", style="dim white")
-#     elif self.directory_pending(d):
-#         pending = root.add(f"⌛ {d.name}", style="yellow")
-#         if should_print_all:
-#             should_print_all = False
-#             for s in self.operations:
-#                 pending.add(f"⌛ {s.summary}", style="dim white")
-#         else:
-#             pending.add("same steps as above", style="dim white")
-#     else:
-#         # plan was modified or something, so a previously-complete plan could now be incomplete
-#         pending = root.add(f"⌛ {d.name}", style="yellow")
-#         for s in self.operations:
-#             if s.completed(d):
-#                 pending.add(f"☑️ {s.summary}", style="green")
-#             elif s.failed(d):
-#                 pending.add(f"❌ {s.summary}", style="red")
-#             else:
-#                 pending.add(f"⌛ {s.summary}", style="bold white")
