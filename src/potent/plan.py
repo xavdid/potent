@@ -3,8 +3,10 @@ from datetime import date
 from pathlib import Path
 from typing import Annotated, Literal, Optional, TextIO, Union
 
-import rich
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
+from rich.console import Console
+from rich.markup import escape
+from rich.panel import Panel
 from rich.tree import Tree
 
 from potent.operations._base import AbsDirPath, Status
@@ -74,27 +76,27 @@ def status_styling(s: Status, changed_this_run: bool) -> tuple[str, str, str, st
     raise NotImplementedError
 
 
-class OperationResult(BaseModel):
+class OperationSummary(BaseModel):
     status: Status
     details: str
     """
     printed inline, after the emoji. Probably the result of `op.summary()`
     """
-    changed_this_run: bool = False
+    completed_this_run: bool = False
 
     def to_tree(self) -> tuple[str, str | None]:
-        emoji, _, text_color, _ = status_styling(self.status, self.changed_this_run)
+        emoji, _, text_color, _ = status_styling(self.status, self.completed_this_run)
         return (f"{emoji} {self.details}", text_color)
 
 
-class DirectoryStatus(BaseModel):
+class DirectorySummary(BaseModel):
     """
     A directory has a status and some number of child operations (all of which get printed)
     """
 
     name: Path
     status: Status
-    op_results: list[OperationResult]
+    op_results: list[OperationSummary]
     """
     the steps that should be printed. Some results omit this for brevity
     """
@@ -113,13 +115,13 @@ class DirectoryStatus(BaseModel):
             folder.add(text, style=text_color)
 
 
-class PlanStatus(BaseModel):
+class RunSummary(BaseModel):
     """
     Visual representation of a plan, maybe with additional information about the run that generated it.
     """
 
     filename: str
-    directories: list[DirectoryStatus]
+    directories: list[DirectorySummary]
 
     def to_tree(self) -> Tree:
         root = Tree(f"[yellow]{self.filename}")
@@ -127,6 +129,12 @@ class PlanStatus(BaseModel):
             d.add_to_tree(root)
 
         return root
+
+
+def directory_header(console: Console, directory: Path) -> None:
+    return console.rule(
+        f"📂 [bold underline]{directory.name}[/] 📂", style="bright_cyan"
+    )
 
 
 class Plan(BaseModel):
@@ -241,7 +249,7 @@ class Plan(BaseModel):
         short_plan=False,
         verbose_success_dirs: Optional[list[Path]] = None,
         just_completed_steps: Optional[list[tuple[int, Path]]] = None,
-    ) -> PlanStatus:
+    ) -> RunSummary:
         """
         Show this plan as plaintext. Takes a path to print the plan's location, but not for actual file operations
         """
@@ -250,6 +258,8 @@ class Plan(BaseModel):
             verbose_success_dirs = []
         if just_completed_steps is None:
             just_completed_steps = []
+
+        print(f" {just_completed_steps=} and {verbose_success_dirs=} ")
 
         if verbose_success_dirs or just_completed_steps:
             # do these always overlap?
@@ -264,7 +274,7 @@ class Plan(BaseModel):
         else:
             print("☑️ Completed | ⌛ Pending | ❌ Failed\n")
 
-        result = PlanStatus(
+        result = RunSummary(
             filename=path.name if short_plan else str(path.absolute()),
             directories=[],
         )
@@ -272,7 +282,7 @@ class Plan(BaseModel):
         should_print_all = True
         for d in self.directories:
             status: Status = "not-started"
-            operations: list[OperationResult] = []
+            operations: list[OperationSummary] = []
             completed_this_run = False
 
             if self.directory_complete(d):
@@ -283,9 +293,9 @@ class Plan(BaseModel):
                 # `verbose_success_dirs` is what we worked on this run. If we worked a directory and it's now complete, show all the steps
                 if d in verbose_success_dirs:
                     operations = [
-                        OperationResult(
+                        OperationSummary(
                             status="completed",
-                            changed_this_run=(idx, d) in just_completed_steps,
+                            completed_this_run=(idx, d) in just_completed_steps,
                             details=o.summary,
                         )
                         for idx, o in enumerate(self.operations)
@@ -296,9 +306,9 @@ class Plan(BaseModel):
                 # failures print all steps, so once we hit one, we no longer need to print every step
                 should_print_all = False
                 operations = [
-                    OperationResult(
+                    OperationSummary(
                         status=o.dir_status(d),
-                        changed_this_run=(idx, d) in just_completed_steps,
+                        completed_this_run=(idx, d) in just_completed_steps,
                         details=o.summary,
                     )
                     for idx, o in enumerate(self.operations)
@@ -309,7 +319,7 @@ class Plan(BaseModel):
                 if should_print_all:
                     should_print_all = False
                     operations = [
-                        OperationResult(
+                        OperationSummary(
                             status="not-started",
                             details=o.summary,
                         )
@@ -321,7 +331,7 @@ class Plan(BaseModel):
                 # i probably only need this branch? it's sort of the base case
                 status = "not-started"
                 operations = [
-                    OperationResult(
+                    OperationSummary(
                         status=o.dir_status(d),
                         details=o.summary,
                     )
@@ -329,7 +339,7 @@ class Plan(BaseModel):
                 ]
 
             result.directories.append(
-                DirectoryStatus(
+                DirectorySummary(
                     name=d,
                     status=status,
                     op_results=operations,
@@ -338,3 +348,88 @@ class Plan(BaseModel):
             )
 
         return result
+
+    def run(self, console: Console, path: Path, skip_reset=False) -> RunSummary:
+        # TODO: this should be split up?? result too tightly coupled to presentation right now
+        if not self._fp:
+            raise ValueError("can only act on an open plan")
+
+        worked_dirs = []
+        just_completed_steps: list[tuple[int, Path]] = []
+
+        if self.config.mode == "command":
+            if skip_reset:
+                pass
+            elif self.config.last_run != (today := date.today()):
+                if self.config.last_run:
+                    console.print("Resetting plan")
+                self.reset()
+                self.config.last_run = today
+        elif self.config.mode == "plan" and skip_reset:
+            console.print(
+                "[magenta]WARN: [bold cyan]--skip-reset[/] has no effect on non-command plans; ignoring.[/]"
+            )
+
+        for unique_step in enumerate(self.directories):
+            _, directory = unique_step
+            console.print()
+            if self.directory_complete(directory):
+                directory_header(console, directory)
+
+                console.print("☑️ [green]already finished")
+                continue
+
+            try:
+                worked_dirs.append(directory)
+                directory_header(console, directory)
+
+                for step in self.operations:
+                    success = None
+                    output = ""
+                    style = ""
+                    if step.completed(directory):
+                        output = "Already completed"
+                        subtitle = "Skipped"
+                    else:
+                        result = step.run(directory)
+                        self.save()
+                        if success := result.success:
+                            style = "green"
+                            subtitle = "Succeeded"
+                            just_completed_steps.append(unique_step)
+
+                        else:
+                            style = "red"
+                            subtitle = "Failed"
+
+                        output = escape(result.output) or "[dim]no output[/]"
+
+                        if result.cmd:
+                            output = (
+                                f"[dim white]>>>[/] [cyan]{result.cmd}[/]\n\n{output}"
+                            )
+
+                    console.print(
+                        Panel(
+                            f"\n{output.strip()}\n",
+                            title=f"[dim white]step[not dim]: {step.summary}",
+                            title_align="left",
+                            border_style=style,
+                            subtitle=f"[dim white]result:[/] {subtitle}",
+                            subtitle_align="left",
+                        )
+                    )
+                    console.print()
+                    if success is False:
+                        break
+
+            except NotImplementedError:
+                print("    err!")
+                continue
+
+        return self.status(
+            path,
+            short_plan=True,
+            verbose_success_dirs=worked_dirs,
+            just_completed_steps=just_completed_steps,
+        )
