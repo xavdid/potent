@@ -5,6 +5,7 @@ from rich.console import Console
 
 from potent.commands._types import PlanJson
 from potent.plan import Plan
+from potent.renderers import BasicRenderer
 
 app = App()
 
@@ -32,7 +33,8 @@ def run(
     console.print(f"Running [bold yellow]{str(path)}")
 
     plan = Plan.from_path(path)
-    result = plan.run(console, path, skip_reset)
+    plan._run_renderer = BasicRenderer()
+    result = plan.run(path, skip_reset)
 
     console.print()
     console.rule("Summary")

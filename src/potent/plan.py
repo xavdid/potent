@@ -1,6 +1,6 @@
 from datetime import date
 from pathlib import Path
-from typing import Annotated, Iterator, Literal, Optional, Union
+from typing import Annotated, Callable, Iterator, Literal, Optional, Union
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from rich.console import Console
@@ -19,6 +19,12 @@ from potent.operations.git_status import GitStatus
 from potent.operations.git_switch import GitSwitch
 from potent.operations.manual_confirmation import ManualConfirmation
 from potent.operations.raw_command import RawCommand
+from potent.renderers import NoopRenderer, Renderer
+from potent.run_events import (
+    DirectorySkippedEvent,
+    DirectoryStartedEvent,
+    OperationCompletedEvent,
+)
 
 # OPERATION IMPORTS ^
 
@@ -168,6 +174,11 @@ class Plan(BaseModel):
         AfterValidator(unique_items),
     ]
     _path: Optional[Path] = None
+    # TODO: fixme types
+    _run_renderer: Renderer = NoopRenderer()
+    """
+    When running the plan, progress events are sent to the renderer for presentation
+    """
 
     @staticmethod
     def from_path(path: Path) -> "Plan":
@@ -337,7 +348,7 @@ class Plan(BaseModel):
 
         return result
 
-    def run(self, console: Console, path: Path, skip_reset=False) -> RunSummary:
+    def run(self, path: Path, skip_reset=False, _renderer=None) -> RunSummary:
         # TODO: call list(self.run_iter())?
         # TODO: this should be split up?? result too tightly coupled to presentation right now
         worked_dirs = []
@@ -347,65 +358,45 @@ class Plan(BaseModel):
             if skip_reset:
                 pass
             elif self.config.last_run != (today := date.today()):
-                if self.config.last_run:
-                    console.print("Resetting plan")
+                if self.config.last_run is not None:
+                    self._run_renderer.log("Resetting plan")
                 self.reset()
                 self.config.last_run = today
         elif self.config.mode == "plan" and skip_reset:
-            console.print(
+            self._run_renderer.log(
                 "[magenta]WARN: [bold cyan]--skip-reset[/] has no effect on non-command plans; ignoring.[/]"
             )
 
         for unique_step in enumerate(self.directories):
             _, directory = unique_step
-            console.print()
+            self._run_renderer.send(DirectoryStartedEvent(directory))
             if self.directory_complete(directory):
-                directory_header(console, directory)
-
-                console.print("☑️ [green]already finished")
+                self._run_renderer.send(DirectorySkippedEvent(directory))
                 continue
 
             try:
                 worked_dirs.append(directory)
-                directory_header(console, directory)
 
                 for step in self.operations:
-                    success = None
-                    output = ""
-                    style = ""
+                    success = None  # the ol' triple bool
+                    ev = OperationCompletedEvent(
+                        directory, summary=step.summary, result="failure", output=""
+                    )
                     if step.completed(directory):
-                        output = "Already completed"
-                        subtitle = "Skipped"
+                        ev.result = "skipped"
+                        ev.output = "Already completed"
                     else:
                         result = step.run(directory)
                         self.save()
                         if success := result.success:
-                            style = "green"
-                            subtitle = "Succeeded"
+                            ev.result = "success"
                             just_completed_steps.append(unique_step)
 
-                        else:
-                            style = "red"
-                            subtitle = "Failed"
+                        ev.output = result.output
+                        ev.cmd = result.cmd
 
-                        output = escape(result.output) or "[dim]no output[/]"
+                    self._run_renderer.send(ev)
 
-                        if result.cmd:
-                            output = (
-                                f"[dim white]>>>[/] [cyan]{result.cmd}[/]\n\n{output}"
-                            )
-
-                    console.print(
-                        Panel(
-                            f"\n{output.strip()}\n",
-                            title=f"[dim white]step[not dim]: {step.summary}",
-                            title_align="left",
-                            border_style=style,
-                            subtitle=f"[dim white]result:[/] {subtitle}",
-                            subtitle_align="left",
-                        )
-                    )
-                    console.print()
                     if success is False:
                         break
 

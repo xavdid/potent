@@ -220,7 +220,7 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, tmp_path, subdirs):
     plan_path.write_text(p.model_dump_json())
 
     plan = Plan.from_path(plan_path)
-    result = plan.run(Console(), plan_path)
+    result = plan.run(plan_path)
 
     expected = RunSummary(
         filename="example.plan.json",
