@@ -1,7 +1,6 @@
-from contextlib import contextmanager
 from datetime import date
 from pathlib import Path
-from typing import Annotated, Literal, Optional, TextIO, Union
+from typing import Annotated, Iterator, Literal, Optional, Union
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from rich.console import Console
@@ -168,41 +167,30 @@ class Plan(BaseModel):
         # Len(min_length=1), # we don't want to init plans with a directory that may not exist (or does exist, but has important things in it)
         AfterValidator(unique_items),
     ]
-    _fp: Optional[TextIO] = None
+    _path: Optional[Path] = None
 
     @staticmethod
-    @contextmanager
-    def open(path: Path):
-        """
-        Open a plan at `path` for reading & writing. Stores the pointer on the plan.
-        """
-        with path.open("r+") as fp:
-            plan = Plan.model_validate_json(fp.read())
-            plan._fp = fp
-            try:
-                yield plan
-            finally:
-                plan._fp = None
+    def from_path(path: Path) -> "Plan":
+        plan = Plan.model_validate_json(path.read_text())
+        plan._path = path
+        return plan
 
-    @staticmethod
-    def from_path(f: Path) -> "Plan":
-        return Plan.model_validate_json(f.read_text())
-
-    def save(self):
+    def save(self, path: Optional[Path] = None):
         """
-        Persist an open Plan to disk.
+        Persist an open Plan to disk. Errors if no path is provided _and_ the plan was not given a path at creation time.
         """
-        if self._fp is None:
-            raise ValueError(
-                "Can't do file operations without a file pointer. Consider opening the Plan with the `.open` context manager."
-            )
 
-        self._fp.seek(0)
-        self._fp.truncate()
-        self._fp.write(self.model_dump_json(indent=2))
-        # without this, files may not actually be written right away
-        # but we want to store incremental progress as soon as possible in case something goes wrong
-        self._fp.flush()
+        dest = path or self._path
+
+        if dest is None:
+            raise ValueError("Can't save a Plan without a path.")
+
+        tmp = dest.with_suffix(".tmp")
+        # theoretically, writing the file can fail partway and leave us in a weird state
+        tmp.write_text(self.model_dump_json(indent=2))
+        # but the replace operation is atomic- if we get this far, the original write worked and we're ~guaranteed to produce a
+        # this move retains the original file's metadata and deletes the tmp file in one go
+        tmp.replace(dest)
 
     def reset(self):
         for p in self.operations:
@@ -350,10 +338,8 @@ class Plan(BaseModel):
         return result
 
     def run(self, console: Console, path: Path, skip_reset=False) -> RunSummary:
+        # TODO: call list(self.run_iter())?
         # TODO: this should be split up?? result too tightly coupled to presentation right now
-        if not self._fp:
-            raise ValueError("can only act on an open plan")
-
         worked_dirs = []
         just_completed_steps: list[tuple[int, Path]] = []
 
@@ -433,3 +419,6 @@ class Plan(BaseModel):
             verbose_success_dirs=worked_dirs,
             just_completed_steps=just_completed_steps,
         )
+
+    # def run_iter(self) -> Iterator[int]:
+    #     pass

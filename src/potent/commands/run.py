@@ -31,9 +31,9 @@ def run(
 
     console.print(f"Running [bold yellow]{str(path)}")
 
-    with Plan.open(path) as plan:
-        result = plan.run(console, path, skip_reset)
+    plan = Plan.from_path(path)
+    result = plan.run(console, path, skip_reset)
 
-        console.print()
-        console.rule("Summary")
-        console.print(result.to_tree())
+    console.print()
+    console.rule("Summary")
+    console.print(result.to_tree())

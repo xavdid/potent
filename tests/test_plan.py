@@ -195,7 +195,7 @@ def test_completed_dirs_always_shown(tmp_path, subdirs):
 
 
 @patch("subprocess.run", return_value=MagicMock(stdout="", returncode=0))
-def test_complex_skips_and_continues(mock_run: MagicMock, tmp_path, subdirs):
+def test_complex_skips_and_continues(_mock_run: MagicMock, tmp_path, subdirs):
     # TODO: this test is a smelly code smell;
     # I need to do way too much setup to actually exec a plan
     plan_path = tmp_path / "example.plan.json"
@@ -219,8 +219,8 @@ def test_complex_skips_and_continues(mock_run: MagicMock, tmp_path, subdirs):
     )
     plan_path.write_text(p.model_dump_json())
 
-    with Plan.open(plan_path) as plan:
-        result = plan.run(Console(), plan_path)
+    plan = Plan.from_path(plan_path)
+    result = plan.run(Console(), plan_path)
 
     expected = RunSummary(
         filename="example.plan.json",
