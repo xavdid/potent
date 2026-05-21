@@ -1,12 +1,10 @@
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Annotated, Callable, Iterator, Literal, Optional, Union
+from typing import Annotated, Literal, Optional, Union
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from rich.console import Console
-from rich.markup import escape
-from rich.panel import Panel
 from rich.tree import Tree
 
 from potent.operations._base import AbsDirPath, Status
@@ -188,22 +186,20 @@ class Plan(BaseModel):
         plan._path = path
         return plan
 
-    def save(self, path: Optional[Path] = None):
+    def save(self):
         """
         Persist an open Plan to disk. Errors if no path is provided _and_ the plan was not given a path at creation time.
         """
 
-        dest = path or self._path
-
-        if dest is None:
+        if self._path is None:
             raise ValueError("Can't save a Plan without a path.")
 
-        tmp = dest.with_suffix(".tmp")
+        tmp = self._path.with_suffix(".tmp")
         # theoretically, writing the file can fail partway and leave us in a weird state
         tmp.write_text(self.model_dump_json(indent=2))
         # but the replace operation is atomic- if we get this far, the original write worked and we're ~guaranteed to produce a
         # this move retains the original file's metadata and deletes the tmp file in one go
-        tmp.replace(dest)
+        tmp.replace(self._path)
 
     def reset(self):
         for p in self.operations:
@@ -244,10 +240,8 @@ class Plan(BaseModel):
 
     def status(
         self,
-        # TODO: the plan should probably know this?? weird to pass it in
-        path: Path,
         *,
-        short_plan=False,
+        short_path=False,
         verbose_success_dirs: Optional[list[Path]] = None,
         just_completed_steps: Optional[list[tuple[int, Path]]] = None,
     ) -> RunSummary:
@@ -275,8 +269,13 @@ class Plan(BaseModel):
         else:
             print("☑️ Completed | ⌛ Pending | ❌ Failed\n")
 
+        if self._path:
+            filename = self._path.name if short_path else str(self._path.absolute())
+        else:
+            filename = ":in memory:"
+
         result = RunSummary(
-            filename=path.name if short_plan else str(path.absolute()),
+            filename=filename,
             directories=[],
         )
 
@@ -352,8 +351,6 @@ class Plan(BaseModel):
 
     def run(
         self,
-        # TODO: don't take a path
-        path: Path,
         skip_reset=False,
         renderer: Renderer = NoopRenderer(),
     ) -> RunSummary:
@@ -411,8 +408,7 @@ class Plan(BaseModel):
                 continue
 
         return self.status(
-            path,
-            short_plan=True,
+            short_path=True,
             verbose_success_dirs=worked_dirs,
             just_completed_steps=just_completed_steps,
         )

@@ -12,4 +12,4 @@ def status(path: PlanJson, /):
     """
     Print the current state of a plan file, including the progress through each directory.
     """
-    rich.print(Plan.from_path(path).status(path).to_tree())
+    rich.print(Plan.from_path(path).status().to_tree())

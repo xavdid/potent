@@ -33,7 +33,7 @@ def run(
     console.print(f"Running [bold yellow]{str(path)}")
 
     plan = Plan.from_path(path)
-    result = plan.run(path, skip_reset, renderer=BasicRenderer())
+    result = plan.run(skip_reset, renderer=BasicRenderer())
 
     console.print()
     console.rule("Summary")
