@@ -33,9 +33,9 @@ def run(
     console.print(f"Running [bold yellow]{str(path)}")
 
     plan = Plan.from_path(path)
-    plan._run_renderer = BasicRenderer()
-    result = plan.run(path, skip_reset)
+    result = plan.run(path, skip_reset, renderer=BasicRenderer())
 
     console.print()
     console.rule("Summary")
+    console.print(result)
     console.print(result.to_tree())

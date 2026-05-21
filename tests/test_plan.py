@@ -199,7 +199,7 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, tmp_path, subdirs):
     # TODO: this test is a smelly code smell;
     # I need to do way too much setup to actually exec a plan
     plan_path = tmp_path / "example.plan.json"
-    p = Plan(
+    plan = Plan(
         operations=[
             GitStatus(
                 directory_statuses={
@@ -217,9 +217,6 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, tmp_path, subdirs):
         ],
         directories=subdirs,
     )
-    plan_path.write_text(p.model_dump_json())
-
-    plan = Plan.from_path(plan_path)
     result = plan.run(plan_path)
 
     expected = RunSummary(
@@ -229,6 +226,7 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, tmp_path, subdirs):
                 name=subdirs[0],
                 status="completed",
                 op_results=[],
+                completed_this_run=False,
             ),
             DirectorySummary(
                 name=subdirs[1],
@@ -251,7 +249,11 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, tmp_path, subdirs):
                 name=subdirs[2],
                 status="completed",
                 op_results=[
-                    OperationSummary(status="completed", details=GitStatus().summary),
+                    OperationSummary(
+                        status="completed",
+                        details=GitStatus().summary,
+                        completed_this_run=False,
+                    ),
                     OperationSummary(
                         status="completed",
                         details=GitStatus().summary,
@@ -280,57 +282,121 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, tmp_path, subdirs):
         ],
     )
 
-    assert json.loads(result.model_dump_json()) == json.loads(
-        expected.model_dump_json()
+    assert result == expected
+
+
+def test_edge_cases(tmp_path):
+    p = {
+        "config": {"mode": "command", "last_run": "2026-05-17"},
+        "version": "v1",
+        "operations": [
+            {
+                "comment": "say where you're at",
+                "directory_statuses": {
+                    "~/projects/potent-demo/aardvark": "completed",
+                    "~/projects/potent-demo/badger": "completed",
+                    "~/projects/potent-demo/camel": "failed",
+                },
+                "slug": "raw-command",
+                "config": {
+                    "arguments": ["pwd"],
+                },
+            },
+            {
+                "comment": "say where you're at 2",
+                "directory_statuses": {
+                    "~/projects/potent-demo/aardvark": "completed",
+                    "~/projects/potent-demo/badger": "failed",
+                },
+                "slug": "raw-command",
+                "config": {
+                    "arguments": ["pwd"],
+                },
+            },
+        ],
+        "directories": [
+            "~/projects/potent-demo/aardvark",
+            "~/projects/potent-demo/dingo",
+            "~/projects/potent-demo/badger",
+            "~/projects/potent-demo/camel",
+        ],
+    }
+    plan = Plan(**p)
+    path = tmp_path / "example.plan.json"
+    results = plan.run(path)
+
+    expected = RunSummary(
+        filename=path,
+        directories=[
+            DirectorySummary(
+                name=Path("~/projects/potent-demo/aardvark"),
+                status="completed",
+                op_results=[
+                    OperationSummary(
+                        status="completed",
+                        details="pwd (raw-command)",
+                        completed_this_run=False,
+                    ),
+                    OperationSummary(
+                        status="completed",
+                        details="pwd (raw-command)",
+                        completed_this_run=False,
+                    ),
+                ],
+                completed_this_run=False,
+            ),
+            DirectorySummary(
+                name=Path("~/projects/potent-demo/dingo"),
+                status="completed",
+                op_results=[
+                    OperationSummary(
+                        status="completed",
+                        details="pwd (raw-command)",
+                        completed_this_run=True,
+                    ),
+                    OperationSummary(
+                        status="completed",
+                        details="pwd (raw-command)",
+                        completed_this_run=True,
+                    ),
+                ],
+                completed_this_run=True,
+            ),
+            DirectorySummary(
+                name=Path("~/projects/potent-demo/badger"),
+                status="completed",
+                op_results=[
+                    OperationSummary(
+                        status="completed",
+                        details="pwd (raw-command)",
+                        completed_this_run=False,
+                    ),
+                    OperationSummary(
+                        status="completed",
+                        details="pwd (raw-command)",
+                        completed_this_run=True,
+                    ),
+                ],
+                completed_this_run=True,
+            ),
+            DirectorySummary(
+                name=Path("~/projects/potent-demo/camel"),
+                status="completed",
+                op_results=[
+                    OperationSummary(
+                        status="completed",
+                        details="pwd (raw-command)",
+                        completed_this_run=False,
+                    ),
+                    OperationSummary(
+                        status="completed",
+                        details="pwd (raw-command)",
+                        completed_this_run=True,
+                    ),
+                ],
+                completed_this_run=True,
+            ),
+        ],
     )
-    # assert Plan(
-    #     operations=[
-    #         GitStatus(
-    #             directory_statuses={
-    #                 subdirs[0]: "completed",
-    #                 subdirs[1]: "completed",
-    #                 subdirs[2]: "failed",
-    #             }
-    #         ),
-    #         GitStatus(
-    #             directory_statuses={
-    #                 subdirs[0]: "completed",
-    #                 subdirs[1]: "failed",
-    #             }
-    #         ),
-    #     ],
-    #     directories=subdirs,
-    # ).status(
-    #     tmp_path,
-    #     verbose_success_dirs=[subdirs[3]],
-    #     just_completed_steps=[(1, subdirs[3])],
-    # ) == PlanStatus(
-    #     filename=str(tmp_path.absolute()),
-    #     directories=[
-    #         DirectoryStatus(
-    #             name=subdirs[0],
-    #             status="not-started",
-    #             op_results=[
-    #                 OperationResult(status="not-started", details=GitStatus().summary)
-    #             ],
-    #         ),
-    #         DirectoryStatus(
-    #             name=subdirs[1],
-    #             status="completed",
-    #             op_results=[],
-    #         ),
-    #         DirectoryStatus(
-    #             name=subdirs[2],
-    #             status="not-started",
-    #             op_results=[],
-    #         ),
-    #         DirectoryStatus(
-    #             name=subdirs[3],
-    #             status="completed",
-    #             op_results=[
-    #                 OperationResult(status="completed", details=GitStatus().summary)
-    #             ],
-    #             completed_this_run=True,
-    #         ),
-    #     ],
-    # )
+
+    assert results == expected

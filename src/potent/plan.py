@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from typing import Annotated, Callable, Iterator, Literal, Optional, Union
@@ -81,7 +82,8 @@ def status_styling(s: Status, changed_this_run: bool) -> tuple[str, str, str, st
     raise NotImplementedError
 
 
-class OperationSummary(BaseModel):
+@dataclass
+class OperationSummary:
     status: Status
     details: str
     """
@@ -94,7 +96,8 @@ class OperationSummary(BaseModel):
         return (f"{emoji} {self.details}", text_color)
 
 
-class DirectorySummary(BaseModel):
+@dataclass
+class DirectorySummary:
     """
     A directory has a status and some number of child operations (all of which get printed)
     """
@@ -120,7 +123,8 @@ class DirectorySummary(BaseModel):
             folder.add(text, style=text_color)
 
 
-class RunSummary(BaseModel):
+@dataclass
+class RunSummary:
     """
     Visual representation of a plan, maybe with additional information about the run that generated it.
     """
@@ -174,8 +178,6 @@ class Plan(BaseModel):
         AfterValidator(unique_items),
     ]
     _path: Optional[Path] = None
-    # TODO: fixme types
-    _run_renderer: Renderer = NoopRenderer()
     """
     When running the plan, progress events are sent to the renderer for presentation
     """
@@ -348,9 +350,13 @@ class Plan(BaseModel):
 
         return result
 
-    def run(self, path: Path, skip_reset=False, _renderer=None) -> RunSummary:
-        # TODO: call list(self.run_iter())?
-        # TODO: this should be split up?? result too tightly coupled to presentation right now
+    def run(
+        self,
+        # TODO: don't take a path
+        path: Path,
+        skip_reset=False,
+        renderer: Renderer = NoopRenderer(),
+    ) -> RunSummary:
         worked_dirs = []
         just_completed_steps: list[tuple[int, Path]] = []
 
@@ -359,25 +365,24 @@ class Plan(BaseModel):
                 pass
             elif self.config.last_run != (today := date.today()):
                 if self.config.last_run is not None:
-                    self._run_renderer.log("Resetting plan")
+                    renderer.log("Resetting plan")
                 self.reset()
                 self.config.last_run = today
         elif self.config.mode == "plan" and skip_reset:
-            self._run_renderer.log(
+            renderer.log(
                 "[magenta]WARN: [bold cyan]--skip-reset[/] has no effect on non-command plans; ignoring.[/]"
             )
 
-        for unique_step in enumerate(self.directories):
-            _, directory = unique_step
-            self._run_renderer.send(DirectoryStartedEvent(directory))
+        for directory in self.directories:
+            renderer.send(DirectoryStartedEvent(directory))
             if self.directory_complete(directory):
-                self._run_renderer.send(DirectorySkippedEvent(directory))
+                renderer.send(DirectorySkippedEvent(directory))
                 continue
 
             try:
                 worked_dirs.append(directory)
 
-                for step in self.operations:
+                for idx, step in enumerate(self.operations):
                     success = None  # the ol' triple bool
                     ev = OperationCompletedEvent(
                         directory, summary=step.summary, result="failure", output=""
@@ -387,15 +392,16 @@ class Plan(BaseModel):
                         ev.output = "Already completed"
                     else:
                         result = step.run(directory)
-                        self.save()
+                        if self._path:
+                            self.save()
                         if success := result.success:
                             ev.result = "success"
-                            just_completed_steps.append(unique_step)
+                            just_completed_steps.append((idx, directory))
 
                         ev.output = result.output
                         ev.cmd = result.cmd
 
-                    self._run_renderer.send(ev)
+                    renderer.send(ev)
 
                     if success is False:
                         break
@@ -410,6 +416,3 @@ class Plan(BaseModel):
             verbose_success_dirs=worked_dirs,
             just_completed_steps=just_completed_steps,
         )
-
-    # def run_iter(self) -> Iterator[int]:
-    #     pass
