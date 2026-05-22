@@ -1,4 +1,5 @@
 set quiet
+set lazy # introduced in 1.47.0
 
 _default:
   just --list
@@ -49,9 +50,11 @@ init-operation name: (_is_valid_python_identifier name) && (lint "src/potent/pla
 bump level: lint typecheck docs
   uv version --bump {{ level }}
 
+package_version := `uv run potent --version`
+
 [confirm("This will release the package as written. Have you already run `just bump LEVEL`? (yN)")]
 release:
   rm -rf dist
   uv build
   uv publish
-  gh release create $(uv run potent --version) --notes "See [the changelog](https://github.com/xavdid/potent/blob/main/CHANGELOG.md) for detailed information."
+  gh release create {{ package_version }} --notes "See [the changelog](https://github.com/xavdid/potent/blob/main/CHANGELOG.md#{{ replace(package_version, ".", "") }}) for detailed information."
