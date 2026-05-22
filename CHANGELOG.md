@@ -2,7 +2,15 @@
 
 ## Unreleased
 
-- Print the plan path when creating a command plan using only a filename
+- Print the plan path when creating a command plan using only a short name
+- fix a bug that caused the wrong emoji to sometimes be used when reporting a plan run result ([#2](https://github.com/xavdid/potent/pull/2))
+
+This release also contains some changes to the Python API (which isn't considered stable, but is probably worth mentioning just in case):
+
+- ❗ Remove the `Plan.open()` context manager. Use `Plan.from_path(path)` when working with a file
+- ❗ rename the `short_plan` kwarg in `Plan.run()` to `short_path`
+- ❗ change the return type of `Plan.run()` to a new `RunSummary` class that can _print_ the `Tree` that was returned before
+- ❗ add a `renderer` kwarg to `Plan.run()`. This is technically backwards compatible except that calling it with the default args will no longer show any output. Use `Plan.
 
 ## 0.4.0
 

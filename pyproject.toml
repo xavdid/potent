@@ -68,9 +68,16 @@ ignore = [
 ]
 
 unfixable = [
-    "F401", # don't remove unused imports
+    "F401", # don't remove unused imports; annoying while editing
+    # run `just lint --fix --fixable F401` to fix these manually
     "F841", # don't remove unused variables
 ]
 
 [dependency-groups]
-dev = ["pytest >= 8.4.2", "ruff == 0.13.3", "tox>=4.32.0", "tox-uv>=1.29.0"]
+dev = [
+    "pyright>=1.1.409",
+    "pytest >= 8.4.2",
+    "ruff == 0.13.3",
+    "tox>=4.32.0",
+    "tox-uv>=1.29.0",
+]

@@ -11,6 +11,6 @@ def reset(path: PlanJson, /):
     """
     Reset the progress on a plan file so it can be run again from scratch.
     """
-    with Plan.open(path) as plan:
-        plan.reset()
-        plan.save()
+    plan = Plan.from_path(path)
+    plan.reset()
+    plan.save()

@@ -25,6 +25,9 @@ test-versions *args:
 lint *args:
   uv run -- ruff check {{ args }}
 
+typecheck:
+  uv run -- pyright
+
 _is_valid_python_identifier name:
   {{ assert(name =~ "^[A-Za-z_]*$", "not a valid python identifier") }}
 
@@ -43,7 +46,7 @@ init-operation name: (_is_valid_python_identifier name) && (lint "src/potent/pla
   sed -i '' $'/# OPERATION IMPORTS/i\\\nfrom potent.operations.{{ name }} import TKTK\\\n' src/potent/plan.py
   sed -i '' $'/# OPERATIONS/i\\\n                TKTK,\\\n' src/potent/plan.py
 
-bump level: docs
+bump level: lint typecheck docs
   uv version --bump {{ level }}
 
 [confirm("This will release the package as written. Have you already run `just bump LEVEL`? (yN)")]
@@ -51,3 +54,4 @@ release:
   rm -rf dist
   uv build
   uv publish
+  gh release create $(uv run potent --version) --notes "See [the changelog](https://github.com/xavdid/potent/blob/main/CHANGELOG.md) for detailed information."

@@ -1,22 +1,13 @@
-from datetime import date
-from pathlib import Path
 from typing import Annotated
 
 from cyclopts import App, Parameter
 from rich.console import Console
-from rich.markup import escape
-from rich.panel import Panel
 
 from potent.commands._types import PlanJson
 from potent.plan import Plan
+from potent.renderers import BasicRenderer
 
 app = App()
-
-
-def directory_header(console: Console, directory: Path) -> None:
-    return console.rule(
-        f"📂 [bold underline]{directory.name}[/] 📂", style="bright_cyan"
-    )
 
 
 @app.command()
@@ -32,94 +23,15 @@ def run(
     ] = False,
 ):
     """
-    Execute a plan file and then summarize it.
+    Execute a plan file and then print its status.
     """
-    # TODO: probably make this internal to the class??
-    # can maybe use a generator so the presentation is controlled in the CLI
-    # update 2026-01-17; don't see a good way forward here. The plan is only occasionally invoked and most of the logic is presentational.
     console = Console()
 
     console.print(f"Running [bold yellow]{str(path)}")
 
-    worked_dirs = []
-    current_run: list[tuple[Path, str]] = []
-    with Plan.open(path) as plan:
-        if plan.config.mode == "command":
-            if skip_reset:
-                pass
-            elif plan.config.last_run != (today := date.today()):
-                if plan.config.last_run:
-                    console.print("Resetting plan")
-                plan.reset()
-                plan.config.last_run = today
-        elif plan.config.mode == "plan" and skip_reset:
-            console.print(
-                "[magenta]WARN: [bold cyan]--skip-reset[/] has no effect on non-command plans; ignoring.[/]"
-            )
+    plan = Plan.from_path(path)
+    result = plan.run(skip_reset, renderer=BasicRenderer())
 
-        for directory in plan.directories:
-            console.print()
-            if plan.directory_complete(directory):
-                directory_header(console, directory)
-
-                console.print("☑️ [green]already finished")
-                continue
-
-            try:
-                worked_dirs.append(directory)
-                directory_header(console, directory)
-
-                for step in plan.operations:
-                    success = None
-                    output = ""
-                    style = ""
-                    if step.completed(directory):
-                        output = "Already completed"
-                        subtitle = "skipped"
-                    else:
-                        result = step.run(directory)
-                        plan.save()
-                        if success := result.success:
-                            style = "green"
-                            subtitle = "Succeeded"
-                            current_run.append((directory, step.slug))
-
-                        else:
-                            style = "red"
-                            subtitle = "Failed"
-
-                        output = escape(result.output) or "[dim]no output[/]"
-
-                        if result.cmd:
-                            output = (
-                                f"[dim white]>>>[/] [cyan]{result.cmd}[/]\n\n{output}"
-                            )
-
-                    console.print(
-                        Panel(
-                            f"\n{output.strip()}\n",
-                            title=f"[dim white]step[not dim]: {step.summary}",
-                            title_align="left",
-                            border_style=style,
-                            subtitle=f"[dim white]result:[/] {subtitle}",
-                            subtitle_align="left",
-                        )
-                    )
-                    console.print()
-                    if success is False:
-                        break
-
-            except NotImplementedError:
-                print("    err!")
-                continue
-
-        console.print()
-        console.rule("Summary")
-        console.print(
-            plan.status(
-                path,
-                short_plan=True,
-                verbose_success_dirs=worked_dirs,
-                current_run=current_run,
-            )
-        )
+    console.print()
+    console.rule("Summary")
+    console.print(result.to_tree())
