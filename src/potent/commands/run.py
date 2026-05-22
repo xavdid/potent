@@ -34,4 +34,5 @@ def run(
 
     console.print()
     console.rule("Summary")
+    console.print(result.legend())
     console.print(result.to_tree())

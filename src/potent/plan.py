@@ -81,7 +81,7 @@ def status_styling(s: Status, changed_this_run: bool) -> tuple[str, str, str, st
 
 
 @dataclass
-class OperationSummary:
+class OperationStatus:
     status: Status
     details: str
     """
@@ -95,14 +95,14 @@ class OperationSummary:
 
 
 @dataclass
-class DirectorySummary:
+class DirectoryStatus:
     """
     A directory has a status and some number of child operations (all of which get printed)
     """
 
     name: Path
     status: Status
-    op_results: list[OperationSummary]
+    op_results: list[OperationStatus]
     """
     the steps that should be printed. Some results omit this for brevity
     """
@@ -122,13 +122,17 @@ class DirectorySummary:
 
 
 @dataclass
-class RunSummary:
+class PlanStatus:
     """
-    Visual representation of a plan, maybe with additional information about the run that generated it.
+    Visual representation of the state of a plan, maybe with additional information about the run that generated it.
     """
 
     filename: str
-    directories: list[DirectorySummary]
+    directories: list[DirectoryStatus]
+    includes_run_info: bool = False
+    """
+    Whether to include emoji that are part of a run
+    """
 
     def to_tree(self) -> Tree:
         root = Tree(f"[yellow]{self.filename}")
@@ -136,6 +140,9 @@ class RunSummary:
             d.add_to_tree(root)
 
         return root
+
+    def legend(self) -> str:
+        return f"\n☑️ Completed{' | ✅ Completed this run' if self.includes_run_info else ''} | ⌛ Pending | ❌ Failed\n"
 
 
 def directory_header(console: Console, directory: Path) -> None:
@@ -247,108 +254,67 @@ class Plan(BaseModel):
         self,
         *,
         short_path=False,
-        verbose_success_dirs: Optional[list[Path]] = None,
         just_completed_steps: Optional[list[tuple[int, Path]]] = None,
-    ) -> RunSummary:
+    ) -> PlanStatus:
         """
         Show this plan as plaintext. Takes a path to print the plan's location, but not for actual file operations
         """
-        # TODO: this is a mess
-        if verbose_success_dirs is None:
-            verbose_success_dirs = []
+
         if just_completed_steps is None:
             just_completed_steps = []
 
-        print(f" {just_completed_steps=} and {verbose_success_dirs=} ")
-
-        if verbose_success_dirs or just_completed_steps:
-            # do these always overlap?
-            completed_paths = {p for _, p in just_completed_steps}
-            assert completed_paths == set(verbose_success_dirs), (
-                f"expeceted {completed_paths=} and {verbose_success_dirs=} to be equal?"
-            )
-
-        # TODO: remove/move
-        if verbose_success_dirs or just_completed_steps:
-            print("☑️ Completed | ✅ Completed this run | ⌛ Pending | ❌ Failed\n")
-        else:
-            print("☑️ Completed | ⌛ Pending | ❌ Failed\n")
+        # store what we _just_ finished, if anything
+        completed_dirs = {p for _, p in just_completed_steps}
 
         if self._path:
             filename = self._path.name if short_path else str(self._path.absolute())
         else:
             filename = ":in memory:"
 
-        result = RunSummary(
+        result = PlanStatus(
             filename=filename,
             directories=[],
+            includes_run_info=bool(just_completed_steps),
         )
 
         should_print_all = True
         for d in self.directories:
             status: Status = "not-started"
-            operations: list[OperationSummary] = []
-            completed_this_run = False
+            operations = [
+                OperationStatus(
+                    status=o.dir_status(d),
+                    completed_this_run=(idx, d) in just_completed_steps,
+                    details=o.summary,
+                )
+                for idx, o in enumerate(self.operations)
+            ]
+            dir_completed_this_run = False
 
             if self.directory_complete(d):
                 status = "completed"
-                completed_this_run = any(
-                    directory == d for _, directory in just_completed_steps
-                )
-                # `verbose_success_dirs` is what we worked on this run. If we worked a directory and it's now complete, show all the steps
-                if d in verbose_success_dirs:
-                    operations = [
-                        OperationSummary(
-                            status="completed",
-                            completed_this_run=(idx, d) in just_completed_steps,
-                            details=o.summary,
-                        )
-                        for idx, o in enumerate(self.operations)
-                    ]
+                if not (dir_completed_this_run := d in completed_dirs):
+                    operations = []
 
             elif self.directory_failed(d):
                 status = "failed"
                 # failures print all steps, so once we hit one, we no longer need to print every step
                 should_print_all = False
-                operations = [
-                    OperationSummary(
-                        status=o.dir_status(d),
-                        completed_this_run=(idx, d) in just_completed_steps,
-                        details=o.summary,
-                    )
-                    for idx, o in enumerate(self.operations)
-                ]
 
             elif self.directory_pending(d):
-                status = "not-started"
                 if should_print_all:
                     should_print_all = False
-                    operations = [
-                        OperationSummary(
-                            status="not-started",
-                            details=o.summary,
-                        )
-                        for o in self.operations
-                    ]
+                else:
+                    operations = []
 
             else:
-                # plan was modified or something, so a previously-complete plan could now be incomplete
-                # i probably only need this branch? it's sort of the base case
-                status = "not-started"
-                operations = [
-                    OperationSummary(
-                        status=o.dir_status(d),
-                        details=o.summary,
-                    )
-                    for o in self.operations
-                ]
+                raise ValueError("Unknown status?")
 
             result.directories.append(
-                DirectorySummary(
+                DirectoryStatus(
                     name=d,
                     status=status,
                     op_results=operations,
-                    completed_this_run=completed_this_run,
+                    completed_this_run=dir_completed_this_run,
                 )
             )
 
@@ -358,7 +324,7 @@ class Plan(BaseModel):
         self,
         skip_reset=False,
         renderer: Renderer = NoopRenderer(),
-    ) -> RunSummary:
+    ) -> PlanStatus:
         worked_dirs = []
         just_completed_steps: list[tuple[int, Path]] = []
 
@@ -414,6 +380,5 @@ class Plan(BaseModel):
 
         return self.status(
             short_path=True,
-            verbose_success_dirs=worked_dirs,
             just_completed_steps=just_completed_steps,
         )

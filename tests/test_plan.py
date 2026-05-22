@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from potent.operations.git_status import GitStatus
-from potent.plan import DirectorySummary, OperationSummary, Plan, RunSummary
+from potent.plan import DirectoryStatus, OperationStatus, Plan, PlanStatus
 
 
 @pytest.fixture
@@ -96,18 +96,18 @@ def test_reset(tmp_path: Path):
 
 
 def test_only_first_pending_dir_prints_steps(subdirs):
-    assert Plan(operations=[GitStatus()], directories=subdirs).status() == RunSummary(
+    assert Plan(operations=[GitStatus()], directories=subdirs).status() == PlanStatus(
         filename=":in memory:",
         directories=[
-            DirectorySummary(
+            DirectoryStatus(
                 name=subdirs[0],
                 status="not-started",
                 op_results=[
-                    OperationSummary(status="not-started", details=GitStatus().summary)
+                    OperationStatus(status="not-started", details=GitStatus().summary)
                 ],
             ),
             *[
-                DirectorySummary(
+                DirectoryStatus(
                     name=d,
                     status="not-started",
                     op_results=[],
@@ -124,23 +124,23 @@ def test_success_doesnt_stop_print(subdirs):
         directories=subdirs,
     )
 
-    assert p.status() == RunSummary(
+    assert p.status() == PlanStatus(
         filename=":in memory:",
         directories=[
-            DirectorySummary(
+            DirectoryStatus(
                 name=subdirs[0],
                 status="completed",
                 op_results=[],
             ),
-            DirectorySummary(
+            DirectoryStatus(
                 name=subdirs[1],
                 status="not-started",
                 op_results=[
-                    OperationSummary(status="not-started", details=GitStatus().summary)
+                    OperationStatus(status="not-started", details=GitStatus().summary)
                 ],
             ),
             *[
-                DirectorySummary(
+                DirectoryStatus(
                     name=d,
                     status="not-started",
                     op_results=[],
@@ -157,14 +157,14 @@ def test_failure_always_prints(subdirs):
         directories=subdirs,
     )
 
-    assert p.status() == RunSummary(
+    assert p.status() == PlanStatus(
         filename=":in memory:",
         directories=[
-            DirectorySummary(
+            DirectoryStatus(
                 name=d,
                 status="failed",
                 op_results=[
-                    OperationSummary(status="failed", details=GitStatus().summary)
+                    OperationStatus(status="failed", details=GitStatus().summary)
                 ],
             )
             for d in subdirs
@@ -178,18 +178,18 @@ def test_failure_stops_prints(subdirs):
         directories=subdirs,
     )
 
-    assert p.status() == RunSummary(
+    assert p.status() == PlanStatus(
         filename=":in memory:",
         directories=[
-            DirectorySummary(
+            DirectoryStatus(
                 name=subdirs[0],
                 status="failed",
                 op_results=[
-                    OperationSummary(status="failed", details=GitStatus().summary)
+                    OperationStatus(status="failed", details=GitStatus().summary)
                 ],
             ),
             *[
-                DirectorySummary(
+                DirectoryStatus(
                     name=d,
                     status="not-started",
                     op_results=[],
@@ -212,37 +212,37 @@ def test_completed_dirs_always_shown(subdirs):
         ],
         directories=subdirs,
     ).status(
-        verbose_success_dirs=[subdirs[3]],
         just_completed_steps=[(1, subdirs[3])],
-    ) == RunSummary(
+    ) == PlanStatus(
         filename=":in memory:",
         directories=[
-            DirectorySummary(
+            DirectoryStatus(
                 name=subdirs[0],
                 status="not-started",
                 op_results=[
-                    OperationSummary(status="not-started", details=GitStatus().summary)
+                    OperationStatus(status="not-started", details=GitStatus().summary)
                 ],
             ),
-            DirectorySummary(
+            DirectoryStatus(
                 name=subdirs[1],
                 status="completed",
                 op_results=[],
             ),
-            DirectorySummary(
+            DirectoryStatus(
                 name=subdirs[2],
                 status="not-started",
                 op_results=[],
             ),
-            DirectorySummary(
+            DirectoryStatus(
                 name=subdirs[3],
                 status="completed",
                 op_results=[
-                    OperationSummary(status="completed", details=GitStatus().summary)
+                    OperationStatus(status="completed", details=GitStatus().summary)
                 ],
                 completed_this_run=True,
             ),
         ],
+        includes_run_info=True,
     )
 
 
@@ -268,25 +268,25 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, subdirs):
     )
     result = plan.run()
 
-    expected = RunSummary(
+    expected = PlanStatus(
         filename=":in memory:",
         directories=[
-            DirectorySummary(
+            DirectoryStatus(
                 name=subdirs[0],
                 status="completed",
                 op_results=[],
                 completed_this_run=False,
             ),
-            DirectorySummary(
+            DirectoryStatus(
                 name=subdirs[1],
                 status="completed",
                 op_results=[
-                    OperationSummary(
+                    OperationStatus(
                         status="completed",
                         details=GitStatus().summary,
                         completed_this_run=False,
                     ),
-                    OperationSummary(
+                    OperationStatus(
                         status="completed",
                         details=GitStatus().summary,
                         completed_this_run=True,
@@ -294,16 +294,16 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, subdirs):
                 ],
                 completed_this_run=True,
             ),
-            DirectorySummary(
+            DirectoryStatus(
                 name=subdirs[2],
                 status="completed",
                 op_results=[
-                    OperationSummary(
+                    OperationStatus(
                         status="completed",
                         details=GitStatus().summary,
                         completed_this_run=True,
                     ),
-                    OperationSummary(
+                    OperationStatus(
                         status="completed",
                         details=GitStatus().summary,
                         completed_this_run=True,
@@ -311,16 +311,16 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, subdirs):
                 ],
                 completed_this_run=True,
             ),
-            DirectorySummary(
+            DirectoryStatus(
                 name=subdirs[3],
                 status="completed",
                 op_results=[
-                    OperationSummary(
+                    OperationStatus(
                         status="completed",
                         details=GitStatus().summary,
                         completed_this_run=True,
                     ),
-                    OperationSummary(
+                    OperationStatus(
                         status="completed",
                         details=GitStatus().summary,
                         completed_this_run=True,
@@ -329,6 +329,7 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, subdirs):
                 completed_this_run=True,
             ),
         ],
+        includes_run_info=True,
     )
 
     assert result == expected

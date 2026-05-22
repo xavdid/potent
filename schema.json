@@ -1,6 +1,7 @@
 {
   "$defs": {
     "CommandConfig": {
+      "description": "One of the configuration options for a Plan",
       "properties": {
         "mode": {
           "const": "command",
@@ -434,6 +435,7 @@
       "type": "object"
     },
     "PlanConfig": {
+      "description": "One of the configuration options for a Plan",
       "properties": {
         "mode": {
           "const": "plan",

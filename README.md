@@ -285,7 +285,7 @@ Reset the progress on a plan file so it can be run again from scratch.
 
 ### `run`
 
-Execute a plan file and then summarize it.
+Execute a plan file and then print its status.
 
 #### Arguments
 
