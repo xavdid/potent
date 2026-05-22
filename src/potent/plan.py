@@ -186,20 +186,25 @@ class Plan(BaseModel):
         plan._path = path
         return plan
 
-    def save(self):
+    def save(self, path: Optional[Path] = None):
         """
         Persist an open Plan to disk. Errors if no path is provided _and_ the plan was not given a path at creation time.
         """
 
-        if self._path is None:
+        dest = path or self._path
+
+        if dest is None:
             raise ValueError("Can't save a Plan without a path.")
 
-        tmp = self._path.with_suffix(".tmp")
+        tmp = dest.with_suffix(".tmp")
         # theoretically, writing the file can fail partway and leave us in a weird state
         tmp.write_text(self.model_dump_json(indent=2))
         # but the replace operation is atomic- if we get this far, the original write worked and we're ~guaranteed to produce a
         # this move retains the original file's metadata and deletes the tmp file in one go
-        tmp.replace(self._path)
+        tmp.replace(dest)
+
+        if path and (self._path is None):
+            self._path = path
 
     def reset(self):
         for p in self.operations:

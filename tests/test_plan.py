@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -23,6 +24,36 @@ def subdirs(tmp_path) -> list[Path]:
         d.mkdir()
 
     return dirs
+
+
+def test_save_path_kwarg(tmp_path):
+    dest = tmp_path / "example.plan.json"
+    plan = Plan(operations=[], directories=[])
+    plan.save(dest)
+
+    assert "directories" in dest.read_text()
+    assert plan._path
+
+
+def test_save_path_kwarg_doesnt_overwrite_stored_path(tmp_path):
+    dest = tmp_path / "example.plan.json"
+    dest2 = tmp_path / "example2.plan.json"
+
+    plan = Plan(operations=[], directories=[])
+    plan._path = dest
+    plan.save(dest2)
+
+    assert dest.exists() is False
+    assert "directories" in dest2.read_text()
+    assert plan._path == dest
+
+
+def test_save_after_path_constructor(tmp_path):
+    dest = tmp_path / "example.plan.json"
+    dest.write_text(json.dumps({"operations": [], "directories": []}))
+
+    plan = Plan.from_path(dest)
+    assert plan._path
 
 
 def test_directory_complete(subdirs):

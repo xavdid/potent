@@ -31,14 +31,13 @@ def init(
     is_command = get_command_dir() in path.parents
 
     path.parent.mkdir(exist_ok=True, parents=True)
-    path.write_text(
-        Plan(
-            version="v1",
-            operations=[],
-            directories=[],
-            config=CommandConfig() if is_command else PlanConfig(),
-        ).model_dump_json(indent=2)
-    )
+
+    Plan(
+        version="v1",
+        operations=[],
+        directories=[],
+        config=CommandConfig() if is_command else PlanConfig(),
+    ).save(path)
 
     if is_command:
         print(f"Created {path}")
