@@ -5,6 +5,7 @@
 - ❗ remove the `path` argument for `potent schema dump` and instead print to stdout. You can redirect this to a file to restore the original behavior.
 - Print the plan path when creating a command plan using only a short name
 - fix a bug that caused the wrong emoji to sometimes be used when reporting a plan run result ([#2](https://github.com/xavdid/potent/pull/2))
+- `manual-confirmation` steps now show their comment, if any
 
 This release also contains some changes to the Python API (which isn't considered stable, but is probably worth mentioning just in case):
 

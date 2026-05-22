@@ -16,5 +16,14 @@ class ManualConfirmation(BaseOperation):
     @override
     def _run(self, directory: Path) -> OperationResult:
         return OperationResult(
-            success=False, output="Manually edit the plan file to proceed"
+            success=False,
+            output=f'Manually mark this step as completed for "{directory}" to proceed.',
         )
+
+    @property
+    @override
+    def summary(self) -> str:
+        if self.comment:
+            return f"Halting because: {self.comment} (manual-confirmation)"
+        # children will provide this if needed
+        return self.slug  # type: ignore
