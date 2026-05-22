@@ -307,11 +307,7 @@ Print the versioned url of Potent's JSON schema. Useful for getting in-editor co
 
 ### `schema dump`
 
-Dump the current schema. While the versioned url is simpler to use, this schema will include any plugins you have, making it more complete & accurate for your use case.
-
-#### Arguments
-
-- `path` (Path, required)
+Dump the current schema to stdout. While the versioned url is simpler to use, the dumped schema will include any plugins you have installed, making it more complete & accurate for your use case.
 
 ### `status`
 

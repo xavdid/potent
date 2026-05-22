@@ -1,7 +1,6 @@
 import json
 
 from cyclopts import App
-from cyclopts.types import JsonPath
 
 from potent.plan import Plan
 
@@ -23,9 +22,8 @@ def url():
 
 
 @app.command()
-def dump(path: JsonPath, /):
+def dump():
     """
-    Dump the current schema. While the versioned url is simpler to use, this schema will include any plugins you have, making it more complete & accurate for your use case.
+    Dump the current schema to stdout. While the versioned url is simpler to use, the dumped schema will include any plugins you have installed, making it more complete & accurate for your use case.
     """
-    # TODO: just write to stdout - let the user redirect
-    path.write_text(json.dumps(Plan.model_json_schema(), indent=2))
+    print(json.dumps(Plan.model_json_schema(), indent=2))
