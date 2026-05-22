@@ -54,3 +54,4 @@ release:
   rm -rf dist
   uv build
   uv publish
+  gh release create $(uv run potent --version) --notes "See [the changelog](https://github.com/xavdid/potent/blob/main/CHANGELOG.md) for detailed information."

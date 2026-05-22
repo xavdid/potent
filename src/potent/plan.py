@@ -20,9 +20,9 @@ from potent.operations.manual_confirmation import ManualConfirmation
 from potent.operations.raw_command import RawCommand
 from potent.renderers import NoopRenderer, Renderer
 from potent.run_events import (
-    DirectorySkippedEvent,
-    DirectoryStartedEvent,
-    OperationCompletedEvent,
+    DirectorySkipped,
+    DirectoryStarted,
+    OperationCompleted,
 )
 
 # OPERATION IMPORTS ^
@@ -371,9 +371,9 @@ class Plan(BaseModel):
             )
 
         for directory in self.directories:
-            renderer.send(DirectoryStartedEvent(directory))
+            renderer.send(DirectoryStarted(directory))
             if self.directory_complete(directory):
-                renderer.send(DirectorySkippedEvent(directory))
+                renderer.send(DirectorySkipped(directory))
                 continue
 
             try:
@@ -381,7 +381,7 @@ class Plan(BaseModel):
 
                 for idx, step in enumerate(self.operations):
                     success = None  # the ol' triple bool
-                    ev = OperationCompletedEvent(
+                    ev = OperationCompleted(
                         directory, summary=step.summary, result="failure", output=""
                     )
                     if step.completed(directory):

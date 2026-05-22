@@ -23,11 +23,8 @@ def run(
     ] = False,
 ):
     """
-    Execute a plan file and then summarize it.
+    Execute a plan file and then print its status.
     """
-    # TODO: probably make this internal to the class??
-    # can maybe use a generator so the presentation is controlled in the CLI
-    # update 2026-01-17; don't see a good way forward here. The plan is only occasionally invoked and most of the logic is presentational.
     console = Console()
 
     console.print(f"Running [bold yellow]{str(path)}")
@@ -37,5 +34,4 @@ def run(
 
     console.print()
     console.rule("Summary")
-    console.print(result)
     console.print(result.to_tree())

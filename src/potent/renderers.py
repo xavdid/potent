@@ -5,19 +5,27 @@ from rich.markup import escape
 from rich.panel import Panel
 
 from potent.run_events import (
-    DirectorySkippedEvent,
-    DirectoryStartedEvent,
-    OperationCompletedEvent,
+    DirectorySkipped,
+    DirectoryStarted,
+    OperationCompleted,
     RunEvent,
 )
 
 
 class Renderer(Protocol):
+    """
+    Renderers are responsible for printing the output of a Plan's run(). They mostly translate shell calls into readable and useful output.
+    """
+
     def send(self, event: RunEvent): ...
     def log(self, msg: str): ...
 
 
 class NoopRenderer:
+    """
+    This renderer intentionally does nothing; useful for tests and places where the pretty output of a run isn't used
+    """
+
     def send(self, event: RunEvent):
         pass
 
@@ -35,14 +43,14 @@ class BasicRenderer:
 
     def send(self, event: RunEvent):
         match event:
-            case DirectoryStartedEvent(directory):
+            case DirectoryStarted(directory):
                 self.console.rule(
                     f"📂 [bold underline]{directory.name}[/] 📂", style="bright_cyan"
                 )
                 self.console.print()
-            case DirectorySkippedEvent():
+            case DirectorySkipped():
                 self.console.print("☑️ [green]already finished")
-            case OperationCompletedEvent(
+            case OperationCompleted(
                 summary=summary, result=result, output=output, cmd=cmd
             ):
                 if result == "success":

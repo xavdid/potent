@@ -1,20 +1,25 @@
+"""
+This file holds a Rust-style enum to communicate updates about the plan execution to a renderer.
+It acts as a bridge between the computation layer and the presentational one.
+"""
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, Optional
 
 
 @dataclass
-class DirectoryStartedEvent:
+class DirectoryStarted:
     path: Path
 
 
 @dataclass
-class DirectorySkippedEvent:
+class DirectorySkipped:
     path: Path
 
 
 @dataclass
-class OperationCompletedEvent:
+class OperationCompleted:
     path: Path
     summary: str
     result: Literal["success", "failure", "skipped"]
@@ -22,4 +27,4 @@ class OperationCompletedEvent:
     cmd: Optional[str] = None
 
 
-RunEvent = DirectoryStartedEvent | DirectorySkippedEvent | OperationCompletedEvent
+RunEvent = DirectoryStarted | DirectorySkipped | OperationCompleted
