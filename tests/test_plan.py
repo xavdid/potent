@@ -3,8 +3,11 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+import rich
 
 from potent.operations.git_status import GitStatus
+from potent.operations.manual_confirmation import ManualConfirmation
+from potent.operations.raw_command import RawCommand
 from potent.plan import DirectoryStatus, OperationStatus, Plan, PlanStatus
 
 
@@ -333,3 +336,45 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, subdirs):
     )
 
     assert result == expected
+
+
+def test_comments_and_summary_are_printed_separately():
+    p = Plan(
+        directories=[],
+        operations=[
+            RawCommand(
+                config=RawCommand.OpConfig(arguments=["echo", "cool"]),
+                comment="ice cold",
+            ),
+            GitStatus(comment="all clear!"),
+        ],
+    )
+    ops = p.outline().children[0].children
+
+    assert len(ops) == 2
+    assert "(raw-command)" in ops[0].label  # pyright: ignore[reportOperatorIssue]
+    assert "echo cool" in ops[0].label  # pyright: ignore[reportOperatorIssue]
+    assert len(ops[0].children) == 1
+    assert "ice cold" in ops[0].children[0].label  # pyright: ignore[reportOperatorIssue]
+
+    assert len(ops[1].children) == 1
+    assert ops[1].label == "git-status"
+
+
+def test_manual_confirmation_prints_comment_only_once():
+    p = Plan(
+        directories=[],
+        operations=[
+            ManualConfirmation(),
+            ManualConfirmation(comment="stop!"),
+        ],
+    )
+    ops = p.outline().children[0].children
+    assert len(ops) == 2
+
+    assert ops[0].label == "manual-confirmation"
+    assert len(ops[0].children) == 0
+
+    assert "(manual-confirmation)" in ops[1].label  # pyright: ignore[reportOperatorIssue]
+    assert "stop!" in ops[1].label  # pyright: ignore[reportOperatorIssue]
+    assert len(ops[1].children) == 0

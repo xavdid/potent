@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- None
+- fix double printing in `describe` command when used with manual confirmation
 
 ## 0.5.0
 

@@ -226,11 +226,11 @@ class Plan(BaseModel):
     def directory_pending(self, directory: Path) -> bool:
         return all(s.pending(directory) for s in self.operations)
 
-    def outline(self, path: Path) -> Tree:
+    def outline(self) -> Tree:
         """
         Show this plan's step as plaintext. Doesn't show status information, just an overview of the whole plan.
         """
-        root = Tree(f"[yellow]{path.absolute()}")
+        root = Tree(f"[yellow]{self._path.absolute() if self._path else ':in-memory:'}")
 
         if self.comment:
             info_leaf = root.add("summary", style="bold")
@@ -240,13 +240,17 @@ class Plan(BaseModel):
 
         for op in self.operations:
             op_leaf = steps_leaf.add(op.summary, style="not bold")
-            if op.comment:
+            if op.comment and op.slug != "manual-confirmation":
+                # manual confirmations have their comment in their summary
                 op_leaf.add(op.comment)
 
         dir_leaf = root.add("directories:", style="bold")
 
-        for d in self.directories:
-            dir_leaf.add(str(d), style="not bold")
+        if self.directories:
+            for d in self.directories:
+                dir_leaf.add(str(d), style="not bold")
+        else:
+            dir_leaf.add("⚠️ none!", style="not bold yellow")
 
         return root
 
