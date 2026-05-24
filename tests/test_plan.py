@@ -3,7 +3,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-import rich
 
 from potent.operations.git_status import GitStatus
 from potent.operations.manual_confirmation import ManualConfirmation
@@ -366,15 +365,20 @@ def test_manual_confirmation_prints_comment_only_once():
         directories=[],
         operations=[
             ManualConfirmation(),
+            ManualConfirmation(config=ManualConfirmation.OpConfig(reason="halt!")),
             ManualConfirmation(comment="stop!"),
         ],
     )
     ops = p.outline().children[0].children
-    assert len(ops) == 2
+    assert len(ops) == 3
 
     assert ops[0].label == "manual-confirmation"
     assert len(ops[0].children) == 0
 
+    assert "halt!" in ops[1].label  # pyright: ignore[reportOperatorIssue]
     assert "(manual-confirmation)" in ops[1].label  # pyright: ignore[reportOperatorIssue]
-    assert "stop!" in ops[1].label  # pyright: ignore[reportOperatorIssue]
     assert len(ops[1].children) == 0
+
+    assert ops[2].label == "manual-confirmation"
+    assert len(ops[2].children) == 1
+    assert ops[2].children[0].label == "stop!"

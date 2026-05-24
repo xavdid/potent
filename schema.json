@@ -429,6 +429,12 @@
           "default": "manual-confirmation",
           "title": "Slug",
           "type": "string"
+        },
+        "config": {
+          "$ref": "#/$defs/potent__operations__manual_confirmation__ManualConfirmation__OpConfig",
+          "default": {
+            "reason": null
+          }
         }
       },
       "title": "ManualConfirmation",
@@ -631,6 +637,26 @@
       "required": [
         "branch"
       ],
+      "title": "OpConfig",
+      "type": "object"
+    },
+    "potent__operations__manual_confirmation__ManualConfirmation__OpConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "User-facing reason for the pause",
+          "title": "Reason"
+        }
+      },
       "title": "OpConfig",
       "type": "object"
     },

@@ -198,11 +198,16 @@ class BaseOperation(CommonBase):
 
         fields = cls.model_fields
 
-        config_required = False
-        if (raw_config := fields.get("config")) and raw_config.annotation:
-            config_required = True
+        config_note = "∅ None"
+        if (raw_config := fields.get("config")) and (
+            annotation := raw_config.annotation
+        ):
+            if any(f.is_required() for f in annotation.model_fields.values()):
+                config_note = "✅ Reqiured"
+            else:
+                config_note = "☑️ Optional"
 
         return (
             f"[`{get_args(fields['slug'].annotation)[0]}`](#{cls.__name__})",
-            "☑️" if config_required else "",
+            config_note,
         )

@@ -1,7 +1,7 @@
 from pathlib import Path
-from typing import Literal, override
+from typing import Literal, Optional, override
 
-from potent.operations._base import BaseOperation, OperationResult
+from potent.operations._base import BaseConfig, BaseOperation, OperationResult
 
 
 class ManualConfirmation(BaseOperation):
@@ -11,7 +11,14 @@ class ManualConfirmation(BaseOperation):
     Useful for putting pauses into a multi-phase plan.
     """
 
+    class OpConfig(BaseConfig):
+        reason: Optional[str] = None
+        """
+        User-facing reason for the pause
+        """
+
     slug: Literal["manual-confirmation"] = "manual-confirmation"
+    config: OpConfig = OpConfig()
 
     @override
     def _run(self, directory: Path) -> OperationResult:
@@ -23,7 +30,7 @@ class ManualConfirmation(BaseOperation):
     @property
     @override
     def summary(self) -> str:
-        if self.comment:
-            return f"Halting because: {self.comment} (manual-confirmation)"
-        # children will provide this if needed
-        return self.slug  # type: ignore
+        if self.config.reason:
+            return f"{self.config.reason} (manual-confirmation)"
+
+        return self.slug

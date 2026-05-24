@@ -240,7 +240,7 @@ class Plan(BaseModel):
 
         for op in self.operations:
             op_leaf = steps_leaf.add(op.summary, style="not bold")
-            if op.comment and op.slug != "manual-confirmation":
+            if op.comment:
                 # manual confirmations have their comment in their summary
                 op_leaf.add(op.comment)
 

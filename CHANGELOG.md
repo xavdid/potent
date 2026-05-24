@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- fix double printing in `describe` command when used with manual confirmation
+- add optional `reason` to `manual-confirmation` operation for better summaries.
 
 ## 0.5.0
 

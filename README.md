@@ -130,16 +130,16 @@ Each Operation is identified by its unique `slug` field. Each of the Operations 
 
 | Slug                                         | Requires Config? |
 | -------------------------------------------- | ---------------- |
-| [`create-pr`](#CreatePR)                     | ☑️               |
-| [`enable-automerge`](#EnableAutomerge)       | ☑️               |
-| [`git-add`](#GitAdd)                         | ☑️               |
-| [`git-commit`](#GitCommit)                   | ☑️               |
-| [`git-pull`](#GitPull)                       |
-| [`git-push`](#GitPush)                       |
-| [`git-status`](#GitStatus)                   |
-| [`git-switch`](#GitSwitch)                   | ☑️               |
-| [`manual-confirmation`](#ManualConfirmation) |
-| [`raw-command`](#RawCommand)                 | ☑️               |
+| [`create-pr`](#CreatePR)                     | ✅ Reqiured      |
+| [`enable-automerge`](#EnableAutomerge)       | ☑️ Optional      |
+| [`git-add`](#GitAdd)                         | ☑️ Optional      |
+| [`git-commit`](#GitCommit)                   | ✅ Reqiured      |
+| [`git-pull`](#GitPull)                       | ∅ None           |
+| [`git-push`](#GitPush)                       | ∅ None           |
+| [`git-status`](#GitStatus)                   | ∅ None           |
+| [`git-switch`](#GitSwitch)                   | ✅ Reqiured      |
+| [`manual-confirmation`](#ManualConfirmation) | ☑️ Optional      |
+| [`raw-command`](#RawCommand)                 | ✅ Reqiured      |
 
 ### CreatePR
 
@@ -239,6 +239,12 @@ A step that always fails. To advance your plan, manually edit the plan file so e
 Useful for putting pauses into a multi-phase plan.
 
 **Slug**: `manual-confirmation`
+
+#### Config (optional)
+
+| name     | type            | description                      | default (if optional) |
+| -------- | --------------- | -------------------------------- | --------------------- |
+| `reason` | `Optional[str]` | User-facing reason for the pause | `None`                |
 
 ### RawCommand
 
