@@ -57,4 +57,4 @@ release:
   rm -rf dist
   uv build
   uv publish
-  gh release create {{ package_version }} --notes "See [the changelog](https://github.com/xavdid/potent/blob/main/CHANGELOG.md#{{ replace(package_version, ".", "") }}) for detailed information."
+  gh release create v{{ package_version }} --notes "See [the changelog](https://github.com/xavdid/potent/blob/main/CHANGELOG.md#{{ replace(package_version, ".", "") }}) for detailed information."
