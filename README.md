@@ -130,6 +130,7 @@ Each Operation is identified by its unique `slug` field. Each of the Operations 
 
 | Slug                                         | Requires Config? |
 | -------------------------------------------- | ---------------- |
+| [`change-pr-status`](#ChangePrStatus)        | ☑️ Optional      |
 | [`create-pr`](#CreatePR)                     | ✅ Reqiured      |
 | [`enable-automerge`](#EnableAutomerge)       | ☑️ Optional      |
 | [`git-add`](#GitAdd)                         | ☑️ Optional      |
@@ -140,6 +141,21 @@ Each Operation is identified by its unique `slug` field. Each of the Operations 
 | [`git-switch`](#GitSwitch)                   | ✅ Reqiured      |
 | [`manual-confirmation`](#ManualConfirmation) | ☑️ Optional      |
 | [`raw-command`](#RawCommand)                 | ✅ Reqiured      |
+
+### ChangePrStatus
+
+Change the readiness status of a PR. Moves it from draft -> "ready to review" by default, but can also move it back to draft.
+
+> [!IMPORTANT]
+> Requires the `gh` CLI to be installed.
+
+**Slug**: `change-pr-status`
+
+#### Config (optional)
+
+| name        | type                   | description                                               | default (if optional) |
+| ----------- | ---------------------- | --------------------------------------------------------- | --------------------- |
+| `to_status` | `"ready"` \| `"draft"` | Whether to mark the PR as ready or move it back to draft. | `"ready"`             |
 
 ### CreatePR
 

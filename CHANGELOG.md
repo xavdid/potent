@@ -2,8 +2,9 @@
 
 ## Unreleased
 
+- add `change-pr-status` operation for moving PRs between draft and ready.
 - add optional `reason` to `manual-confirmation` operation for better summaries.
-- fix `potent status` crash when adding a new operation to an otherwise completed plan
+- fix `potent status` crash when adding a new operation to an otherwise completed plan.
 
 ## 0.5.0
 

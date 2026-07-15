@@ -1,5 +1,53 @@
 {
   "$defs": {
+    "ChangePrStatus": {
+      "additionalProperties": false,
+      "description": "Change the readiness status of a PR. Moves it from draft -> \"ready to review\" by default, but can also move it back to draft.\n\n> [!IMPORTANT]\n> Requires the `gh` CLI to be installed.",
+      "properties": {
+        "comment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment"
+        },
+        "directory_statuses": {
+          "additionalProperties": {
+            "enum": [
+              "not-started",
+              "failed",
+              "completed"
+            ],
+            "type": "string"
+          },
+          "default": {},
+          "propertyNames": {
+            "format": "path"
+          },
+          "title": "Directory Statuses",
+          "type": "object"
+        },
+        "slug": {
+          "const": "change-pr-status",
+          "default": "change-pr-status",
+          "title": "Slug",
+          "type": "string"
+        },
+        "config": {
+          "$ref": "#/$defs/potent__operations__change_pr_status__ChangePrStatus__OpConfig",
+          "default": {
+            "to_status": "ready"
+          }
+        }
+      },
+      "title": "ChangePrStatus",
+      "type": "object"
+    },
     "CommandConfig": {
       "description": "One of the configuration options for a Plan",
       "properties": {
@@ -501,6 +549,23 @@
       "title": "RawCommand",
       "type": "object"
     },
+    "potent__operations__change_pr_status__ChangePrStatus__OpConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "to_status": {
+          "default": "ready",
+          "description": "Whether to mark the PR as ready or move it back to draft.",
+          "enum": [
+            "ready",
+            "draft"
+          ],
+          "title": "To Status",
+          "type": "string"
+        }
+      },
+      "title": "OpConfig",
+      "type": "object"
+    },
     "potent__operations__create_pr__Config": {
       "additionalProperties": false,
       "properties": {
@@ -737,6 +802,7 @@
       "items": {
         "discriminator": {
           "mapping": {
+            "change-pr-status": "#/$defs/ChangePrStatus",
             "create-pr": "#/$defs/CreatePR",
             "enable-automerge": "#/$defs/EnableAutomerge",
             "git-add": "#/$defs/GitAdd",
@@ -780,6 +846,9 @@
           },
           {
             "$ref": "#/$defs/ManualConfirmation"
+          },
+          {
+            "$ref": "#/$defs/ChangePrStatus"
           }
         ]
       },
