@@ -224,7 +224,7 @@ class Plan(BaseModel):
         return any(s.failed(directory) for s in self.operations)
 
     def directory_pending(self, directory: Path) -> bool:
-        return all(s.pending(directory) for s in self.operations)
+        return any(s.pending(directory) for s in self.operations)
 
     def outline(self) -> Tree:
         """

@@ -3,6 +3,7 @@
 ## Unreleased
 
 - add optional `reason` to `manual-confirmation` operation for better summaries.
+- fix `potent status` crash when adding a new operation to an otherwise completed plan
 
 ## 0.5.0
 

@@ -120,6 +120,39 @@ def test_only_first_pending_dir_prints_steps(subdirs):
     )
 
 
+def test_add_pending_step(subdirs):
+    """
+    If there's a new step added after the plan is successful, then status failed
+    """
+    assert Plan(
+        operations=[
+            GitStatus(directory_statuses=dict.fromkeys(subdirs, "completed")),
+            GitStatus(),
+        ],
+        directories=subdirs,
+    ).status() == PlanStatus(
+        filename=":in memory:",
+        directories=[
+            DirectoryStatus(
+                name=subdirs[0],
+                status="not-started",
+                op_results=[
+                    OperationStatus(status="completed", details=GitStatus().summary),
+                    OperationStatus(status="not-started", details=GitStatus().summary),
+                ],
+            ),
+            *[
+                DirectoryStatus(
+                    name=d,
+                    status="not-started",
+                    op_results=[],
+                )
+                for d in subdirs[1:]
+            ],
+        ],
+    )
+
+
 def test_success_doesnt_stop_print(subdirs):
     p = Plan(
         operations=[GitStatus(directory_statuses={subdirs[0]: "completed"})],
