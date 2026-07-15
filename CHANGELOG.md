@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.6.0
+
+_released `2026-07-14`_
 
 - add `change-pr-status` operation for moving PRs between draft and ready.
 - add optional `reason` to `manual-confirmation` operation for better summaries.
