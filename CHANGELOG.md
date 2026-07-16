@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- raise the message truncation limit for `git-commit` and `raw-command` when printing a plan
+
 ## 0.6.0
 
 _released `2026-07-14`_

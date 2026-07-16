@@ -25,7 +25,7 @@ class GitCommit(BaseOperation):
     @property
     @override
     def summary(self) -> str:
-        LIMIT = 10
+        LIMIT = 15
         msg = (
             f"{self.config.message[:LIMIT]}..."
             if len(self.config.message) > LIMIT

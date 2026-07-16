@@ -34,7 +34,7 @@ class RawCommand(BaseOperation):
         if self.config.name:
             return f"{self.config.name} ({self.slug})"
 
-        LIMIT = 3
+        LIMIT = 5
 
         msg = (
             f"{' '.join(self.config.arguments[:LIMIT])}..."

@@ -69,7 +69,7 @@ def test_tile_paths_are_retained_when_dumping_plan(path_with_tilde: Path):
                     message="A longer message that gets truncated"
                 )
             ),
-            'git commit -m "A longer m..."',
+            'git commit -m "A longer messag..."',
         ],
         [GitSwitch(config=GitSwitch.OpConfig(branch="asdf")), "git switch -> asdf"],
         [
@@ -82,7 +82,23 @@ def test_tile_paths_are_retained_when_dumping_plan(path_with_tilde: Path):
                     arguments=["npm", "run", "start", "--some", "arg"]
                 )
             ),
-            "npm run start... (raw-command)",
+            "npm run start --some arg (raw-command)",
+        ],
+        [
+            RawCommand(
+                config=RawCommand.OpConfig(
+                    arguments=[
+                        "npm",
+                        "run",
+                        "start",
+                        "--some",
+                        "arg",
+                        "--another",
+                        "arg",
+                    ]
+                )
+            ),
+            "npm run start --some arg... (raw-command)",
         ],
         [
             RawCommand(
