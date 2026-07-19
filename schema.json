@@ -74,6 +74,67 @@
       "title": "CommandConfig",
       "type": "object"
     },
+    "Config": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "description": "The title of the PR.",
+          "title": "Title",
+          "type": "string"
+        },
+        "body_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "A string that will be used as the body of the PR. Exactly one of `body_text` or `body_file` is required.",
+          "title": "Body Text"
+        },
+        "body_file": {
+          "anyOf": [
+            {
+              "format": "file-path",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The absolute path to a readable file containing the full body of the PR. Exactly one of `body_text` or `body_file` is required.",
+          "title": "Body File"
+        },
+        "draft": {
+          "default": false,
+          "description": "Whether to open the PR in draft mode.",
+          "title": "Draft",
+          "type": "boolean"
+        },
+        "base_branch": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The branch that you want to merge your changes into. Defaults to the repo's default branch.",
+          "title": "Base Branch"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "title": "Config",
+      "type": "object"
+    },
     "CreatePR": {
       "additionalProperties": false,
       "description": "Creates a pull request using the `gh` CLI.\n\n> [!IMPORTANT]\n> Requires the `gh` CLI to be installed.",
@@ -113,61 +174,13 @@
           "type": "string"
         },
         "config": {
-          "$ref": "#/$defs/potent__operations__create_pr__Config"
+          "$ref": "#/$defs/Config"
         }
       },
       "required": [
         "config"
       ],
       "title": "CreatePR",
-      "type": "object"
-    },
-    "EnableAutomerge": {
-      "additionalProperties": false,
-      "description": "Enables auto-merge for the PR corresponding to the current branch.\n\n> [!IMPORTANT]\n> Requires the `gh` CLI to be installed.",
-      "properties": {
-        "comment": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Comment"
-        },
-        "directory_statuses": {
-          "additionalProperties": {
-            "enum": [
-              "not-started",
-              "failed",
-              "completed"
-            ],
-            "type": "string"
-          },
-          "default": {},
-          "propertyNames": {
-            "format": "path"
-          },
-          "title": "Directory Statuses",
-          "type": "object"
-        },
-        "slug": {
-          "const": "enable-automerge",
-          "default": "enable-automerge",
-          "title": "Slug",
-          "type": "string"
-        },
-        "config": {
-          "$ref": "#/$defs/potent__operations__enable_automerge__Config",
-          "default": {
-            "mode": "squash"
-          }
-        }
-      },
-      "title": "EnableAutomerge",
       "type": "object"
     },
     "GitAdd": {
@@ -549,6 +562,55 @@
       "title": "RawCommand",
       "type": "object"
     },
+    "SetAutomerge": {
+      "additionalProperties": false,
+      "description": "Sets (or un-sets) auto-merge for the PR corresponding to the current branch.\n\n> [!IMPORTANT]\n> Requires the `gh` CLI to be installed.",
+      "properties": {
+        "comment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment"
+        },
+        "directory_statuses": {
+          "additionalProperties": {
+            "enum": [
+              "not-started",
+              "failed",
+              "completed"
+            ],
+            "type": "string"
+          },
+          "default": {},
+          "propertyNames": {
+            "format": "path"
+          },
+          "title": "Directory Statuses",
+          "type": "object"
+        },
+        "slug": {
+          "const": "set-automerge",
+          "default": "set-automerge",
+          "title": "Slug",
+          "type": "string"
+        },
+        "config": {
+          "$ref": "#/$defs/potent__operations__enable_automerge__SetAutomerge__OpConfig",
+          "default": {
+            "enable": true,
+            "mode": "squash"
+          }
+        }
+      },
+      "title": "SetAutomerge",
+      "type": "object"
+    },
     "potent__operations__change_pr_status__ChangePrStatus__OpConfig": {
       "additionalProperties": false,
       "properties": {
@@ -566,70 +628,15 @@
       "title": "OpConfig",
       "type": "object"
     },
-    "potent__operations__create_pr__Config": {
+    "potent__operations__enable_automerge__SetAutomerge__OpConfig": {
       "additionalProperties": false,
       "properties": {
-        "title": {
-          "description": "The title of the PR.",
-          "title": "Title",
-          "type": "string"
-        },
-        "body_text": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "description": "A string that will be used as the body of the PR. Exactly one of `body_text` or `body_file` is required.",
-          "title": "Body Text"
-        },
-        "body_file": {
-          "anyOf": [
-            {
-              "format": "file-path",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "description": "The absolute path to a readable file containing the full body of the PR. Exactly one of `body_text` or `body_file` is required.",
-          "title": "Body File"
-        },
-        "draft": {
-          "default": false,
-          "description": "Whether to open the PR in draft mode.",
-          "title": "Draft",
+        "enable": {
+          "default": true,
+          "description": "Whether to set (or unset) auto-merge.",
+          "title": "Enable",
           "type": "boolean"
         },
-        "base_branch": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "description": "The branch that you want to merge your changes into. Defaults to the repo's default branch.",
-          "title": "Base Branch"
-        }
-      },
-      "required": [
-        "title"
-      ],
-      "title": "Config",
-      "type": "object"
-    },
-    "potent__operations__enable_automerge__Config": {
-      "additionalProperties": false,
-      "properties": {
         "mode": {
           "default": "squash",
           "description": "Sets the merge strategy for the PR.",
@@ -641,7 +648,7 @@
           "type": "string"
         }
       },
-      "title": "Config",
+      "title": "OpConfig",
       "type": "object"
     },
     "potent__operations__git_add__GitAdd__OpConfig": {
@@ -804,7 +811,6 @@
           "mapping": {
             "change-pr-status": "#/$defs/ChangePrStatus",
             "create-pr": "#/$defs/CreatePR",
-            "enable-automerge": "#/$defs/EnableAutomerge",
             "git-add": "#/$defs/GitAdd",
             "git-commit": "#/$defs/GitCommit",
             "git-pull": "#/$defs/GitPull",
@@ -812,7 +818,8 @@
             "git-status": "#/$defs/GitStatus",
             "git-switch": "#/$defs/GitSwitch",
             "manual-confirmation": "#/$defs/ManualConfirmation",
-            "raw-command": "#/$defs/RawCommand"
+            "raw-command": "#/$defs/RawCommand",
+            "set-automerge": "#/$defs/SetAutomerge"
           },
           "propertyName": "slug"
         },
@@ -839,7 +846,7 @@
             "$ref": "#/$defs/CreatePR"
           },
           {
-            "$ref": "#/$defs/EnableAutomerge"
+            "$ref": "#/$defs/SetAutomerge"
           },
           {
             "$ref": "#/$defs/RawCommand"

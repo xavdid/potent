@@ -4,7 +4,7 @@ from typing import get_args
 import pytest
 
 from potent.operations._base import BaseOperation
-from potent.operations.enable_automerge import Config as AutomergeConfig
+from potent.operations.enable_automerge import SetAutomerge
 
 
 @pytest.mark.skip("errors aren't caught")
@@ -25,4 +25,4 @@ def test_automerge_has_only_two_modes():
     so add a test to confirm that can't happen by accident
     """
 
-    assert len(get_args(AutomergeConfig.__annotations__["mode"])) == 2
+    assert len(get_args(SetAutomerge.OpConfig.__annotations__["mode"])) == 2

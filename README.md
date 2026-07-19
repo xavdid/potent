@@ -132,7 +132,6 @@ Each Operation is identified by its unique `slug` field. Each of the Operations 
 | -------------------------------------------- | ---------------- |
 | [`change-pr-status`](#ChangePrStatus)        | ☑️ Optional      |
 | [`create-pr`](#CreatePR)                     | ✅ Reqiured      |
-| [`enable-automerge`](#EnableAutomerge)       | ☑️ Optional      |
 | [`git-add`](#GitAdd)                         | ☑️ Optional      |
 | [`git-commit`](#GitCommit)                   | ✅ Reqiured      |
 | [`git-pull`](#GitPull)                       | ∅ None           |
@@ -141,6 +140,7 @@ Each Operation is identified by its unique `slug` field. Each of the Operations 
 | [`git-switch`](#GitSwitch)                   | ✅ Reqiured      |
 | [`manual-confirmation`](#ManualConfirmation) | ☑️ Optional      |
 | [`raw-command`](#RawCommand)                 | ✅ Reqiured      |
+| [`set-automerge`](#SetAutomerge)             | ☑️ Optional      |
 
 ### ChangePrStatus
 
@@ -175,21 +175,6 @@ Creates a pull request using the `gh` CLI.
 | `body_file`   | `Optional[str]` | The absolute path to a readable file containing the full body of the PR. Exactly one of `body_text` or `body_file` is required. | `None`                |
 | `draft`       | `bool`          | Whether to open the PR in draft mode.                                                                                           | `False`               |
 | `base_branch` | `Optional[str]` | The branch that you want to merge your changes into. Defaults to the repo's default branch.                                     | `None`                |
-
-### EnableAutomerge
-
-Enables auto-merge for the PR corresponding to the current branch.
-
-> [!IMPORTANT]
-> Requires the `gh` CLI to be installed.
-
-**Slug**: `enable-automerge`
-
-#### Config (optional)
-
-| name   | type                    | description                         | default (if optional) |
-| ------ | ----------------------- | ----------------------------------- | --------------------- |
-| `mode` | `"merge"` \| `"squash"` | Sets the merge strategy for the PR. | `"squash"`            |
 
 ### GitAdd
 
@@ -274,6 +259,22 @@ Runs a shell command. The step succeeds if the command exits 0 and fails otherwi
 | ----------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
 | `arguments` | `list[str]`     | The arguments that will be passed into Python's [subprocess.run()](https://docs.python.org/3/library/subprocess.html#subprocess.run) |                       |
 | `name`      | `Optional[str]` | A name used to disambiguate this step in summaries. Useful if you have many `raw-command`s.                                          | `None`                |
+
+### SetAutomerge
+
+Sets (or un-sets) auto-merge for the PR corresponding to the current branch.
+
+> [!IMPORTANT]
+> Requires the `gh` CLI to be installed.
+
+**Slug**: `set-automerge`
+
+#### Config (optional)
+
+| name     | type                    | description                           | default (if optional) |
+| -------- | ----------------------- | ------------------------------------- | --------------------- |
+| `enable` | `bool`                  | Whether to set (or unset) auto-merge. | `True`                |
+| `mode`   | `"merge"` \| `"squash"` | Sets the merge strategy for the PR.   | `"squash"`            |
 
 <!-- END:OPERATIONS -->
 

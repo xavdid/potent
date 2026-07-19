@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- ❗ rename `enable-automerge` to `set-automerge` and add `config.enable` (which defaults to `true` to patch previous behavior)
 - raise the message truncation limit for `git-commit` and `raw-command` when printing a plan
 
 ## 0.6.0

@@ -10,7 +10,7 @@ from rich.tree import Tree
 from potent.operations._base import AbsDirPath, Status
 from potent.operations.change_pr_status import ChangePrStatus
 from potent.operations.create_pr import CreatePR
-from potent.operations.enable_automerge import EnableAutomerge
+from potent.operations.enable_automerge import SetAutomerge
 from potent.operations.git_add import GitAdd
 from potent.operations.git_commit import GitCommit
 from potent.operations.git_pull import GitPull
@@ -170,7 +170,7 @@ class Plan(BaseModel):
                 GitCommit,
                 GitPush,
                 CreatePR,
-                EnableAutomerge,
+                SetAutomerge,
                 RawCommand,
                 ManualConfirmation,
                 ChangePrStatus,
