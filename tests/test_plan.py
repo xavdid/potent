@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from potent.operations._base import Status
 from potent.operations.git_status import GitStatus
 from potent.operations.manual_confirmation import ManualConfirmation
 from potent.operations.raw_command import RawCommand
@@ -26,6 +27,14 @@ def subdirs(tmp_path) -> list[Path]:
         d.mkdir()
 
     return dirs
+
+
+@pytest.fixture
+def subdir(subdirs) -> Path:
+    """
+    1 real subfolder
+    """
+    return subdirs[0]
 
 
 def test_save_path_kwarg(tmp_path):
@@ -82,6 +91,73 @@ def test_directory_complete(subdirs):
     assert p.directory_complete(subdirs[1]) is False
     assert p.directory_complete(subdirs[2]) is False
     assert p.directory_complete(subdirs[3]) is False
+
+
+type HaltedTestCase = list[tuple[type[GitStatus | ManualConfirmation], Status | None]]
+halted_test_cases: list[tuple[HaltedTestCase, bool]] = [
+    # 0: all completed is completed, not halted
+    (
+        [
+            (GitStatus, "completed"),
+            (ManualConfirmation, "completed"),
+        ],
+        False,
+    ),
+    # 1: all failed is failed, not halted
+    (
+        [
+            (GitStatus, "failed"),
+            (ManualConfirmation, "failed"),
+        ],
+        False,
+    ),
+    # 2: first failed step is a manual confirmation, so it's halted!
+    (
+        [
+            (GitStatus, "completed"),
+            (ManualConfirmation, "failed"),
+        ],
+        True,
+    ),
+    # 3: There's a new step added, so the plan is no longer halted
+    (
+        [
+            (GitStatus, "completed"),
+            (GitStatus, None),
+            (ManualConfirmation, None),
+        ],
+        False,
+    ),
+    # 4: Missing status will count as halted (we know it won't pass on run)
+    (
+        [
+            (GitStatus, "completed"),
+            (ManualConfirmation, None),
+        ],
+        True,
+    ),
+    # 5: Double halted still means halted
+    (
+        [
+            (GitStatus, "completed"),
+            (ManualConfirmation, "completed"),
+            (ManualConfirmation, None),
+        ],
+        True,
+    ),
+]
+
+
+@pytest.mark.parametrize(["operations", "expected"], halted_test_cases)
+def test_directory_halted_completed(operations: HaltedTestCase, expected: bool, subdir):
+    p = Plan(
+        directories=[subdir],
+        operations=[
+            op(directory_statuses={subdir: status} if status else {})
+            for op, status in operations
+        ],
+    )
+    assert p.directory_halted(subdir) == expected
 
 
 def test_reset(tmp_path: Path):
@@ -275,6 +351,135 @@ def test_completed_dirs_always_shown(subdirs):
                     OperationStatus(status="completed", details=GitStatus().summary)
                 ],
                 completed_this_run=True,
+            ),
+        ],
+        includes_run_info=True,
+    )
+
+
+def test_halted_changes_dir(subdirs):
+    assert Plan(
+        operations=[
+            GitStatus(
+                directory_statuses={
+                    subdirs[0]: "completed",
+                    subdirs[1]: "failed",
+                    subdirs[2]: "completed",
+                    subdirs[3]: "completed",
+                }
+            ),
+            ManualConfirmation(
+                directory_statuses={
+                    subdirs[0]: "completed",
+                    subdirs[3]: "failed",
+                }
+            ),
+        ],
+        directories=subdirs,
+    ).status() == PlanStatus(
+        filename=":in memory:",
+        directories=[
+            DirectoryStatus(
+                name=subdirs[0],
+                status="completed",
+                op_results=[],
+            ),
+            DirectoryStatus(
+                name=subdirs[1],
+                status="failed",
+                op_results=[
+                    OperationStatus(status="failed", details=GitStatus().summary),
+                    OperationStatus(
+                        status="not-started", details=ManualConfirmation().summary
+                    ),
+                ],
+            ),
+            DirectoryStatus(
+                name=subdirs[2],
+                status="halted",
+                op_results=[
+                    OperationStatus(status="completed", details=GitStatus().summary),
+                    OperationStatus(
+                        status="halted", details=ManualConfirmation().summary
+                    ),
+                ],
+            ),
+            DirectoryStatus(
+                name=subdirs[3],
+                status="halted",
+                op_results=[
+                    OperationStatus(status="completed", details=GitStatus().summary),
+                    OperationStatus(
+                        status="halted", details=ManualConfirmation().summary
+                    ),
+                ],
+                completed_this_run=True,
+            ),
+        ],
+        includes_run_info=True,
+    )
+
+
+def test_halted_only_changes_op_that_stopped(subdirs):
+    assert Plan(
+        operations=[
+            GitStatus(
+                directory_statuses={
+                    subdirs[0]: "completed",
+                    subdirs[1]: "completed",
+                    subdirs[2]: "completed",
+                }
+            ),
+            ManualConfirmation(
+                directory_statuses={
+                    subdirs[1]: "completed",
+                    subdirs[2]: "failed",
+                }
+            ),
+            ManualConfirmation(),
+        ],
+        directories=subdirs[:3],
+    ).status() == PlanStatus(
+        filename=":in memory:",
+        directories=[
+            DirectoryStatus(
+                name=subdirs[0],
+                status="halted",
+                op_results=[
+                    OperationStatus(status="completed", details=GitStatus().summary),
+                    OperationStatus(
+                        status="halted", details=ManualConfirmation().summary
+                    ),
+                    OperationStatus(
+                        status="not-started", details=ManualConfirmation().summary
+                    ),
+                ],
+            ),
+            DirectoryStatus(
+                name=subdirs[1],
+                status="halted",
+                op_results=[
+                    OperationStatus(status="completed", details=GitStatus().summary),
+                    OperationStatus(
+                        status="completed", details=ManualConfirmation().summary
+                    ),
+                    OperationStatus(
+                        status="halted", details=ManualConfirmation().summary
+                    ),
+                ],
+            ),
+            DirectoryStatus(
+                name=subdirs[2],
+                status="halted",
+                op_results=[
+                    OperationStatus(status="completed", details=GitStatus().summary),
+                    OperationStatus(
+                        status="halted", details=ManualConfirmation().summary
+                    ),
+                    OperationStatus(
+                        status="not-started", details=ManualConfirmation().summary
+                    ),
+                ],
             ),
         ],
         includes_run_info=True,

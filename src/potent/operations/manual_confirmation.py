@@ -1,7 +1,8 @@
 from pathlib import Path
 from typing import Literal, Optional, override
 
-from potent.operations._base import BaseConfig, BaseOperation, OperationResult
+from potent.operations._base import BaseConfig, BaseOperation, OperationResult, Status
+from potent.plan import PrintableStatus
 
 
 class ManualConfirmation(BaseOperation):
@@ -34,3 +35,7 @@ class ManualConfirmation(BaseOperation):
             return f"{self.config.reason} (manual-confirmation)"
 
         return self.slug
+
+    @override
+    def dir_status(self, directory: Path) -> PrintableStatus:
+        return self.directory_statuses.get(directory, "halted")

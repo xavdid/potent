@@ -11,7 +11,10 @@ from pydantic import (
 
 from potent.util import format_annotation, table_row, truthy_list
 
+# the only valid values in the json
 Status = Literal["not-started", "failed", "completed"]
+# but, we can print with more information
+PrintableStatus = Status | Literal["halted"]
 
 
 def ensure_directory(value: Path) -> Path:
@@ -50,7 +53,7 @@ AbsFilePath = Annotated[
     AfterValidator(ensure_abs_path),
 ]
 """
-AbsFilePath cool comment?
+AbsFilePath cool comment? This doesn't make it into the generated docs.
 """
 
 
@@ -113,7 +116,7 @@ class BaseOperation(CommonBase):
     def pending(self, directory: Path) -> bool:
         return self.directory_statuses.get(directory, "not-started") == "not-started"
 
-    def dir_status(self, directory: Path) -> Status:
+    def dir_status(self, directory: Path) -> PrintableStatus:
         return self.directory_statuses.get(directory, "not-started")
 
     def initialize_dirs(self, directories: list[Path]) -> None:
