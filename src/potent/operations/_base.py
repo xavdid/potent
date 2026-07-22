@@ -11,7 +11,10 @@ from pydantic import (
 
 from potent.util import format_annotation, table_row, truthy_list
 
+# the only valid values in the json
 Status = Literal["not-started", "failed", "completed"]
+# but, we can print with more information
+PrintableStatus = Status | Literal["halted"]
 
 
 def ensure_directory(value: Path) -> Path:
@@ -50,7 +53,7 @@ AbsFilePath = Annotated[
     AfterValidator(ensure_abs_path),
 ]
 """
-AbsFilePath cool comment?
+AbsFilePath cool comment? This doesn't make it into the generated docs.
 """
 
 

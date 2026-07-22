@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Annotated, Literal, Optional, Union
+from typing import Annotated, Literal, Optional, Union, assert_never
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from rich.console import Console
 from rich.tree import Tree
 
-from potent.operations._base import AbsDirPath, Status
+from potent.operations._base import AbsDirPath, PrintableStatus
 from potent.operations.change_pr_status import ChangePrStatus
 from potent.operations.create_pr import CreatePR
 from potent.operations.enable_automerge import SetAutomerge
@@ -64,7 +64,9 @@ class CommandConfig(BaseModel):
     """
 
 
-def status_styling(s: Status, changed_this_run: bool) -> tuple[str, str, str, str]:
+def status_styling(
+    s: PrintableStatus, changed_this_run: bool
+) -> tuple[str, str, str, str]:
     """
     returns (emoji, title_style, text_style, guide_style)
     """
@@ -74,16 +76,24 @@ def status_styling(s: Status, changed_this_run: bool) -> tuple[str, str, str, st
         case "completed", False:
             return "☑️", "green", "green", "green"
         case "not-started", _:
-            return "⏳", "yellow", "dim white", "dim white"
+            return "⏳", "white", "dim white", "dim white"
         case "failed", _:
             return "❌", "red", "red", "red"
+        case "halted", _:
+            return "⏸️", "yellow", "yellow", "yellow"
+        case n:
+            assert_never(n)
 
     raise NotImplementedError
 
 
 @dataclass
 class OperationStatus:
-    status: Status
+    status: PrintableStatus
+    op_slug: str
+    """
+    Operation slug, so it's identifiable later. Not typechecked, since Python has no mapped types
+    """
     details: str
     """
     printed inline, after the emoji. Probably the result of `op.summary()`
@@ -102,7 +112,7 @@ class DirectoryStatus:
     """
 
     name: Path
-    status: Status
+    status: PrintableStatus
     op_results: list[OperationStatus]
     """
     the steps that should be printed. Some results omit this for brevity
@@ -143,7 +153,7 @@ class PlanStatus:
         return root
 
     def legend(self) -> str:
-        return f"\n☑️ Completed{' | ✅ Completed this run' if self.includes_run_info else ''} | ⌛ Pending | ❌ Failed\n"
+        return f"\n☑️ Completed{' | ✅ Completed this run' if self.includes_run_info else ''} | ⏸️ Needs confirmation | ⌛ Pending | ❌ Failed\n"
 
 
 def directory_header(console: Console, directory: Path) -> None:
@@ -220,13 +230,32 @@ class Plan(BaseModel):
             p.reset()
 
     def directory_complete(self, directory: Path) -> bool:
-        return all(s.completed(directory) for s in self.operations)
+        return all(o.completed(directory) for o in self.operations)
 
     def directory_failed(self, directory: Path) -> bool:
-        return any(s.failed(directory) for s in self.operations)
+        return any(o.failed(directory) for o in self.operations)
 
     def directory_pending(self, directory: Path) -> bool:
-        return any(s.pending(directory) for s in self.operations)
+        return any(o.pending(directory) for o in self.operations)
+
+    def directory_halted(self, directory: Path) -> bool:
+        """
+        if the first incomplete step is a manual-confirmation
+        """
+        for o in self.operations:
+            if o.completed(directory):
+                continue
+
+            # if we hit a manual confirmation that isn't completed, the step is halted
+            if o.slug == "manual-confirmation":
+                return True
+
+            # any other incomplete step is a failure or a pending, so it's not halted
+            # fall back to the outer return
+            break
+
+        # if we never returned above, must not be halted
+        return False
 
     def outline(self) -> Tree:
         """
@@ -285,10 +314,11 @@ class Plan(BaseModel):
 
         should_print_all = True
         for d in self.directories:
-            status: Status = "not-started"
+            status: PrintableStatus = "not-started"
             operations = [
                 OperationStatus(
                     status=o.dir_status(d),
+                    op_slug=o.slug,
                     completed_this_run=(idx, d) in just_completed_steps,
                     details=o.summary,
                 )
@@ -300,6 +330,15 @@ class Plan(BaseModel):
                 status = "completed"
                 if not (dir_completed_this_run := d in completed_dirs):
                     operations = []
+
+            elif self.directory_halted(d):
+                status = "halted"
+
+                # mark the halted status that's are actually holding up the step
+                for o in operations:
+                    if o.op_slug == "manual-confirmation" and o.status != "completed":
+                        o.status = "halted"
+                        break
 
             elif self.directory_failed(d):
                 status = "failed"

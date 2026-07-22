@@ -1,9 +1,10 @@
 from pathlib import Path
+from typing import get_args
 from unittest.mock import patch
 
 import pytest
 
-from potent.operations._base import BaseOperation, ensure_directory
+from potent.operations._base import BaseOperation, Status, ensure_directory
 from potent.operations.git_add import GitAdd
 from potent.operations.git_commit import GitCommit
 from potent.operations.git_switch import GitSwitch
@@ -119,3 +120,10 @@ def test_tile_paths_are_retained_when_dumping_plan(path_with_tilde: Path):
 )
 def test_summary(op: BaseOperation, expected: str):
     assert op.summary == expected
+
+
+def test_only_3_statuses():
+    """
+    if there are more than 3 statuses, some logic (around halted status) will break
+    """
+    assert len(get_args(Status)) == 3
