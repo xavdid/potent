@@ -7,7 +7,7 @@ from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from rich.console import Console
 from rich.tree import Tree
 
-from potent.operations._base import AbsDirPath, PrintableStatus, Status
+from potent.operations._base import AbsDirPath, PrintableStatus
 from potent.operations.change_pr_status import ChangePrStatus
 from potent.operations.create_pr import CreatePR
 from potent.operations.enable_automerge import SetAutomerge
@@ -76,11 +76,11 @@ def status_styling(
         case "completed", False:
             return "☑️", "green", "green", "green"
         case "not-started", _:
-            return "⏳", "yellow", "dim white", "dim white"
+            return "⏳", "white", "dim white", "dim white"
         case "failed", _:
             return "❌", "red", "red", "red"
         case "halted", _:
-            return "⏸️", "white", "dim white", "dim white"
+            return "⏸️", "yellow", "yellow", "yellow"
         case n:
             assert_never(n)
 
@@ -90,6 +90,10 @@ def status_styling(
 @dataclass
 class OperationStatus:
     status: PrintableStatus
+    op_slug: str
+    """
+    Operation slug, so it's identifiable later. Not typechecked, since Python has no mapped types
+    """
     details: str
     """
     printed inline, after the emoji. Probably the result of `op.summary()`
@@ -310,10 +314,11 @@ class Plan(BaseModel):
 
         should_print_all = True
         for d in self.directories:
-            status: Status | Literal["halted"] = "not-started"
+            status: PrintableStatus = "not-started"
             operations = [
                 OperationStatus(
                     status=o.dir_status(d),
+                    op_slug=o.slug,
                     completed_this_run=(idx, d) in just_completed_steps,
                     details=o.summary,
                 )
@@ -328,6 +333,12 @@ class Plan(BaseModel):
 
             elif self.directory_halted(d):
                 status = "halted"
+
+                # mark the halted status that's are actually holding up the step
+                for o in operations:
+                    if o.op_slug == "manual-confirmation" and o.status != "completed":
+                        o.status = "halted"
+                        break
 
             elif self.directory_failed(d):
                 status = "failed"

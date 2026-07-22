@@ -116,7 +116,7 @@ class BaseOperation(CommonBase):
     def pending(self, directory: Path) -> bool:
         return self.directory_statuses.get(directory, "not-started") == "not-started"
 
-    def dir_status(self, directory: Path) -> PrintableStatus:
+    def dir_status(self, directory: Path) -> Status:
         return self.directory_statuses.get(directory, "not-started")
 
     def initialize_dirs(self, directories: list[Path]) -> None:

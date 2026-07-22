@@ -181,7 +181,11 @@ def test_only_first_pending_dir_prints_steps(subdirs):
                 name=subdirs[0],
                 status="not-started",
                 op_results=[
-                    OperationStatus(status="not-started", details=GitStatus().summary)
+                    OperationStatus(
+                        status="not-started",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    )
                 ],
             ),
             *[
@@ -213,8 +217,16 @@ def test_add_pending_step(subdirs):
                 name=subdirs[0],
                 status="not-started",
                 op_results=[
-                    OperationStatus(status="completed", details=GitStatus().summary),
-                    OperationStatus(status="not-started", details=GitStatus().summary),
+                    OperationStatus(
+                        status="completed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    ),
+                    OperationStatus(
+                        status="not-started",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    ),
                 ],
             ),
             *[
@@ -247,7 +259,11 @@ def test_success_doesnt_stop_print(subdirs):
                 name=subdirs[1],
                 status="not-started",
                 op_results=[
-                    OperationStatus(status="not-started", details=GitStatus().summary)
+                    OperationStatus(
+                        status="not-started",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    )
                 ],
             ),
             *[
@@ -275,7 +291,11 @@ def test_failure_always_prints(subdirs):
                 name=d,
                 status="failed",
                 op_results=[
-                    OperationStatus(status="failed", details=GitStatus().summary)
+                    OperationStatus(
+                        status="failed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    )
                 ],
             )
             for d in subdirs
@@ -296,7 +316,11 @@ def test_failure_stops_prints(subdirs):
                 name=subdirs[0],
                 status="failed",
                 op_results=[
-                    OperationStatus(status="failed", details=GitStatus().summary)
+                    OperationStatus(
+                        status="failed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    )
                 ],
             ),
             *[
@@ -331,7 +355,11 @@ def test_completed_dirs_always_shown(subdirs):
                 name=subdirs[0],
                 status="not-started",
                 op_results=[
-                    OperationStatus(status="not-started", details=GitStatus().summary)
+                    OperationStatus(
+                        status="not-started",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    )
                 ],
             ),
             DirectoryStatus(
@@ -348,7 +376,11 @@ def test_completed_dirs_always_shown(subdirs):
                 name=subdirs[3],
                 status="completed",
                 op_results=[
-                    OperationStatus(status="completed", details=GitStatus().summary)
+                    OperationStatus(
+                        status="completed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    )
                 ],
                 completed_this_run=True,
             ),
@@ -357,8 +389,11 @@ def test_completed_dirs_always_shown(subdirs):
     )
 
 
-def test_halted_changes_dir(subdirs):
-    assert Plan(
+def test_halted_changes_dir(subdirs, tmp_path):
+    e = Path(tmp_path / "e")
+    e.mkdir()
+
+    plan = Plan(
         operations=[
             GitStatus(
                 directory_statuses={
@@ -375,8 +410,9 @@ def test_halted_changes_dir(subdirs):
                 }
             ),
         ],
-        directories=subdirs,
-    ).status() == PlanStatus(
+        directories=[*subdirs, e],
+    )
+    status = PlanStatus(
         filename=":in memory:",
         directories=[
             DirectoryStatus(
@@ -388,9 +424,15 @@ def test_halted_changes_dir(subdirs):
                 name=subdirs[1],
                 status="failed",
                 op_results=[
-                    OperationStatus(status="failed", details=GitStatus().summary),
                     OperationStatus(
-                        status="not-started", details=ManualConfirmation().summary
+                        status="failed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    ),
+                    OperationStatus(
+                        status="not-started",
+                        details=ManualConfirmation().summary,
+                        op_slug="manual-confirmation",
                     ),
                 ],
             ),
@@ -398,9 +440,15 @@ def test_halted_changes_dir(subdirs):
                 name=subdirs[2],
                 status="halted",
                 op_results=[
-                    OperationStatus(status="completed", details=GitStatus().summary),
                     OperationStatus(
-                        status="halted", details=ManualConfirmation().summary
+                        status="completed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    ),
+                    OperationStatus(
+                        status="halted",
+                        details=ManualConfirmation().summary,
+                        op_slug="manual-confirmation",
                     ),
                 ],
             ),
@@ -408,16 +456,34 @@ def test_halted_changes_dir(subdirs):
                 name=subdirs[3],
                 status="halted",
                 op_results=[
-                    OperationStatus(status="completed", details=GitStatus().summary),
                     OperationStatus(
-                        status="halted", details=ManualConfirmation().summary
+                        status="completed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    ),
+                    OperationStatus(
+                        status="halted",
+                        details=ManualConfirmation().summary,
+                        op_slug="manual-confirmation",
                     ),
                 ],
-                completed_this_run=True,
+            ),
+            DirectoryStatus(
+                name=e,
+                status="not-started",
+                op_results=[
+                    # TODO: probably should print, since no directory has this exact status?
+                    # OperationStatus(status="not-started", details=GitStatus().summary, op_slug='git-status'),
+                    # OperationStatus(
+                    #     status="not-started", details=ManualConfirmation().summary,
+                    # op_slug='manual-confirmation'
+                    # ),
+                ],
             ),
         ],
-        includes_run_info=True,
     )
+
+    assert plan.status() == status
 
 
 def test_halted_only_changes_op_that_stopped(subdirs):
@@ -446,12 +512,20 @@ def test_halted_only_changes_op_that_stopped(subdirs):
                 name=subdirs[0],
                 status="halted",
                 op_results=[
-                    OperationStatus(status="completed", details=GitStatus().summary),
                     OperationStatus(
-                        status="halted", details=ManualConfirmation().summary
+                        status="completed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
                     ),
                     OperationStatus(
-                        status="not-started", details=ManualConfirmation().summary
+                        status="halted",
+                        details=ManualConfirmation().summary,
+                        op_slug="manual-confirmation",
+                    ),
+                    OperationStatus(
+                        status="not-started",
+                        details=ManualConfirmation().summary,
+                        op_slug="manual-confirmation",
                     ),
                 ],
             ),
@@ -459,12 +533,20 @@ def test_halted_only_changes_op_that_stopped(subdirs):
                 name=subdirs[1],
                 status="halted",
                 op_results=[
-                    OperationStatus(status="completed", details=GitStatus().summary),
                     OperationStatus(
-                        status="completed", details=ManualConfirmation().summary
+                        status="completed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
                     ),
                     OperationStatus(
-                        status="halted", details=ManualConfirmation().summary
+                        status="completed",
+                        details=ManualConfirmation().summary,
+                        op_slug="manual-confirmation",
+                    ),
+                    OperationStatus(
+                        status="halted",
+                        details=ManualConfirmation().summary,
+                        op_slug="manual-confirmation",
                     ),
                 ],
             ),
@@ -472,17 +554,24 @@ def test_halted_only_changes_op_that_stopped(subdirs):
                 name=subdirs[2],
                 status="halted",
                 op_results=[
-                    OperationStatus(status="completed", details=GitStatus().summary),
                     OperationStatus(
-                        status="halted", details=ManualConfirmation().summary
+                        status="completed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
                     ),
                     OperationStatus(
-                        status="not-started", details=ManualConfirmation().summary
+                        status="halted",
+                        details=ManualConfirmation().summary,
+                        op_slug="manual-confirmation",
+                    ),
+                    OperationStatus(
+                        status="not-started",
+                        details=ManualConfirmation().summary,
+                        op_slug="manual-confirmation",
                     ),
                 ],
             ),
         ],
-        includes_run_info=True,
     )
 
 
@@ -524,11 +613,13 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, subdirs):
                     OperationStatus(
                         status="completed",
                         details=GitStatus().summary,
+                        op_slug="git-status",
                         completed_this_run=False,
                     ),
                     OperationStatus(
                         status="completed",
                         details=GitStatus().summary,
+                        op_slug="git-status",
                         completed_this_run=True,
                     ),
                 ],
@@ -541,11 +632,13 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, subdirs):
                     OperationStatus(
                         status="completed",
                         details=GitStatus().summary,
+                        op_slug="git-status",
                         completed_this_run=True,
                     ),
                     OperationStatus(
                         status="completed",
                         details=GitStatus().summary,
+                        op_slug="git-status",
                         completed_this_run=True,
                     ),
                 ],
@@ -558,11 +651,13 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, subdirs):
                     OperationStatus(
                         status="completed",
                         details=GitStatus().summary,
+                        op_slug="git-status",
                         completed_this_run=True,
                     ),
                     OperationStatus(
                         status="completed",
                         details=GitStatus().summary,
+                        op_slug="git-status",
                         completed_this_run=True,
                     ),
                 ],
