@@ -3,6 +3,7 @@
 ## Unreleased
 
 - ❗ rename `enable-automerge` to `set-automerge` and add `config.enable` (which defaults to `true` to patch previous behavior)
+- add a "⏸️ Halted" mode to `potent status`. This is purely presentational and involves no schema changes ([#4](https://github.com/xavdid/potent/pull/4))
 - raise the message truncation limit for `git-commit` and `raw-command` when printing a plan
 
 ## 0.6.0
