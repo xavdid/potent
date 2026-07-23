@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.7.0
+
+_released `2026-07-23`_
 
 - ❗ rename `enable-automerge` to `set-automerge` and add `config.enable` (which defaults to `true` to patch previous behavior)
 - Skip printing all steps for when identical to previous directory for `run` and `status` commands (disable with `--skip-collapse`)
