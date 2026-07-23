@@ -21,6 +21,13 @@ def run(
             help="If supplied, don't automatically reset a command plan. Ignored for non-command plans.",
         ),
     ] = False,
+    skip_collapse: Annotated[
+        bool,
+        Parameter(
+            negative="",
+            help="If supplied, directories with identical results are repeated in full.",
+        ),
+    ] = False,
 ):
     """
     Execute a plan file and then print its status.
@@ -30,7 +37,9 @@ def run(
     console.print(f"Running [bold yellow]{str(path)}")
 
     plan = Plan.from_path(path)
-    result = plan.run(skip_reset, renderer=BasicRenderer())
+    result = plan.run(
+        skip_reset, renderer=BasicRenderer(), collapse_duplicates=not skip_collapse
+    )
 
     console.print()
     console.rule("Summary")

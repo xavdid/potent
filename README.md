@@ -314,6 +314,7 @@ Execute a plan file and then print its status.
 
 - `path` (FILE, required): The location of a `.plan.json` file. Can be a full path or a name. If a name, the named file must exist in the configured command directory.
 - `skip_reset` (bool, optional): If supplied, don't automatically reset a command plan. Ignored for non-command plans.
+- `skip_collapse` (bool, optional): If supplied, directories with identical results are repeated in full.
 
 ### `schema`
 
@@ -339,6 +340,7 @@ Print the current state of a plan file, including the progress through each dire
 #### Arguments
 
 - `path` (FILE, required): The location of a `.plan.json` file. Can be a full path or a name. If a name, the named file must exist in the configured command directory.
+- `skip_collapse` (bool, optional): If supplied, directories with identical results are repeated in full.
 
 <!-- END:CLI -->
 

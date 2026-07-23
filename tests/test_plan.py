@@ -178,7 +178,7 @@ def test_only_first_pending_dir_prints_steps(subdirs):
         filename=":in memory:",
         directories=[
             DirectoryStatus(
-                name=subdirs[0],
+                path=subdirs[0],
                 status="not-started",
                 op_results=[
                     OperationStatus(
@@ -190,7 +190,7 @@ def test_only_first_pending_dir_prints_steps(subdirs):
             ),
             *[
                 DirectoryStatus(
-                    name=d,
+                    path=d,
                     status="not-started",
                     op_results=[],
                 )
@@ -214,7 +214,7 @@ def test_add_pending_step(subdirs):
         filename=":in memory:",
         directories=[
             DirectoryStatus(
-                name=subdirs[0],
+                path=subdirs[0],
                 status="not-started",
                 op_results=[
                     OperationStatus(
@@ -231,7 +231,7 @@ def test_add_pending_step(subdirs):
             ),
             *[
                 DirectoryStatus(
-                    name=d,
+                    path=d,
                     status="not-started",
                     op_results=[],
                 )
@@ -251,12 +251,12 @@ def test_success_doesnt_stop_print(subdirs):
         filename=":in memory:",
         directories=[
             DirectoryStatus(
-                name=subdirs[0],
+                path=subdirs[0],
                 status="completed",
                 op_results=[],
             ),
             DirectoryStatus(
-                name=subdirs[1],
+                path=subdirs[1],
                 status="not-started",
                 op_results=[
                     OperationStatus(
@@ -268,7 +268,7 @@ def test_success_doesnt_stop_print(subdirs):
             ),
             *[
                 DirectoryStatus(
-                    name=d,
+                    path=d,
                     status="not-started",
                     op_results=[],
                 )
@@ -288,7 +288,7 @@ def test_failure_always_prints(subdirs):
         filename=":in memory:",
         directories=[
             DirectoryStatus(
-                name=d,
+                path=d,
                 status="failed",
                 op_results=[
                     OperationStatus(
@@ -313,7 +313,7 @@ def test_failure_stops_prints(subdirs):
         filename=":in memory:",
         directories=[
             DirectoryStatus(
-                name=subdirs[0],
+                path=subdirs[0],
                 status="failed",
                 op_results=[
                     OperationStatus(
@@ -325,7 +325,7 @@ def test_failure_stops_prints(subdirs):
             ),
             *[
                 DirectoryStatus(
-                    name=d,
+                    path=d,
                     status="not-started",
                     op_results=[],
                 )
@@ -352,7 +352,7 @@ def test_completed_dirs_always_shown(subdirs):
         filename=":in memory:",
         directories=[
             DirectoryStatus(
-                name=subdirs[0],
+                path=subdirs[0],
                 status="not-started",
                 op_results=[
                     OperationStatus(
@@ -363,17 +363,17 @@ def test_completed_dirs_always_shown(subdirs):
                 ],
             ),
             DirectoryStatus(
-                name=subdirs[1],
+                path=subdirs[1],
                 status="completed",
                 op_results=[],
             ),
             DirectoryStatus(
-                name=subdirs[2],
+                path=subdirs[2],
                 status="not-started",
                 op_results=[],
             ),
             DirectoryStatus(
-                name=subdirs[3],
+                path=subdirs[3],
                 status="completed",
                 op_results=[
                     OperationStatus(
@@ -416,12 +416,12 @@ def test_halted_changes_dir(subdirs, tmp_path):
         filename=":in memory:",
         directories=[
             DirectoryStatus(
-                name=subdirs[0],
+                path=subdirs[0],
                 status="completed",
                 op_results=[],
             ),
             DirectoryStatus(
-                name=subdirs[1],
+                path=subdirs[1],
                 status="failed",
                 op_results=[
                     OperationStatus(
@@ -437,7 +437,7 @@ def test_halted_changes_dir(subdirs, tmp_path):
                 ],
             ),
             DirectoryStatus(
-                name=subdirs[2],
+                path=subdirs[2],
                 status="halted",
                 op_results=[
                     OperationStatus(
@@ -453,7 +453,7 @@ def test_halted_changes_dir(subdirs, tmp_path):
                 ],
             ),
             DirectoryStatus(
-                name=subdirs[3],
+                path=subdirs[3],
                 status="halted",
                 op_results=[
                     OperationStatus(
@@ -469,7 +469,7 @@ def test_halted_changes_dir(subdirs, tmp_path):
                 ],
             ),
             DirectoryStatus(
-                name=e,
+                path=e,
                 status="not-started",
                 op_results=[
                     # TODO: probably should print, since no directory has this exact status?
@@ -509,7 +509,7 @@ def test_halted_only_changes_op_that_stopped(subdirs):
         filename=":in memory:",
         directories=[
             DirectoryStatus(
-                name=subdirs[0],
+                path=subdirs[0],
                 status="halted",
                 op_results=[
                     OperationStatus(
@@ -530,7 +530,7 @@ def test_halted_only_changes_op_that_stopped(subdirs):
                 ],
             ),
             DirectoryStatus(
-                name=subdirs[1],
+                path=subdirs[1],
                 status="halted",
                 op_results=[
                     OperationStatus(
@@ -551,7 +551,7 @@ def test_halted_only_changes_op_that_stopped(subdirs):
                 ],
             ),
             DirectoryStatus(
-                name=subdirs[2],
+                path=subdirs[2],
                 status="halted",
                 op_results=[
                     OperationStatus(
@@ -595,19 +595,19 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, subdirs):
         ],
         directories=subdirs,
     )
-    result = plan.run()
+    result = plan.run(collapse_duplicates=False)
 
     expected = PlanStatus(
         filename=":in memory:",
         directories=[
             DirectoryStatus(
-                name=subdirs[0],
+                path=subdirs[0],
                 status="completed",
                 op_results=[],
                 completed_this_run=False,
             ),
             DirectoryStatus(
-                name=subdirs[1],
+                path=subdirs[1],
                 status="completed",
                 op_results=[
                     OperationStatus(
@@ -626,7 +626,7 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, subdirs):
                 completed_this_run=True,
             ),
             DirectoryStatus(
-                name=subdirs[2],
+                path=subdirs[2],
                 status="completed",
                 op_results=[
                     OperationStatus(
@@ -645,7 +645,7 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, subdirs):
                 completed_this_run=True,
             ),
             DirectoryStatus(
-                name=subdirs[3],
+                path=subdirs[3],
                 status="completed",
                 op_results=[
                     OperationStatus(
@@ -715,3 +715,238 @@ def test_manual_confirmation_prints_comment_only_once():
     assert ops[2].label == "manual-confirmation"
     assert len(ops[2].children) == 1
     assert ops[2].children[0].label == "stop!"
+
+
+def test_no_collapse_by_default(subdirs):
+    plan = Plan(
+        operations=[
+            GitStatus(
+                directory_statuses={
+                    subdirs[0]: "completed",
+                    subdirs[1]: "completed",
+                    subdirs[2]: "completed",
+                    subdirs[3]: "completed",
+                }
+            ),
+            GitStatus(
+                directory_statuses={
+                    subdirs[0]: "completed",
+                    subdirs[1]: "completed",
+                    subdirs[2]: "failed",
+                    subdirs[3]: "failed",
+                }
+            ),
+            ManualConfirmation(
+                directory_statuses={
+                    subdirs[0]: "completed",
+                    subdirs[1]: "completed",
+                }
+            ),
+        ],
+        directories=subdirs,
+    )
+    status = PlanStatus(
+        filename=":in memory:",
+        directories=[
+            DirectoryStatus(
+                path=subdirs[0],
+                status="completed",
+                op_results=[],
+            ),
+            DirectoryStatus(
+                path=subdirs[1],
+                status="completed",
+                op_results=[],
+            ),
+            DirectoryStatus(
+                path=subdirs[2],
+                status="failed",
+                op_results=[
+                    OperationStatus(
+                        status="completed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    ),
+                    OperationStatus(
+                        status="failed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    ),
+                    OperationStatus(
+                        status="not-started",
+                        details=ManualConfirmation().summary,
+                        op_slug="manual-confirmation",
+                    ),
+                ],
+            ),
+            DirectoryStatus(
+                path=subdirs[3],
+                status="failed",
+                op_results=[
+                    OperationStatus(
+                        status="completed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    ),
+                    OperationStatus(
+                        status="failed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    ),
+                    OperationStatus(
+                        status="not-started",
+                        details=ManualConfirmation().summary,
+                        op_slug="manual-confirmation",
+                    ),
+                ],
+            ),
+        ],
+    )
+
+    assert plan.status() == status
+
+
+def test_collapse_status_for_dupes(subdirs):
+    plan = Plan(
+        operations=[
+            GitStatus(
+                directory_statuses={
+                    subdirs[0]: "completed",
+                    subdirs[1]: "completed",
+                    subdirs[2]: "completed",
+                    subdirs[3]: "completed",
+                }
+            ),
+            GitStatus(
+                directory_statuses={
+                    subdirs[0]: "completed",
+                    subdirs[1]: "completed",
+                    subdirs[2]: "failed",
+                    subdirs[3]: "failed",
+                }
+            ),
+            ManualConfirmation(
+                directory_statuses={
+                    subdirs[0]: "completed",
+                    subdirs[1]: "completed",
+                }
+            ),
+        ],
+        directories=subdirs,
+    )
+    status = PlanStatus(
+        filename=":in memory:",
+        directories=[
+            DirectoryStatus(
+                path=subdirs[0],
+                status="completed",
+                op_results=[],
+            ),
+            DirectoryStatus(
+                path=subdirs[1],
+                status="completed",
+                op_results=[],
+            ),
+            DirectoryStatus(
+                path=subdirs[2],
+                status="failed",
+                op_results=[
+                    OperationStatus(
+                        status="completed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    ),
+                    OperationStatus(
+                        status="failed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    ),
+                    OperationStatus(
+                        status="not-started",
+                        details=ManualConfirmation().summary,
+                        op_slug="manual-confirmation",
+                    ),
+                ],
+            ),
+            DirectoryStatus(
+                path=subdirs[3],
+                status="failed",
+                op_results=[
+                    OperationStatus(
+                        status="duplicate",
+                        details="Same as `[bold cyan]c[/]`",
+                        op_slug="duplicate",
+                    ),
+                ],
+            ),
+        ],
+    )
+
+    assert plan.status(collapse_duplicates=True) == status
+
+
+def test_collapse_status_takes_first(subdirs):
+    plan = Plan(
+        operations=[
+            GitStatus(
+                directory_statuses={
+                    subdirs[0]: "completed",
+                    subdirs[1]: "completed",
+                    subdirs[2]: "completed",
+                    subdirs[3]: "completed",
+                }
+            ),
+            GitStatus(
+                directory_statuses={
+                    subdirs[0]: "failed",
+                    subdirs[1]: "failed",
+                    subdirs[2]: "failed",
+                    subdirs[3]: "failed",
+                }
+            ),
+            ManualConfirmation(),
+        ],
+        directories=subdirs,
+    )
+    status = PlanStatus(
+        filename=":in memory:",
+        directories=[
+            DirectoryStatus(
+                path=subdirs[0],
+                status="failed",
+                op_results=[
+                    OperationStatus(
+                        status="completed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    ),
+                    OperationStatus(
+                        status="failed",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    ),
+                    OperationStatus(
+                        status="not-started",
+                        details=ManualConfirmation().summary,
+                        op_slug="manual-confirmation",
+                    ),
+                ],
+            ),
+            *[
+                DirectoryStatus(
+                    path=s,
+                    status="failed",
+                    op_results=[
+                        OperationStatus(
+                            status="duplicate",
+                            details="Same as `[bold cyan]a[/]`",
+                            op_slug="duplicate",
+                        ),
+                    ],
+                )
+                for s in subdirs[1:]
+            ],
+        ],
+    )
+
+    assert plan.status(collapse_duplicates=True) == status

@@ -3,6 +3,7 @@
 ## Unreleased
 
 - ❗ rename `enable-automerge` to `set-automerge` and add `config.enable` (which defaults to `true` to patch previous behavior)
+- Skip printing all steps for when identical to previous directory for `run` and `status` commands (disable with `--skip-collapse`)
 - add a "⏸️ Halted" mode to `potent status`. This is purely presentational and involves no schema changes ([#4](https://github.com/xavdid/potent/pull/4))
 - raise the message truncation limit for `git-commit` and `raw-command` when printing a plan
 

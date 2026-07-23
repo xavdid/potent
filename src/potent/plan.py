@@ -77,6 +77,8 @@ def status_styling(
             return "☑️", "green", "green", "green"
         case "not-started", _:
             return "⏳", "white", "dim white", "dim white"
+        case "duplicate", _:
+            return "♊", "white", "white", "dim white"
         case "failed", _:
             return "❌", "red", "red", "red"
         case "halted", _:
@@ -87,7 +89,7 @@ def status_styling(
     raise NotImplementedError
 
 
-@dataclass
+@dataclass(eq=True)
 class OperationStatus:
     status: PrintableStatus
     op_slug: str
@@ -111,7 +113,7 @@ class DirectoryStatus:
     A directory has a status and some number of child operations (all of which get printed)
     """
 
-    name: Path
+    path: Path
     status: PrintableStatus
     op_results: list[OperationStatus]
     """
@@ -124,7 +126,7 @@ class DirectoryStatus:
             self.status, self.completed_this_run
         )
         folder = tree.add(
-            f"{emoji} {self.name.name}", style=title_color, guide_style=guide_style
+            f"{emoji} {self.path.name}", style=title_color, guide_style=guide_style
         )
 
         for o in self.op_results:
@@ -289,6 +291,7 @@ class Plan(BaseModel):
         self,
         *,
         short_path=False,
+        collapse_duplicates=False,
         just_completed_steps: Optional[list[tuple[int, Path]]] = None,
     ) -> PlanStatus:
         """
@@ -313,6 +316,7 @@ class Plan(BaseModel):
         )
 
         should_print_all = True
+        seen: dict[Path, list[OperationStatus]] = {}
         for d in self.directories:
             status: PrintableStatus = "not-started"
             operations = [
@@ -354,9 +358,23 @@ class Plan(BaseModel):
             else:
                 raise ValueError("Unknown status?")
 
+            # don't treat empty lists as dupes
+            if collapse_duplicates and operations:
+                for seen_path, seen_ops in seen.items():
+                    if operations == seen_ops:
+                        operations = [
+                            OperationStatus(
+                                status="duplicate",
+                                op_slug="duplicate",  # doesn't matter; only ever needed for manual conf
+                                details=f"Same as `[bold cyan]{seen_path.name}[/]`",
+                            )
+                        ]
+                        break
+                seen[d] = operations
+
             result.directories.append(
                 DirectoryStatus(
-                    name=d,
+                    path=d,
                     status=status,
                     op_results=operations,
                     completed_this_run=dir_completed_this_run,
@@ -368,6 +386,7 @@ class Plan(BaseModel):
     def run(
         self,
         skip_reset=False,
+        collapse_duplicates=False,
         renderer: Renderer = NoopRenderer(),
     ) -> PlanStatus:
         worked_dirs = []
@@ -425,5 +444,6 @@ class Plan(BaseModel):
 
         return self.status(
             short_path=True,
+            collapse_duplicates=collapse_duplicates,
             just_completed_steps=just_completed_steps,
         )

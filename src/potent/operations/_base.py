@@ -14,7 +14,7 @@ from potent.util import format_annotation, table_row, truthy_list
 # the only valid values in the json
 Status = Literal["not-started", "failed", "completed"]
 # but, we can print with more information
-PrintableStatus = Status | Literal["halted"]
+PrintableStatus = Status | Literal["halted"] | Literal["duplicate"]
 
 
 def ensure_directory(value: Path) -> Path:
