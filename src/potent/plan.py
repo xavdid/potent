@@ -415,7 +415,7 @@ class Plan(BaseModel):
                 worked_dirs.append(directory)
 
                 for idx, step in enumerate(self.operations):
-                    success = None  # the ol' triple bool
+                    success: Optional[bool] = None  # the ol' triple bool
                     ev = OperationCompleted(
                         directory, summary=step.summary, result="failure", output=""
                     )
