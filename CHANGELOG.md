@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+_released `TBD`_
+
+- When running, consecutive skipped steps are grouped under a single panel to save space
+
 ## 0.7.0
 
 _released `2026-07-23`_

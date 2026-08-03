@@ -35,23 +35,29 @@ class NoopRenderer:
 
 class BasicRenderer:
     """
-    The classic experience - command output is presented in its entirety
+    The classic experience - command output is presented in its entirety.
+
+    It's a little stateful, since it batches consecutive skipped steps in a given directory
     """
 
     def __init__(self) -> None:
         self.console = Console()
+        self._reset_skipped_collection()
+
+    def _reset_skipped_collection(self):
+        self.skipped_steps: list[str] = []
 
     def send(self, event: RunEvent):
         match event:
-            case DirectoryStarted(directory):
+            case DirectoryStarted(path):
                 self.console.rule(
-                    f"📂 [bold underline]{directory.name}[/] 📂", style="bright_cyan"
+                    f"📂 [bold underline]{path.name}[/] 📂", style="bright_cyan"
                 )
                 self.console.print()
             case DirectorySkipped():
                 self.console.print("☑️ [green]already finished")
             case OperationCompleted(
-                summary=summary, result=result, output=output, cmd=cmd
+                summary=summary, result=result, output=output, cmd=cmd, path=path
             ):
                 if result == "success":
                     subtitle = "Succeeded"
@@ -69,17 +75,37 @@ class BasicRenderer:
                 if cmd:
                     output = f"[dim white]>>>[/] [cyan]{cmd}[/]\n\n{output}"
 
-                self.console.print(
-                    Panel(
-                        f"\n{output.strip()}\n",
-                        title=f"[dim white]step[not dim]: {summary}",
-                        title_align="left",
-                        border_style=style,
-                        subtitle=f"[dim white]result:[/] {subtitle}",
-                        subtitle_align="left",
+                if result == "skipped":
+                    # if we're skipping something, it means the directory is worth running but we haven't gotten to the thing we're running yet
+                    # so we can safely add to this list knowing it'll get cleared by by the first non-skipped item (the `else` below)
+                    # i don't _think_ we need to track directories, since we'll always end a dir with an empty list.
+                    self.skipped_steps.append(summary)
+                else:
+                    if self.skipped_steps:
+                        # we've now hit a non-skip after hitting skips
+                        # so, clear the queue and then print the thing that actually killed it
+                        self.console.print(
+                            Panel(
+                                f"\n{'\n'.join(f'- {s}' for s in self.skipped_steps)}\n",
+                                title_align="left",
+                                subtitle="[dim white]result:[/] Skipped",
+                                subtitle_align="left",
+                            )
+                        )
+                        self.console.print()
+                        self._reset_skipped_collection()
+
+                    self.console.print(
+                        Panel(
+                            f"\n{output.strip()}\n",
+                            title=f"[dim white]step[not dim]: {summary}",
+                            title_align="left",
+                            border_style=style,
+                            subtitle=f"[dim white]result:[/] {subtitle}",
+                            subtitle_align="left",
+                        )
                     )
-                )
-                self.console.print()
+                    self.console.print()
             case other:
                 assert_never(other)
 
