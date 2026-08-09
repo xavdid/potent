@@ -44,43 +44,37 @@ example.plan.json
 
 On the road to `v1.0.0`, expect breaking schema changes, new Operations, small behavior changes, and general stability/productionalization improvements.
 
-Before we reach `1.0.0`, there may be breaking changes in any release; see the CHANGELOG for more details.
+Before we reach `1.0.0`, there may be breaking changes in any release; see the [CHANGELOG](https://github.com/xavdid/potent/blob/main/CHANGELOG.md) for more details.
 
 ## Install
 
-Potent is available on PyPI: https://pypi.org/project/potent/. It's typically installed as a CLI using one of these tools:
+Potent is available on PyPI: https://pypi.org/project/potent/. It's installed as a CLI using one of these tools:
 
 [uv](https://docs.astral.sh/uv/guides/tools/):
 
 ```
-
 uv tool install potent
-
 ```
 
 [Homebrew](https://brew.sh/):
 
 ```
-
 brew install xavdid/projects/potent
-
 ```
 
 [pipx](https://pipx.pypa.io/stable/):
 
 ```
-
 pipx install potent
-
 ```
 
 ## Plans
 
-Scripts are run as Plan files. They've got the extension `.plan.json`, but are standard json otherwise.
+A bash script is stored as a Plan file. They're standard JSON with the extension `.plan.json`.
 
-Plans have two main components:
+Plans have two main sections:
 
-- a list of directories the Plan will run in
+- a list of directories in which the Plan will run
 - a list of Operations to perform in those directories
 
 Plan files must conform to The Schema so that the invalid operations are surfaced early and loudly.
@@ -100,7 +94,7 @@ If you'd like in-editor hints, you can tell VSCode (or any other editor that sup
   "json.schemas": [
     {
       "fileMatch": ["*.plan.json"],
-      "url": "TBD"
+      "url": "<SEE BELOW>"
     }
   ]
 }
@@ -108,11 +102,11 @@ If you'd like in-editor hints, you can tell VSCode (or any other editor that sup
 
 Then, run `potent schema url` and paste the result into the `url` field above.
 
-Specifying the schema will help with autocomplete and flag potential errors.
+Specifying the schema will help with autocomplete and flag potential errors during manual authoring.
 
 ### Command Plans
 
-Command plans are special plan variant that will auto-reset themselves once a day. They're useful for plans you want to run periodically but are still idempotent within a daily window.
+Command plans are special plan variant that will auto-reset themselves once each calendar day. They're useful for plans you want to run periodically but are still idempotent within a daily window. For example, running `git pull` on a bunch of directories.
 
 ### Plans as input
 
