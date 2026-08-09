@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from pprint import pprint
+from unittest.mock import ANY, MagicMock, Mock, patch
 
 import pytest
 
@@ -9,6 +10,7 @@ from potent.operations.git_status import GitStatus
 from potent.operations.manual_confirmation import ManualConfirmation
 from potent.operations.raw_command import RawCommand
 from potent.plan import DirectoryStatus, OperationStatus, Plan, PlanStatus
+from potent.run_events import DirectorySkipped, DirectoryStarted, OperationCompleted
 
 
 @pytest.fixture
@@ -950,3 +952,46 @@ def test_collapse_status_takes_first(subdirs):
     )
 
     assert plan.status(collapse_duplicates=True) == status
+
+
+def test_renderer_is_called_with_start_and_finish(subdir: Path):
+    plan = Plan(operations=[GitStatus()], directories=[subdir])
+
+    mock_renderer = Mock()
+    plan.run(renderer=mock_renderer)
+
+    assert len(mock_renderer.send.mock_calls) == 2
+    mock_renderer.send.assert_any_call(DirectoryStarted(path=subdir))
+    mock_renderer.send.assert_any_call(
+        OperationCompleted(result=ANY, path=ANY, summary=ANY, output=ANY, cmd=ANY)
+    )
+
+
+def test_renderer_is_called_with_start_and_skipped(subdir: Path):
+    plan = Plan(
+        operations=[GitStatus(directory_statuses={subdir: "completed"})],
+        directories=[subdir],
+    )
+
+    mock_renderer = Mock()
+    plan.run(renderer=mock_renderer)
+
+    pprint(mock_renderer.send.mock_calls)
+    mock_renderer.send.assert_any_call(DirectoryStarted(path=subdir))
+    mock_renderer.send.assert_any_call(DirectorySkipped(path=subdir))
+
+
+def test_renderer_is_called_with_halted(subdir: Path):
+    plan = Plan(operations=[ManualConfirmation()], directories=[subdir])
+
+    mock_renderer = Mock()
+    plan.run(renderer=mock_renderer)
+
+    mock_renderer.send.assert_called_with(
+        OperationCompleted(
+            result="halted",
+            path=ANY,
+            summary=ANY,
+            output=ANY,
+        )
+    )

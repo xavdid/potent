@@ -177,3 +177,18 @@ class TestBasicRenderer:
 
         # collection should reset after flushing
         assert renderer.skipped_steps == []
+
+    def test_halted_steps_dont_show_failed(
+        self, renderer: BasicRenderer, capsys: pytest.CaptureFixture
+    ):
+        renderer.send(
+            OperationCompleted(
+                summary="run tests",
+                result="halted",
+                output="boom",
+                cmd="pytest",
+                path=Path("/tmp/proj"),
+            )
+        )
+        captured = capsys.readouterr()
+        assert "result: Halted" in captured.out

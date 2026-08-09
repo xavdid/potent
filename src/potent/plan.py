@@ -429,6 +429,9 @@ class Plan(BaseModel):
                         if success := result.success:
                             ev.result = "success"
                             just_completed_steps.append((idx, directory))
+                        elif step.slug == "manual-confirmation":
+                            # it failed, but mark it as halted instead of failed
+                            ev.result = "halted"
 
                         ev.output = result.output
                         ev.cmd = result.cmd

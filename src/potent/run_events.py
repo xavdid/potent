@@ -22,7 +22,12 @@ class DirectorySkipped:
 class OperationCompleted:
     path: Path
     summary: str
-    result: Literal["success", "failure", "skipped"]
+    result: Literal[
+        "success",
+        "failure",
+        "skipped",
+        "halted",  # is marked as failed for run purposes, but is displayed differently
+    ]
     output: str
     cmd: Optional[str] = None
 

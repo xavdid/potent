@@ -68,6 +68,9 @@ class BasicRenderer:
                 elif result == "skipped":
                     subtitle = "Skipped"
                     style = ""
+                elif result == "halted":
+                    subtitle = "Halted"
+                    style = "yellow"
                 else:
                     assert_never(result)
 

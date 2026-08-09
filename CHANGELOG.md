@@ -5,6 +5,7 @@
 _released `TBD`_
 
 - When running, consecutive skipped steps are grouped under a single panel to save space
+- Recolor `halted` steps in output to be yellow (halted) instead of red (failed) (even though they're still failed under the hood)
 
 ## 0.7.0
 
