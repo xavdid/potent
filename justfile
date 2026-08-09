@@ -26,6 +26,9 @@ test-versions *args:
 lint *args:
   uv run -- ruff check {{ args }}
 
+format *args:
+  uv run -- ruff format {{ args }}
+
 typecheck:
   uv run -- pyright
 

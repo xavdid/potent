@@ -29,6 +29,16 @@ Changelog = "https://github.com/xavdid/potent/blob/main/CHANGELOG.md"
 [project.scripts]
 potent = "potent.cli:main"
 
+[dependency-groups]
+dev = [
+    "pyright>=1.1.409",
+    "pytest >= 8.4.2",
+    "ruff == 0.15.*",
+    "tox>=4.32.0",
+    "tox-uv>=1.29.0",
+]
+
+
 [build-system]
 requires = ["uv_build>=0.8.4,<0.9.0"]
 build-backend = "uv_build"
@@ -71,13 +81,4 @@ unfixable = [
     "F401", # don't remove unused imports; annoying while editing
     # run `just lint --fix --fixable F401` to fix these manually
     "F841", # don't remove unused variables
-]
-
-[dependency-groups]
-dev = [
-    "pyright>=1.1.409",
-    "pytest >= 8.4.2",
-    "ruff == 0.13.3",
-    "tox>=4.32.0",
-    "tox-uv>=1.29.0",
 ]
