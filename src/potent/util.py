@@ -1,6 +1,8 @@
 import builtins
-import pathlib
+import os
+import pathlib  # used for pattern matching
 import typing
+from pathlib import Path  # used for actual python operations
 
 
 def truthy_list[T](l: list[T]) -> list[T]:
@@ -43,3 +45,14 @@ def format_annotation(a) -> str:
             return f"{' \\| '.join(f'`"{t}"`' for t in typing.get_args(a))}"
         case _:
             raise NotImplementedError(f"unable to format: {a}")
+
+
+def get_command_dir() -> Path:
+    # from: https://github.com/srstevenson/xdg-base-dirs/blob/ee1b8c41a29bc21f727c7bba54ad56788127f19b/src/xdg_base_dirs/__init__.py#L51
+    config_root = Path.home() / ".config"
+    if (value := os.environ.get("XDG_CONFIG_HOME")) and (
+        config_override_dir := Path(value)
+    ).is_absolute():
+        config_root = config_override_dir
+
+    return config_root / "potent" / "commands"

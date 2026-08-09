@@ -1,24 +1,14 @@
-import os
 from pathlib import Path
 from typing import Annotated, Sequence
 
 from cyclopts import Parameter, Token, validators
 
+from potent.util import get_command_dir
+
 
 def is_plan_json(_, path: Path) -> None:
     if path.suffixes != [".plan", ".json"]:
         raise ValueError("File must have a `.plan.json` extension")
-
-
-def get_command_dir() -> Path:
-    # from: https://github.com/srstevenson/xdg-base-dirs/blob/ee1b8c41a29bc21f727c7bba54ad56788127f19b/src/xdg_base_dirs/__init__.py#L51
-    config_root = Path.home() / ".config"
-    if (value := os.environ.get("XDG_CONFIG_HOME")) and (
-        config_override_dir := Path(value)
-    ).is_absolute():
-        config_root = config_override_dir
-
-    return config_root / "potent" / "commands"
 
 
 def pathify(_, tokens: Sequence[Token]) -> Path:

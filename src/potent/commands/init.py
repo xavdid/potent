@@ -3,8 +3,9 @@ from typing import Annotated
 
 from cyclopts import App, Parameter, validators
 
-from potent.commands._types import get_command_dir, is_plan_json, pathify
+from potent.commands._types import is_plan_json, pathify
 from potent.plan import CommandConfig, Plan, PlanConfig
+from potent.util import get_command_dir
 
 app = App()
 
