@@ -8,9 +8,10 @@ authors = [{ name = "David Brownman", email = "oss@xavd.id" }]
 # but also there's some typing stuff I don't want to backport
 requires-python = ">=3.12"
 dependencies = [
-    "cyclopts>=4.10.1",
+    "cyclopts ~= 4.10",
     "pydantic ~= 2.12",
     "rich ~= 15.0",
+    "yaspin ~= 3.4",
 ]
 license-files = ["LICENSE"]
 keywords = ["automation", "shell-scripting", "idempotency", "CLI tool"]

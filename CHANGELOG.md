@@ -7,6 +7,8 @@ _released `TBD`_
 - ❗ Remove `--skip-collapse` flag from `run` and `status` commands. They now use `--display-mode` instead. To `--skip-collapse`, use `--display-mode verbose` instead.
 - add config file at `~/.config/potent/potent.toml`, which can be used to set your own default for any CLI flag. See [configuration in the readme](https://github.com/xavdid/potent#configuration).
 - When running, consecutive skipped steps are grouped under a single panel to save space
+- Add spinners to `run` to better see progress on long tasks
+- add `--display-mode quiet` for error-only output
 - Recolor `halted` steps in output to be yellow (halted) instead of red (failed) (even though they're still failed under the hood)
 
 ## 0.7.0

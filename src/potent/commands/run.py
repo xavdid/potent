@@ -4,9 +4,9 @@ from cyclopts import App, Parameter
 from rich.console import Console
 
 from potent.commands._types import DisplayModeOptions, PlanJson
-from potent.display_modes import CompactDisplayMode
+from potent.display_modes import StandardDisplayMode
 from potent.plan import Plan
-from potent.renderers import BasicRenderer
+from potent.renderers import BasicRenderer, CompactRenderer
 
 app = App()
 
@@ -15,7 +15,7 @@ app = App()
 def run(
     path: PlanJson,
     /,
-    display_mode: DisplayModeOptions = CompactDisplayMode,
+    display_mode: DisplayModeOptions = StandardDisplayMode,
     skip_reset: Annotated[
         bool,
         Parameter(
@@ -32,7 +32,13 @@ def run(
     console.print(f"Running [bold yellow]{str(path)}")
 
     plan = Plan.from_path(path)
-    completed_steps = plan.run(skip_reset, renderer=BasicRenderer(display_mode))
+    completed_steps = plan.run(
+        skip_reset,
+        # this is smelly
+        renderer=CompactRenderer()
+        if display_mode.name == "quiet"
+        else BasicRenderer(display_mode),
+    )
 
     result = plan.status(
         just_completed_steps=completed_steps,

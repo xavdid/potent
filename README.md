@@ -383,11 +383,11 @@ display-mode = 'compact'
 
 The tool has a few ways to show data as scripts are running. Here are the features each mode sets:
 
-| mode                | panels shown | summary de-duplicated |
-| ------------------- | ------------ | --------------------- |
-| `compact` (default) | all          | yes                   |
-| `quiet`             | only errors  | yes                   |
-| `verbose`           | all          | no                    |
+| mode                 | panels shown               | summary de-duplicated |
+| -------------------- | -------------------------- | --------------------- |
+| `quiet`              | only errors                | yes                   |
+| `standard` (default) | all, skipped steps grouped | yes                   |
+| `verbose`            | all                        | no                    |
 
 ## FAQ
 

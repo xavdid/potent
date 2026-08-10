@@ -2,7 +2,7 @@ import rich
 from cyclopts import App
 
 from potent.commands._types import DisplayModeOptions, PlanJson
-from potent.display_modes import CompactDisplayMode
+from potent.display_modes import StandardDisplayMode
 from potent.plan import Plan
 
 app = App()
@@ -12,7 +12,7 @@ app = App()
 def status(
     path: PlanJson,
     /,
-    display_mode: DisplayModeOptions = CompactDisplayMode,
+    display_mode: DisplayModeOptions = StandardDisplayMode,
 ):
     """
     Print the current state of a plan file, including the progress through each directory.

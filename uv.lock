@@ -172,6 +172,7 @@ dependencies = [
     { name = "cyclopts" },
     { name = "pydantic" },
     { name = "rich" },
+    { name = "yaspin" },
 ]
 
 [package.dev-dependencies]
@@ -185,9 +186,10 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "cyclopts", specifier = ">=4.10.1" },
+    { name = "cyclopts", specifier = "~=4.10" },
     { name = "pydantic", specifier = "~=2.12" },
     { name = "rich", specifier = "~=15.0" },
+    { name = "yaspin", specifier = "~=3.4" },
 ]
 
 [package.metadata.requires-dev]
@@ -383,6 +385,15 @@ wheels = [
 ]
 
 [[package]]
+name = "termcolor"
+version = "3.3.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/46/79/cf31d7a93a8fdc6aa0fbb665be84426a8c5a557d9240b6239e9e11e35fc5/termcolor-3.3.0.tar.gz", hash = "sha256:348871ca648ec6a9a983a13ab626c0acce02f515b9e1983332b17af7979521c5", size = 14434, upload-time = "2025-12-29T12:55:21.882Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/33/d1/8bb87d21e9aeb323cc03034f5eaf2c8f69841e40e4853c2627edf8111ed3/termcolor-3.3.0-py3-none-any.whl", hash = "sha256:cf642efadaf0a8ebbbf4bc7a31cec2f9b5f21a9f726f4ccbb08192c9c26f43a5", size = 7734, upload-time = "2025-12-29T12:55:20.718Z" },
+]
+
+[[package]]
 name = "tox"
 version = "4.32.0"
 source = { registry = "https://pypi.org/simple" }
@@ -475,4 +486,16 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/20/28/e6f1a6f655d620846bd9df527390ecc26b3805a0c5989048c210e22c5ca9/virtualenv-20.35.4.tar.gz", hash = "sha256:643d3914d73d3eeb0c552cbb12d7e82adf0e504dbf86a3182f8771a153a1971c", size = 6028799, upload-time = "2025-10-29T06:57:40.511Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/79/0c/c05523fa3181fdf0c9c52a6ba91a23fbf3246cc095f26f6516f9c60e6771/virtualenv-20.35.4-py3-none-any.whl", hash = "sha256:c21c9cede36c9753eeade68ba7d523529f228a403463376cf821eaae2b650f1b", size = 6005095, upload-time = "2025-10-29T06:57:37.598Z" },
+]
+
+[[package]]
+name = "yaspin"
+version = "3.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "termcolor" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8d/c5/826a862dcfcb9e85321f96d6f1b4b96b3b9bf37df6f63dce9cffd0b17053/yaspin-3.4.0.tar.gz", hash = "sha256:a83a81ac7a9d161e116fb668a7e4d10d87fb18d02b4b08a17b7e472f465f3c90", size = 42396, upload-time = "2025-12-06T12:33:51.889Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/93/6f/7403e6ae864a0a7f1cdd8814d39690062766e141339127f2b3469201ff6f/yaspin-3.4.0-py3-none-any.whl", hash = "sha256:2a40572a38d39846d0df0a421733459481b7da17789f7a2618c3181bb0a82819", size = 21822, upload-time = "2025-12-06T12:33:50.633Z" },
 ]

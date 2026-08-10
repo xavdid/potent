@@ -23,7 +23,8 @@ from potent.renderers import NoopRenderer, Renderer
 from potent.run_events import (
     DirectorySkipped,
     DirectoryStarted,
-    OperationCompleted,
+    OperationFinished,
+    OperationStarted,
 )
 
 # OPERATION IMPORTS ^
@@ -433,13 +434,16 @@ class Plan(BaseModel):
 
                 for idx, step in enumerate(self.operations):
                     success: Optional[bool] = None  # the ol' triple bool
-                    ev = OperationCompleted(
+                    ev = OperationFinished(
                         directory, summary=step.summary, result="failure", output=""
                     )
                     if step.completed(directory):
                         ev.result = "skipped"
                         ev.output = "Already completed"
                     else:
+                        renderer.send(
+                            OperationStarted(path=directory, summary=step.summary)
+                        )
                         result = step.run(directory)
                         if self._path:
                             self.save()

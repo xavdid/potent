@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from pprint import pprint
 from unittest.mock import ANY, MagicMock, Mock, patch
 
 import pytest
@@ -10,7 +9,12 @@ from potent.operations.git_status import GitStatus
 from potent.operations.manual_confirmation import ManualConfirmation
 from potent.operations.raw_command import RawCommand
 from potent.plan import DirectoryStatus, OperationStatus, Plan, PlanStatus
-from potent.run_events import DirectorySkipped, DirectoryStarted, OperationCompleted
+from potent.run_events import (
+    DirectorySkipped,
+    DirectoryStarted,
+    OperationFinished,
+    OperationStarted,
+)
 
 
 @pytest.fixture
@@ -960,10 +964,11 @@ def test_renderer_is_called_with_start_and_finish(subdir: Path):
     mock_renderer = Mock()
     plan.run(renderer=mock_renderer)
 
-    assert len(mock_renderer.send.mock_calls) == 2
+    assert len(mock_renderer.send.mock_calls) == 3
     mock_renderer.send.assert_any_call(DirectoryStarted(path=subdir))
+    mock_renderer.send.assert_any_call(OperationStarted(summary=ANY, path=ANY))
     mock_renderer.send.assert_any_call(
-        OperationCompleted(result=ANY, path=ANY, summary=ANY, output=ANY, cmd=ANY)
+        OperationFinished(result=ANY, path=ANY, summary=ANY, output=ANY, cmd=ANY)
     )
 
 
@@ -976,7 +981,7 @@ def test_renderer_is_called_with_start_and_skipped(subdir: Path):
     mock_renderer = Mock()
     plan.run(renderer=mock_renderer)
 
-    pprint(mock_renderer.send.mock_calls)
+    assert len(mock_renderer.send.mock_calls) == 2
     mock_renderer.send.assert_any_call(DirectoryStarted(path=subdir))
     mock_renderer.send.assert_any_call(DirectorySkipped(path=subdir))
 
@@ -987,8 +992,11 @@ def test_renderer_is_called_with_halted(subdir: Path):
     mock_renderer = Mock()
     plan.run(renderer=mock_renderer)
 
-    mock_renderer.send.assert_called_with(
-        OperationCompleted(
+    assert len(mock_renderer.send.mock_calls) == 3
+    mock_renderer.send.assert_any_call(DirectoryStarted(path=subdir))
+    mock_renderer.send.assert_any_call(OperationStarted(summary=ANY, path=ANY))
+    mock_renderer.send.assert_any_call(
+        OperationFinished(
             result="halted",
             path=ANY,
             summary=ANY,

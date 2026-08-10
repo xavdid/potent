@@ -6,7 +6,7 @@ from potent.renderers import BasicRenderer, NoopRenderer
 from potent.run_events import (
     DirectorySkipped,
     DirectoryStarted,
-    OperationCompleted,
+    OperationFinished,
 )
 
 
@@ -19,7 +19,7 @@ class TestNoopRenderer:
         renderer.send(DirectoryStarted(path=Path("some/dir")))
         renderer.send(DirectorySkipped(path=Path("some/other/dir")))
         renderer.send(
-            OperationCompleted(
+            OperationFinished(
                 summary="step",
                 result="success",
                 output="output",
@@ -70,7 +70,7 @@ class TestBasicRenderer:
         self, renderer: BasicRenderer, capsys: pytest.CaptureFixture
     ):
         renderer.send(
-            OperationCompleted(
+            OperationFinished(
                 summary="install deps",
                 result="success",
                 output="all good",
@@ -88,7 +88,7 @@ class TestBasicRenderer:
         self, renderer: BasicRenderer, capsys: pytest.CaptureFixture
     ):
         renderer.send(
-            OperationCompleted(
+            OperationFinished(
                 summary="run tests",
                 result="failure",
                 output="boom",
@@ -106,7 +106,7 @@ class TestBasicRenderer:
         self, renderer: BasicRenderer, capsys: pytest.CaptureFixture
     ):
         renderer.send(
-            OperationCompleted(
+            OperationFinished(
                 summary="noop step",
                 result="success",
                 output="",
@@ -123,7 +123,7 @@ class TestBasicRenderer:
     ):
         summary = "i was skipped"
         renderer.send(
-            OperationCompleted(
+            OperationFinished(
                 summary=summary,
                 result="skipped",
                 output="",
@@ -139,7 +139,7 @@ class TestBasicRenderer:
         self, renderer: BasicRenderer, capsys: pytest.CaptureFixture
     ):
         renderer.send(
-            OperationCompleted(
+            OperationFinished(
                 summary="skip one",
                 result="skipped",
                 output="",
@@ -148,7 +148,7 @@ class TestBasicRenderer:
             )
         )
         renderer.send(
-            OperationCompleted(
+            OperationFinished(
                 summary="skip two",
                 result="skipped",
                 output="",
@@ -162,7 +162,7 @@ class TestBasicRenderer:
         assert len(renderer.skipped_steps) == 2
 
         renderer.send(
-            OperationCompleted(
+            OperationFinished(
                 summary="finally run",
                 result="success",
                 output="done",
@@ -182,7 +182,7 @@ class TestBasicRenderer:
         self, renderer: BasicRenderer, capsys: pytest.CaptureFixture
     ):
         renderer.send(
-            OperationCompleted(
+            OperationFinished(
                 summary="run tests",
                 result="halted",
                 output="boom",

@@ -7,7 +7,7 @@ from typing import Literal, Sequence, get_args
 
 from cyclopts import Token
 
-DisplayModeNames = Literal["quiet", "compact", "verbose"]
+DisplayModeNames = Literal["quiet", "standard", "verbose"]
 
 
 @dataclass
@@ -35,8 +35,8 @@ QuietDisplayMode = DisplayMode(
     show_duplicate_statuses=False,
 )
 
-CompactDisplayMode = DisplayMode(
-    "compact",
+StandardDisplayMode = DisplayMode(
+    "standard",
     show_non_error_panels=True,
     show_duplicate_statuses=False,
 )
@@ -47,6 +47,6 @@ VerboseDisplayMode = DisplayMode(
     show_duplicate_statuses=True,
 )
 
-_modes = [QuietDisplayMode, CompactDisplayMode, VerboseDisplayMode]
+_modes = [QuietDisplayMode, StandardDisplayMode, VerboseDisplayMode]
 
 modes_by_name: dict[DisplayModeNames, DisplayMode] = {m.name: m for m in _modes}

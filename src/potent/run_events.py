@@ -19,7 +19,13 @@ class DirectorySkipped:
 
 
 @dataclass
-class OperationCompleted:
+class OperationStarted:
+    path: Path
+    summary: str
+
+
+@dataclass
+class OperationFinished:
     path: Path
     summary: str
     result: Literal[
@@ -32,4 +38,4 @@ class OperationCompleted:
     cmd: Optional[str] = None
 
 
-RunEvent = DirectoryStarted | DirectorySkipped | OperationCompleted
+RunEvent = DirectoryStarted | DirectorySkipped | OperationStarted | OperationFinished
