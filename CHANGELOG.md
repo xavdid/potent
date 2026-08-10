@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.8.0
 
-_released `TBD`_
+_released `2026-08-09`_
 
 - ❗ Remove `--skip-collapse` flag from `run` and `status` commands. They now use `--display-mode` instead. To `--skip-collapse`, use `--display-mode verbose` instead.
 - add config file at `~/.config/potent/potent.toml`, which can be used to set your own default for any CLI flag. See [configuration in the readme](https://github.com/xavdid/potent#configuration).
