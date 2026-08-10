@@ -3,7 +3,8 @@ from typing import Annotated
 from cyclopts import App, Parameter
 from rich.console import Console
 
-from potent.commands._types import PlanJson
+from potent.commands._types import DisplayModeOptions, PlanJson
+from potent.display_modes import CompactDisplayMode
 from potent.plan import Plan
 from potent.renderers import BasicRenderer
 
@@ -14,18 +15,12 @@ app = App()
 def run(
     path: PlanJson,
     /,
+    display_mode: DisplayModeOptions = CompactDisplayMode,
     skip_reset: Annotated[
         bool,
         Parameter(
             negative="",
             help="If supplied, don't automatically reset a command plan. Ignored for non-command plans.",
-        ),
-    ] = False,
-    skip_collapse: Annotated[
-        bool,
-        Parameter(
-            negative="",
-            help="If supplied, directories with identical results are repeated in full.",
         ),
     ] = False,
 ):
@@ -37,8 +32,11 @@ def run(
     console.print(f"Running [bold yellow]{str(path)}")
 
     plan = Plan.from_path(path)
-    result = plan.run(
-        skip_reset, renderer=BasicRenderer(), collapse_duplicates=not skip_collapse
+    completed_steps = plan.run(skip_reset, renderer=BasicRenderer(display_mode))
+
+    result = plan.status(
+        just_completed_steps=completed_steps,
+        collapse_duplicates=not display_mode.show_duplicate_statuses,
     )
 
     console.print()

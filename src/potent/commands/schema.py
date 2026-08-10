@@ -4,7 +4,7 @@ from cyclopts import App
 
 from potent.plan import Plan
 
-app = App(name="schema", help="Tools to programmatically access the plan schema.")
+app = App(name="schema", help="Commands to programmatically access the plan schema.")
 
 
 @app.command()

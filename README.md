@@ -35,6 +35,7 @@ example.plan.json
 - [Install](#install)
 - [Plans](#plans)
 - [Operations](#operations)
+- [Configuration](#configuration)
 - [FAQ](#faq)
 - [Demo](#demo)
 
@@ -276,6 +277,18 @@ Sets (or un-sets) auto-merge for the PR corresponding to the current branch.
 
 <!-- BEGIN:CLI -->
 
+### `config`
+
+Commands for interacting with the config file
+
+It includes the following subcommands:
+
+- `init`
+
+### `config init`
+
+Create an empty config file at the correct path.
+
 ### `describe`
 
 Print basic info about the plan, including the directories on which it acts and the steps involved.
@@ -307,12 +320,12 @@ Execute a plan file and then print its status.
 #### Arguments
 
 - `path` (FILE, required): The location of a `.plan.json` file. Can be a full path or a name. If a name, the named file must exist in the configured command directory.
+- `display_mode` (display-mode, optional): Controls how the results are displayed.
 - `skip_reset` (bool, optional): If supplied, don't automatically reset a command plan. Ignored for non-command plans.
-- `skip_collapse` (bool, optional): If supplied, directories with identical results are repeated in full.
 
 ### `schema`
 
-Tools to programmatically access the plan schema.
+Commands to programmatically access the plan schema.
 
 It includes the following subcommands:
 
@@ -334,9 +347,47 @@ Print the current state of a plan file, including the progress through each dire
 #### Arguments
 
 - `path` (FILE, required): The location of a `.plan.json` file. Can be a full path or a name. If a name, the named file must exist in the configured command directory.
-- `skip_collapse` (bool, optional): If supplied, directories with identical results are repeated in full.
+- `display_mode` (display-mode, optional): Controls how the results are displayed.
 
 <!-- END:CLI -->
+
+## Configuration
+
+All CLI flags can be read from an via environment variable or a dedicated configuration file. They are parsed & merged with the following precedence, stopping at the first one found:
+
+1. CLI flags
+2. environment variables
+3. config file
+4. default value
+
+### Environment
+
+Set flags using an environment variable key that combines, `potent`, the command, and the flag name, separated by underscores. For instance, the `display-mode` flag for `potent run` can be set using `POTENT_RUN_DISPLAY_MODE=... potent run`.
+
+### File
+
+Potent reads the `potent.toml` file from `XDG_CONFIG_HOME/potent/potent.toml`, defaulting to `~/.config/potent/potent.toml` if `XDG_CONFIG_HOME` is not set.
+
+Inside the toml file, each top-level table is a command name. The keys & values under that correspond to specific flags.
+
+For instance, the `display-mode` flag for `potent run` can be stored as:
+
+```toml
+# ~/.config/potent/potent.toml
+
+[run]
+display-mode = 'compact'
+```
+
+## Display Modes
+
+The tool has a few ways to show data as scripts are running. Here are the features each mode sets:
+
+| mode                | panels shown | summary de-duplicated |
+| ------------------- | ------------ | --------------------- |
+| `compact` (default) | all          | yes                   |
+| `quiet`             | only errors  | yes                   |
+| `verbose`           | all          | no                    |
 
 ## FAQ
 

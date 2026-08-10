@@ -4,6 +4,7 @@ from rich.console import Console
 from rich.markup import escape
 from rich.panel import Panel
 
+from potent.display_modes import CompactDisplayMode, DisplayMode
 from potent.run_events import (
     DirectorySkipped,
     DirectoryStarted,
@@ -17,6 +18,7 @@ class Renderer(Protocol):
     Renderers are responsible for printing the output of a Plan's run(). They mostly translate shell calls into readable and useful output.
     """
 
+    def __init__(self) -> None: ...
     def send(self, event: RunEvent): ...
     def log(self, msg: str): ...
 
@@ -40,9 +42,10 @@ class BasicRenderer:
     It's a little stateful, since it batches consecutive skipped steps in a given directory
     """
 
-    def __init__(self) -> None:
+    def __init__(self, display_mode: DisplayMode = CompactDisplayMode) -> None:
         self.console = Console()
         self._reset_skipped_collection()
+        self._display_mode = display_mode
 
     def _reset_skipped_collection(self):
         self.skipped_steps: list[str] = []
@@ -90,6 +93,7 @@ class BasicRenderer:
                         self.console.print(
                             Panel(
                                 f"\n{'\n'.join(f'- {s}' for s in self.skipped_steps)}\n",
+                                # title=f"[dim white]directory: [/]{path}",
                                 title_align="left",
                                 subtitle="[dim white]result:[/] Skipped",
                                 subtitle_align="left",
@@ -102,6 +106,7 @@ class BasicRenderer:
                         Panel(
                             f"\n{output.strip()}\n",
                             title=f"[dim white]step[not dim]: {summary}",
+                            # title=f"[dim white]step[not dim]: {summary}[/][/] | [dim white]directory:[not dim] {path}[/]",
                             title_align="left",
                             border_style=style,
                             subtitle=f"[dim white]result:[/] {subtitle}",

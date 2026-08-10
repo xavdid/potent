@@ -47,7 +47,10 @@ def format_annotation(a) -> str:
             raise NotImplementedError(f"unable to format: {a}")
 
 
-def get_command_dir() -> Path:
+def get_config_dir() -> Path:
+    """
+    The folder in which we'll store everything stateful
+    """
     # from: https://github.com/srstevenson/xdg-base-dirs/blob/ee1b8c41a29bc21f727c7bba54ad56788127f19b/src/xdg_base_dirs/__init__.py#L51
     config_root = Path.home() / ".config"
     if (value := os.environ.get("XDG_CONFIG_HOME")) and (
@@ -55,4 +58,15 @@ def get_command_dir() -> Path:
     ).is_absolute():
         config_root = config_override_dir
 
-    return config_root / "potent" / "commands"
+    return config_root / "potent"
+
+
+def get_command_dir() -> Path:
+    """
+    global commands live here
+    """
+    return get_config_dir() / "commands"
+
+
+def get_config_path() -> Path:
+    return get_config_dir() / "potent.toml"

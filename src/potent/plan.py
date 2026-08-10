@@ -295,7 +295,7 @@ class Plan(BaseModel):
         just_completed_steps: Optional[list[tuple[int, Path]]] = None,
     ) -> PlanStatus:
         """
-        Show this plan as plaintext. Takes a path to print the plan's location, but not for actual file operations
+        Show this plan as plaintext.
         """
 
         if just_completed_steps is None:
@@ -361,6 +361,23 @@ class Plan(BaseModel):
             # don't treat empty lists as dupes
             if collapse_duplicates and operations:
                 for seen_path, seen_ops in seen.items():
+                    # it might be nice to deduplicate these? like
+                    # a, b, c
+                    # \
+                    #  - complete
+                    #  - complete
+
+                    # instead of:
+
+                    # a
+                    # \
+                    #  - complete
+                    #  - complete
+                    # b: same as a
+                    # c: same as a
+
+                    # but that requires doing a check here that modifies how the `result.directories` is build.
+                    # `DirectoryStatus` assumes a `Path`, so there's a bunch to unwind if we do that
                     if operations == seen_ops:
                         operations = [
                             OperationStatus(
@@ -384,17 +401,17 @@ class Plan(BaseModel):
         return result
 
     def run(
-        self,
-        skip_reset=False,
-        collapse_duplicates=False,
-        renderer: Renderer = NoopRenderer(),
-    ) -> PlanStatus:
+        self, skip_reset=False, renderer: Renderer = NoopRenderer()
+    ) -> list[tuple[int, Path]]:
+        """
+        Executes a plan, modifying this object. Returns the steps that it completed this run
+        """
         worked_dirs = []
         just_completed_steps: list[tuple[int, Path]] = []
 
         if self.config.mode == "command":
             if skip_reset:
-                pass
+                renderer.log("skpping reset calculation")
             elif self.config.last_run != (today := date.today()):
                 if self.config.last_run is not None:
                     renderer.log("Resetting plan")
@@ -445,8 +462,4 @@ class Plan(BaseModel):
                 print("    err!")
                 continue
 
-        return self.status(
-            short_path=True,
-            collapse_duplicates=collapse_duplicates,
-            just_completed_steps=just_completed_steps,
-        )
+        return just_completed_steps

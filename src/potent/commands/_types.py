@@ -3,6 +3,7 @@ from typing import Annotated, Sequence
 
 from cyclopts import Parameter, Token, validators
 
+from potent.display_modes import DisplayMode
 from potent.util import get_command_dir
 
 
@@ -36,5 +37,14 @@ PlanJson = Annotated[
             validators.Path(ext="json", exists=True, dir_okay=False),
         ],
         help="The location of a `.plan.json` file. Can be a full path or a name. If a name, the named file must exist in the configured command directory.",
+    ),
+]
+
+DisplayModeOptions = Annotated[
+    DisplayMode,
+    Parameter(
+        name="display-mode",
+        converter=DisplayMode.parse,
+        help="Controls how the results are displayed.",
     ),
 ]

@@ -2,6 +2,7 @@ import re
 from datetime import date, timedelta
 from unittest.mock import MagicMock, patch
 
+import cyclopts
 import pytest
 from cyclopts import CycloptsError
 from pydantic import ValidationError
@@ -9,6 +10,19 @@ from pydantic import ValidationError
 from potent.cli import app as cli
 from potent.operations.raw_command import RawCommand
 from potent.plan import CommandConfig, Plan
+
+
+@pytest.fixture(autouse=True)
+def isolated_config(tmp_path):
+    """
+    isolate my actual config from these tests
+    """
+    toml_source = next(s for s in cli.config if isinstance(s, cyclopts.config.Toml))
+    original_path = toml_source.path
+
+    toml_source.path = tmp_path / "potent.toml"
+    yield
+    toml_source.path = original_path
 
 
 def test_version(capsys):

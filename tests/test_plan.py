@@ -597,7 +597,7 @@ def test_complex_skips_and_continues(_mock_run: MagicMock, subdirs):
         ],
         directories=subdirs,
     )
-    result = plan.run(collapse_duplicates=False)
+    result = plan.status(just_completed_steps=plan.run())
 
     expected = PlanStatus(
         filename=":in memory:",

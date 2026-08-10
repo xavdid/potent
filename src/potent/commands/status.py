@@ -1,9 +1,8 @@
-from typing import Annotated
-
 import rich
-from cyclopts import App, Parameter
+from cyclopts import App
 
-from potent.commands._types import PlanJson
+from potent.commands._types import DisplayModeOptions, PlanJson
+from potent.display_modes import CompactDisplayMode
 from potent.plan import Plan
 
 app = App()
@@ -13,17 +12,13 @@ app = App()
 def status(
     path: PlanJson,
     /,
-    skip_collapse: Annotated[
-        bool,
-        Parameter(
-            negative="",
-            help="If supplied, directories with identical results are repeated in full.",
-        ),
-    ] = False,
+    display_mode: DisplayModeOptions = CompactDisplayMode,
 ):
     """
     Print the current state of a plan file, including the progress through each directory.
     """
-    status = Plan.from_path(path).status(collapse_duplicates=not skip_collapse)
+    status = Plan.from_path(path).status(
+        collapse_duplicates=not display_mode.show_duplicate_statuses
+    )
     rich.print(status.legend())
     rich.print(status.to_tree())

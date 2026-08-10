@@ -23,6 +23,9 @@ test-versions *args:
   # this handles the build and installs magically - it's very cool
   uv run -- tox -p "$@"
 
+_test:
+  uv run -- pytest --quiet
+
 lint *args:
   uv run -- ruff check {{ args }}
 
@@ -31,6 +34,8 @@ format *args:
 
 typecheck:
   uv run -- pyright
+
+validate: _test lint format typecheck
 
 _is_valid_python_identifier name:
   {{ assert(name =~ "^[A-Za-z_]*$", "not a valid python identifier") }}
@@ -50,7 +55,7 @@ init-operation name: (_is_valid_python_identifier name) && (lint "src/potent/pla
   sed -i '' $'/# OPERATION IMPORTS/i\\\nfrom potent.operations.{{ name }} import TKTK\\\n' src/potent/plan.py
   sed -i '' $'/# OPERATIONS/i\\\n                TKTK,\\\n' src/potent/plan.py
 
-bump level: lint typecheck docs
+bump level: _test lint (format "--check") typecheck docs
   uv version --bump {{ level }}
 
 package_version := `uv run potent --version`
