@@ -320,7 +320,7 @@ Execute a plan file and then print its status.
 #### Arguments
 
 - `path` (FILE, required): The location of a `.plan.json` file. Can be a full path or a name. If a name, the named file must exist in the configured command directory.
-- `display_mode` (display-mode, optional): Controls how the results are displayed.
+- `display_mode` (display-mode, optional): Controls how the results are displayed. [choices: quiet, standard, verbose] (default: standard)
 - `skip_reset` (bool, optional): If supplied, don't automatically reset a command plan. Ignored for non-command plans.
 
 ### `schema`
@@ -347,7 +347,7 @@ Print the current state of a plan file, including the progress through each dire
 #### Arguments
 
 - `path` (FILE, required): The location of a `.plan.json` file. Can be a full path or a name. If a name, the named file must exist in the configured command directory.
-- `display_mode` (display-mode, optional): Controls how the results are displayed.
+- `display_mode` (display-mode, optional): Controls how the results are displayed. [choices: quiet, standard, verbose] (default: standard)
 
 <!-- END:CLI -->
 

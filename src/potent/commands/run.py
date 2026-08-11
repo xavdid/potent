@@ -3,8 +3,8 @@ from typing import Annotated
 from cyclopts import App, Parameter
 from rich.console import Console
 
-from potent.commands._types import DisplayModeOptions, PlanJson
-from potent.display_modes import StandardDisplayMode
+from potent.commands._types import PlanJson
+from potent.display_modes import DisplayModeFlag, StandardDisplayMode
 from potent.plan import Plan
 from potent.renderers import BasicRenderer, CompactRenderer
 
@@ -15,7 +15,7 @@ app = App()
 def run(
     path: PlanJson,
     /,
-    display_mode: DisplayModeOptions = StandardDisplayMode,
+    display_mode: DisplayModeFlag = StandardDisplayMode,
     skip_reset: Annotated[
         bool,
         Parameter(
