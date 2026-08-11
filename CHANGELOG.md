@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.8.1
+
+_released `2026-08-10`_
 
 - fix help text presentation for display mode
 
