@@ -20,8 +20,9 @@ class DisplayMode:
 
     @staticmethod
     def parse(_, tokens: Sequence[Token]) -> "DisplayMode":
-        # turns a string into a
-        # is responsible for validation instead of cyclopts
+        """
+        Turns a string into a DisplayMode. is responsible for validation instead of cyclopts
+        """
         mode = tokens[0].value
         if mode not in modes_by_name:
             raise ValueError(
@@ -58,8 +59,7 @@ DisplayModeFlag = Annotated[
     Parameter(
         name="display-mode",
         converter=DisplayMode.parse,
-        # https://github.com/BrianPugh/cyclopts/issues/886
-        help=f"Controls how the results are displayed. [choices:  {', '.join(display_mode_names)}] (default: standard)",
+        choices=display_mode_names,
         accepts_keys=False,
         show_default=False,
     ),
