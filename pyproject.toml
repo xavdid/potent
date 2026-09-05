@@ -49,7 +49,7 @@ requires = ["uv_build>=0.8.4,<0.9.0"]
 build-backend = "uv_build"
 
 [tool.ruff.lint]
-select = [
+extend-select = [
     "E",    # PEP8 recommendations
     "F",    # bugs
     "I001", # import sorting
@@ -68,10 +68,9 @@ select = [
     "FLY",  # short "".join calls
     "PERF", # performance hints
     "PL",   # pylint, general recommendations
-    # "RUF", # these are a little picky for me
 ]
 
-ignore = [
+extend-ignore = [
     "E501",    # skip enforcing line length
     "E741",    # ignore short variable names
     "PLR2004", # magic values
@@ -79,7 +78,7 @@ ignore = [
     "PLR0912", # too many branches
     "PLR0913", # too many arguments
     "PLR0915", # too many statements
-    'Q000',    # single quotes; handled by formatter
+    "Q000",    # single quotes; handled by formatter
 ]
 
 unfixable = [
