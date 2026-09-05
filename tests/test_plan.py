@@ -180,7 +180,9 @@ def test_reset(tmp_path: Path):
 
 
 def test_only_first_pending_dir_prints_steps(subdirs):
-    assert Plan(operations=[GitStatus()], directories=subdirs).status() == PlanStatus(
+    assert Plan(operations=[GitStatus()], directories=subdirs).status(
+        collapse_duplicates=True
+    ) == PlanStatus(
         filename=":in memory:",
         directories=[
             DirectoryStatus(
@@ -198,7 +200,14 @@ def test_only_first_pending_dir_prints_steps(subdirs):
                 DirectoryStatus(
                     path=d,
                     status="not-started",
-                    op_results=[],
+                    op_results=[
+                        OperationStatus(
+                            status="duplicate",
+                            op_slug="duplicate",
+                            details="Same as `[bold cyan]a[/]`",
+                            completed_this_run=False,
+                        ),
+                    ],
                 )
                 for d in subdirs[1:]
             ],
@@ -216,7 +225,7 @@ def test_add_pending_step(subdirs):
             GitStatus(),
         ],
         directories=subdirs,
-    ).status() == PlanStatus(
+    ).status(collapse_duplicates=True) == PlanStatus(
         filename=":in memory:",
         directories=[
             DirectoryStatus(
@@ -239,7 +248,14 @@ def test_add_pending_step(subdirs):
                 DirectoryStatus(
                     path=d,
                     status="not-started",
-                    op_results=[],
+                    op_results=[
+                        OperationStatus(
+                            status="duplicate",
+                            op_slug="duplicate",
+                            details="Same as `[bold cyan]a[/]`",
+                            completed_this_run=False,
+                        ),
+                    ],
                 )
                 for d in subdirs[1:]
             ],
@@ -253,7 +269,7 @@ def test_success_doesnt_stop_print(subdirs):
         directories=subdirs,
     )
 
-    assert p.status() == PlanStatus(
+    assert p.status(collapse_duplicates=True) == PlanStatus(
         filename=":in memory:",
         directories=[
             DirectoryStatus(
@@ -276,7 +292,14 @@ def test_success_doesnt_stop_print(subdirs):
                 DirectoryStatus(
                     path=d,
                     status="not-started",
-                    op_results=[],
+                    op_results=[
+                        OperationStatus(
+                            status="duplicate",
+                            op_slug="duplicate",
+                            details="Same as `[bold cyan]b[/]`",
+                            completed_this_run=False,
+                        ),
+                    ],
                 )
                 for d in subdirs[2:]
             ],
@@ -290,7 +313,7 @@ def test_failure_always_prints(subdirs):
         directories=subdirs,
     )
 
-    assert p.status() == PlanStatus(
+    assert p.status(collapse_duplicates=False) == PlanStatus(
         filename=":in memory:",
         directories=[
             DirectoryStatus(
@@ -315,7 +338,7 @@ def test_failure_stops_prints(subdirs):
         directories=subdirs,
     )
 
-    assert p.status() == PlanStatus(
+    assert p.status(collapse_duplicates=True) == PlanStatus(
         filename=":in memory:",
         directories=[
             DirectoryStatus(
@@ -329,13 +352,31 @@ def test_failure_stops_prints(subdirs):
                     )
                 ],
             ),
+            DirectoryStatus(
+                path=subdirs[1],
+                status="not-started",
+                op_results=[
+                    OperationStatus(
+                        status="not-started",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    )
+                ],
+            ),
             *[
                 DirectoryStatus(
                     path=d,
                     status="not-started",
-                    op_results=[],
+                    op_results=[
+                        OperationStatus(
+                            status="duplicate",
+                            op_slug="duplicate",
+                            details="Same as `[bold cyan]b[/]`",
+                            completed_this_run=False,
+                        ),
+                    ],
                 )
-                for d in subdirs[1:]
+                for d in subdirs[2:]
             ],
         ],
     )
@@ -353,6 +394,7 @@ def test_completed_dirs_always_shown(subdirs):
         ],
         directories=subdirs,
     ).status(
+        collapse_duplicates=True,
         just_completed_steps=[(1, subdirs[3])],
     ) == PlanStatus(
         filename=":in memory:",
@@ -376,7 +418,14 @@ def test_completed_dirs_always_shown(subdirs):
             DirectoryStatus(
                 path=subdirs[2],
                 status="not-started",
-                op_results=[],
+                op_results=[
+                    OperationStatus(
+                        status="duplicate",
+                        op_slug="duplicate",
+                        details="Same as `[bold cyan]a[/]`",
+                        completed_this_run=False,
+                    ),
+                ],
             ),
             DirectoryStatus(
                 path=subdirs[3],
@@ -478,12 +527,16 @@ def test_halted_changes_dir(subdirs, tmp_path):
                 path=e,
                 status="not-started",
                 op_results=[
-                    # TODO: probably should print, since no directory has this exact status?
-                    # OperationStatus(status="not-started", details=GitStatus().summary, op_slug='git-status'),
-                    # OperationStatus(
-                    #     status="not-started", details=ManualConfirmation().summary,
-                    # op_slug='manual-confirmation'
-                    # ),
+                    OperationStatus(
+                        status="not-started",
+                        details=GitStatus().summary,
+                        op_slug="git-status",
+                    ),
+                    OperationStatus(
+                        status="not-started",
+                        details=ManualConfirmation().summary,
+                        op_slug="manual-confirmation",
+                    ),
                 ],
             ),
         ],
@@ -889,6 +942,69 @@ def test_collapse_status_for_dupes(subdirs):
     )
 
     assert plan.status(collapse_duplicates=True) == status
+
+
+def test_skip_collapse_status_for_dupes(subdirs):
+    plan = Plan(
+        operations=[
+            GitStatus(
+                directory_statuses={
+                    subdirs[0]: "completed",
+                    subdirs[1]: "completed",
+                    subdirs[2]: "completed",
+                    subdirs[3]: "completed",
+                }
+            ),
+            GitStatus(
+                directory_statuses={
+                    subdirs[0]: "completed",
+                }
+            ),
+            ManualConfirmation(
+                directory_statuses={
+                    subdirs[0]: "completed",
+                    subdirs[1]: "failed",
+                }
+            ),
+        ],
+        directories=subdirs,
+    )
+    status = PlanStatus(
+        filename=":in memory:",
+        directories=[
+            DirectoryStatus(
+                path=subdirs[0],
+                status="completed",
+                op_results=[],
+            ),
+            *[
+                DirectoryStatus(
+                    path=d,
+                    status="not-started",
+                    op_results=[
+                        OperationStatus(
+                            status="completed",
+                            details=GitStatus().summary,
+                            op_slug="git-status",
+                        ),
+                        OperationStatus(
+                            status="not-started",
+                            details=GitStatus().summary,
+                            op_slug="git-status",
+                        ),
+                        OperationStatus(
+                            status="not-started",
+                            details=ManualConfirmation().summary,
+                            op_slug="manual-confirmation",
+                        ),
+                    ],
+                )
+                for d in subdirs[1:]
+            ],
+        ],
+    )
+
+    assert plan.status(collapse_duplicates=False) == status
 
 
 def test_collapse_status_takes_first(subdirs):

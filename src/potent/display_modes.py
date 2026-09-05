@@ -23,13 +23,8 @@ class DisplayMode:
         """
         Turns a string into a DisplayMode. is responsible for validation instead of cyclopts
         """
-        mode = tokens[0].value
-        if mode not in modes_by_name:
-            raise ValueError(
-                f"{mode} is not a valid display mode. Options are: {display_mode_names}"
-            )
 
-        return modes_by_name[mode]
+        return modes_by_name[tokens[0].value]
 
 
 QuietDisplayMode = DisplayMode(
@@ -52,7 +47,7 @@ VerboseDisplayMode = DisplayMode(
 
 _modes = [QuietDisplayMode, StandardDisplayMode, VerboseDisplayMode]
 
-modes_by_name: dict[DisplayModeNames, DisplayMode] = {m.name: m for m in _modes}
+modes_by_name = {m.name: m for m in _modes}
 
 DisplayModeFlag = Annotated[
     DisplayMode,

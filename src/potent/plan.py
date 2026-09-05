@@ -329,7 +329,6 @@ class Plan(BaseModel):
             includes_run_info=bool(just_completed_steps),
         )
 
-        should_print_all = True
         seen: dict[Path, list[OperationStatus]] = {}
         for d in self.directories:
             status: PrintableStatus = "not-started"
@@ -362,14 +361,12 @@ class Plan(BaseModel):
                         break
 
             elif self.directory_pending(d):
-                if should_print_all:
-                    should_print_all = False
-                else:
-                    operation_statuses = []
+                # already use the default status
+                # but need this block so we don't hit a different case
+                pass
 
             elif self.directory_failed(d):
                 status = "failed"
-                should_print_all = False
 
             else:
                 raise ValueError("Unknown status?")
