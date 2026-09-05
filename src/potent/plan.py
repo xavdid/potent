@@ -29,6 +29,8 @@ from potent.run_events import (
 
 # OPERATION IMPORTS ^
 
+MANUAL_CONFIRMATION_SLUG = ManualConfirmation().slug
+
 
 def unique_items(v):
     if len(v) != len(set(v)):
@@ -145,7 +147,7 @@ class PlanStatus:
     directories: list[DirectoryStatus]
     includes_run_info: bool = False
     """
-    Whether to include emoji that are part of a run
+    Whether to include emoji in the legend to mark items that were completed this run
     """
 
     def to_tree(self) -> Tree:
@@ -239,7 +241,18 @@ class Plan(BaseModel):
         return any(o.failed(directory) for o in self.operations)
 
     def directory_pending(self, directory: Path) -> bool:
-        return any(o.pending(directory) for o in self.operations)
+        """
+        if the first incomplete step is a manual-confirmation
+        """
+        for o in self.operations:
+            if o.completed(directory):
+                continue
+
+            # if the first non-complete step is a pending one, then the directory is also pending
+            return o.pending(directory)
+
+        # if we never returned above, must not be halted
+        return False
 
     def directory_halted(self, directory: Path) -> bool:
         """
@@ -250,7 +263,7 @@ class Plan(BaseModel):
                 continue
 
             # if we hit a manual confirmation that isn't completed, the step is halted
-            if o.slug == "manual-confirmation":
+            if o.slug == MANUAL_CONFIRMATION_SLUG:
                 return True
 
             # any other incomplete step is a failure or a pending, so it's not halted
@@ -320,7 +333,7 @@ class Plan(BaseModel):
         seen: dict[Path, list[OperationStatus]] = {}
         for d in self.directories:
             status: PrintableStatus = "not-started"
-            operations = [
+            operation_statuses = [
                 OperationStatus(
                     status=o.dir_status(d),
                     op_slug=o.slug,
@@ -334,33 +347,44 @@ class Plan(BaseModel):
             if self.directory_complete(d):
                 status = "completed"
                 if not (dir_completed_this_run := d in completed_dirs):
-                    operations = []
+                    operation_statuses = []
 
             elif self.directory_halted(d):
                 status = "halted"
 
                 # mark the halted status that's are actually holding up the step
-                for o in operations:
-                    if o.op_slug == "manual-confirmation" and o.status != "completed":
+                for o in operation_statuses:
+                    if (
+                        o.op_slug == MANUAL_CONFIRMATION_SLUG
+                        and o.status != "completed"
+                    ):
                         o.status = "halted"
                         break
-
-            elif self.directory_failed(d):
-                status = "failed"
-                # failures print all steps, so once we hit one, we no longer need to print every step
-                should_print_all = False
 
             elif self.directory_pending(d):
                 if should_print_all:
                     should_print_all = False
                 else:
-                    operations = []
+                    operation_statuses = []
+
+            elif self.directory_failed(d):
+                status = "failed"
+                should_print_all = False
 
             else:
                 raise ValueError("Unknown status?")
 
+            # if the directory isn't complete and our manual step isn't otherwise marked, don't mark it as failed
+            if status in {"not-started", "failed"}:
+                for o in operation_statuses:
+                    if (
+                        o.op_slug == MANUAL_CONFIRMATION_SLUG
+                        and o.status != "completed"
+                    ):
+                        o.status = "not-started"
+
             # don't treat empty lists as dupes
-            if collapse_duplicates and operations:
+            if collapse_duplicates and operation_statuses:
                 for seen_path, seen_ops in seen.items():
                     # it might be nice to deduplicate these? like
                     # a, b, c
@@ -379,8 +403,8 @@ class Plan(BaseModel):
 
                     # but that requires doing a check here that modifies how the `result.directories` is build.
                     # `DirectoryStatus` assumes a `Path`, so there's a bunch to unwind if we do that
-                    if operations == seen_ops:
-                        operations = [
+                    if operation_statuses == seen_ops:
+                        operation_statuses = [
                             OperationStatus(
                                 status="duplicate",
                                 op_slug="duplicate",  # doesn't matter; only ever needed for manual conf
@@ -388,13 +412,13 @@ class Plan(BaseModel):
                             )
                         ]
                         break
-                seen[d] = operations
+                seen[d] = operation_statuses
 
             result.directories.append(
                 DirectoryStatus(
                     path=d,
                     status=status,
-                    op_results=operations,
+                    op_results=operation_statuses,
                     completed_this_run=dir_completed_this_run,
                 )
             )
@@ -450,7 +474,7 @@ class Plan(BaseModel):
                         if success := result.success:
                             ev.result = "success"
                             just_completed_steps.append((idx, directory))
-                        elif step.slug == "manual-confirmation":
+                        elif step.slug == MANUAL_CONFIRMATION_SLUG:
                             # it failed, but mark it as halted instead of failed
                             ev.result = "halted"
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- don't mark halted steps as failed if there are failed or pending steps before them
+
 ## 0.8.1
 
 _released `2026-08-10`_

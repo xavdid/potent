@@ -958,6 +958,92 @@ def test_collapse_status_takes_first(subdirs):
     assert plan.status(collapse_duplicates=True) == status
 
 
+def test_plans_with_gaps_before_halted_are_pending(subdir: Path):
+    plan = Plan(
+        operations=[
+            GitStatus(directory_statuses={subdir: "completed"}),
+            GitStatus(),
+            ManualConfirmation(directory_statuses={subdir: "failed"}),
+        ],
+        directories=[subdir],
+    )
+
+    status = PlanStatus(
+        filename=":in memory:",
+        directories=[
+            DirectoryStatus(
+                path=subdir,
+                status="not-started",
+                op_results=[
+                    OperationStatus(
+                        status="completed",
+                        op_slug="git-status",
+                        details="git-status",
+                        completed_this_run=False,
+                    ),
+                    OperationStatus(
+                        status="not-started",
+                        op_slug="git-status",
+                        details="git-status",
+                        completed_this_run=False,
+                    ),
+                    OperationStatus(
+                        status="not-started",
+                        op_slug="manual-confirmation",
+                        details="manual-confirmation",
+                        completed_this_run=False,
+                    ),
+                ],
+            )
+        ],
+    )
+
+    assert plan.status() == status
+
+
+def test_failed_steps_dont_shadow_halted_ones(subdir: Path):
+    plan = Plan(
+        operations=[
+            GitStatus(directory_statuses={subdir: "failed"}),
+            GitStatus(),
+            ManualConfirmation(directory_statuses={subdir: "failed"}),
+        ],
+        directories=[subdir],
+    )
+
+    status = PlanStatus(
+        filename=":in memory:",
+        directories=[
+            DirectoryStatus(
+                path=subdir,
+                status="failed",
+                op_results=[
+                    OperationStatus(
+                        status="failed",
+                        op_slug="git-status",
+                        details="git-status",
+                        completed_this_run=False,
+                    ),
+                    OperationStatus(
+                        status="not-started",
+                        op_slug="git-status",
+                        details="git-status",
+                        completed_this_run=False,
+                    ),
+                    OperationStatus(
+                        status="not-started",
+                        op_slug="manual-confirmation",
+                        details="manual-confirmation",
+                        completed_this_run=False,
+                    ),
+                ],
+            )
+        ],
+    )
+
+    assert plan.status() == status
+
+
 def test_renderer_is_called_with_start_and_finish(subdir: Path):
     plan = Plan(operations=[GitStatus()], directories=[subdir])
 
