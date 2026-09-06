@@ -1,7 +1,13 @@
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Annotated, Iterable, Literal, Optional, Union, assert_never
+from typing import (
+    Annotated,
+    Literal,
+    Optional,
+    Union,
+    assert_never,
+)
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from rich.console import Console
@@ -26,6 +32,7 @@ from potent.run_events import (
     OperationFinished,
     OperationStarted,
 )
+from potent.util import get_command_dir
 
 # OPERATION IMPORTS ^
 
@@ -491,9 +498,11 @@ class Plan(BaseModel):
         return just_completed_steps
 
 
-def get_plans_from_path(path: Path) -> Iterable[Plan]:
-    for p in path.iterdir():
-        if p.suffixes != [".plan", ".json"]:
-            continue
+def get_plans_from_path(path: Path) -> list[Plan]:
+    return [
+        Plan.from_path(p) for p in path.iterdir() if p.suffixes == [".plan", ".json"]
+    ]
 
-        yield Plan.from_path(p)
+
+def get_available_commands() -> tuple[list[Plan], list[Plan]]:
+    return get_plans_from_path(get_command_dir()), get_plans_from_path(Path.cwd())

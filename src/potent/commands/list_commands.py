@@ -1,11 +1,8 @@
-from pathlib import Path
-
 import rich
 from cyclopts import App
 from rich.tree import Tree
 
-from potent.plan import get_plans_from_path
-from potent.util import get_command_dir
+from potent.plan import Plan, get_available_commands
 
 app = App()
 
@@ -20,9 +17,9 @@ def list_commands():
         "Currently available plans. Run `[bold cyan]potent run <name>[/]` to invoke any of them."
     )
 
-    def print_tree(path: Path, label: str, trim_filename: bool, color: str):
+    def print_tree(plans: list[Plan], label: str, trim_filename: bool, color: str):
         tree = None
-        for p in get_plans_from_path(path):
+        for p in plans:
             if not tree:
                 tree = root.add(label)
 
@@ -34,7 +31,9 @@ def list_commands():
                 f"[bold {color}]{plan_name}[/]{f' ({p.comment})' if p.comment else ''}"
             )
 
-    print_tree(get_command_dir(), label="global", trim_filename=True, color="blue")
-    print_tree(Path(), label="local", trim_filename=False, color="yellow")
+    global_commands, local_commands = get_available_commands()
+
+    print_tree(global_commands, label="global", trim_filename=True, color="blue")
+    print_tree(local_commands, label="local", trim_filename=False, color="yellow")
 
     rich.print(root)

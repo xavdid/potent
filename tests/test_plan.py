@@ -1,4 +1,6 @@
 import json
+import re
+from itertools import chain
 from pathlib import Path
 from unittest.mock import ANY, MagicMock, Mock, patch
 
@@ -8,7 +10,13 @@ from potent.operations._base import Status
 from potent.operations.git_status import GitStatus
 from potent.operations.manual_confirmation import ManualConfirmation
 from potent.operations.raw_command import RawCommand
-from potent.plan import DirectoryStatus, OperationStatus, Plan, PlanStatus
+from potent.plan import (
+    DirectoryStatus,
+    OperationStatus,
+    Plan,
+    PlanStatus,
+    get_available_commands,
+)
 from potent.run_events import (
     DirectorySkipped,
     DirectoryStarted,
@@ -1205,3 +1213,38 @@ def test_renderer_is_called_with_halted(subdir: Path):
             output=ANY,
         )
     )
+
+
+def test_get_avilable_commands(tmp_path, monkeypatch: pytest.MonkeyPatch):
+    global_dir = tmp_path / "global"
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(global_dir))
+
+    commands_dir = global_dir / "potent" / "commands"
+    commands_dir.mkdir(parents=True)
+
+    basic_plan = Plan(operations=[], directories=[])
+
+    # global commands
+    basic_plan.save(commands_dir / "global_0.plan.json")
+    basic_plan.save(commands_dir / "global_1.plan.json")
+    (commands_dir / "fake.json").touch()  # red herring!
+
+    # local commands
+    basic_plan.save(tmp_path / "local_0.plan.json")
+
+    # so we find the local ones
+    monkeypatch.chdir(tmp_path)
+
+    global_result, local_result = get_available_commands()
+
+    # can't compare the output to anything directly because they all have _path set differently, so comparison fails
+
+    assert len(global_result) == 2
+    assert len(local_result) == 1
+
+    for p in chain(*get_available_commands()):
+        assert p.directories == []
+        assert p.operations == []
+        assert p.comment is None
+        assert p._path
+        assert re.search(r"(local|global)_\d\.plan\.json", p._path.name)
