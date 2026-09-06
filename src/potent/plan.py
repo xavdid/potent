@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Annotated, Literal, Optional, Union, assert_never
+from typing import Annotated, Iterable, Literal, Optional, Union, assert_never
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from rich.console import Console
@@ -301,6 +301,12 @@ class Plan(BaseModel):
 
         return root
 
+    def plan_name(self, short_path=False) -> str:
+        if self._path:
+            return self._path.name if short_path else str(self._path.absolute())
+
+        return ":in memory:"
+
     def status(
         self,
         *,
@@ -318,13 +324,8 @@ class Plan(BaseModel):
         # store what we _just_ finished, if anything
         completed_dirs = {p for _, p in just_completed_steps}
 
-        if self._path:
-            filename = self._path.name if short_path else str(self._path.absolute())
-        else:
-            filename = ":in memory:"
-
         result = PlanStatus(
-            filename=filename,
+            filename=self.plan_name(short_path),
             directories=[],
             includes_run_info=bool(just_completed_steps),
         )
@@ -488,3 +489,11 @@ class Plan(BaseModel):
                 continue
 
         return just_completed_steps
+
+
+def get_plans_from_path(path: Path) -> Iterable[Plan]:
+    for p in path.iterdir():
+        if p.suffixes != [".plan", ".json"]:
+            continue
+
+        yield Plan.from_path(p)

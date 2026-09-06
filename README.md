@@ -305,6 +305,10 @@ Create an empty plan at the specified path. If the path resolves to the config d
 
 - `path` (Path, required): The location in which to to create a blank plan file. Can be a full path or a name. If a name, the named file must not exist in the configured command directory.
 
+### `list-commands`
+
+List all available plans (both global commands and plans in this directory).
+
 ### `reset`
 
 Reset the progress on a plan file so it can be run again from scratch.

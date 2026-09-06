@@ -26,6 +26,9 @@ test-versions *args:
 _test:
   uv run -- pytest --quiet
 
+dev *args:
+  uv run -- potent {{ args }}
+
 lint *args:
   uv run -- ruff check {{ args }}
 

@@ -56,6 +56,7 @@ DisplayModeFlag = Annotated[
         converter=DisplayMode.parse,
         choices=display_mode_names,
         accepts_keys=False,
+        help="Controls how the results are displayed.",
         show_default=False,
     ),
 ]

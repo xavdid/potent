@@ -4,6 +4,7 @@ from cyclopts import App
 from potent.commands.config import app as config
 from potent.commands.describe import app as describe
 from potent.commands.init import app as init
+from potent.commands.list_commands import app as list_commands
 from potent.commands.reset import app as reset
 from potent.commands.run import app as run
 from potent.commands.schema import app as schema
@@ -33,6 +34,7 @@ app.command(reset, name="*")
 app.command(init, name="*")
 app.command(schema)
 app.command(config)
+app.command(list_commands, name="*")
 # COMMANDS ^
 
 

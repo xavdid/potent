@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- don't mark halted steps as failed if there are failed or pending steps before them
+- Add `potent list` command to see all global and local plans that are currently available.
+- don't mark halted steps as failed if there are failed or pending steps before them.
 
 ## 0.8.1
 
