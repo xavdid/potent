@@ -4,6 +4,7 @@
 
 - Add `potent list` command to see all global and local plans that are currently available.
 - don't mark halted steps as failed if there are failed or pending steps before them.
+- fix crash where command output could be interpreted as (invalid) styling markup
 
 ## 0.8.1
 

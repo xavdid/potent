@@ -118,7 +118,7 @@ class BasicRenderer:
                         self.console.print(
                             Panel(
                                 f"\n{output.strip()}\n",
-                                title=f"[dim white]step[not dim]: {summary}",
+                                title=f"[dim white]step[not dim]: {escape(summary)}",
                                 # title=f"[dim white]step[not dim]: {summary}[/][/] | [dim white]directory:[not dim] {path}[/]",
                                 title_align="left",
                                 border_style=style,
@@ -159,19 +159,22 @@ class CompactRenderer:
                 if self._spinner:
                     if result == "failure":
                         self._spinner.stop()
-                        self.console.print(
-                            Panel(
-                                f"\n{output.strip()}\n",
-                                title=f"[dim white]step[not dim]: {summary}",
-                                title_align="left",
-                                border_style="red",
-                            )
-                        )
                     elif result == "success":
                         self._spinner.ok("✅")
                     elif result == "halted":
                         self._spinner.ok("⏸️")
-                        self.console.print()
+
+                if result == "failure":
+                    self.console.print(
+                        Panel(
+                            f"\n{escape(output.strip())}\n",
+                            title=f"[dim white]step[not dim]: {escape(summary)}",
+                            title_align="left",
+                            border_style="red",
+                        )
+                    )
+                elif result == "halted":
+                    self.console.print()
             case other:
                 assert_never(other)
 

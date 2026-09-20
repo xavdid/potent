@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from potent.renderers import BasicRenderer, NoopRenderer
+from potent.renderers import BasicRenderer, CompactRenderer, NoopRenderer
 from potent.run_events import (
     DirectorySkipped,
     DirectoryStarted,
@@ -192,3 +192,39 @@ class TestBasicRenderer:
         )
         captured = capsys.readouterr()
         assert "result: Halted" in captured.out
+
+    def test_output_is_not_markup(
+        self, renderer: BasicRenderer, capsys: pytest.CaptureFixture
+    ):
+        renderer.send(
+            OperationFinished(
+                summary="[/is-not-a-markup-tag]",
+                result="failure",
+                output="[/is-also-not-a-tag]",
+                cmd="pytest",
+                path=Path("/tmp/proj"),
+            )
+        )
+        captured = capsys.readouterr()
+        assert "not-a-tag" in captured.out
+
+
+class TestCompactRenderer:
+    @pytest.fixture
+    def renderer(self) -> CompactRenderer:
+        return CompactRenderer()
+
+    def test_output_is_not_markup(
+        self, renderer: CompactRenderer, capsys: pytest.CaptureFixture
+    ):
+        renderer.send(
+            OperationFinished(
+                summary="[/is-not-a-markup-tag]",
+                result="failure",
+                output="[/is-also-not-a-tag]",
+                cmd="pytest",
+                path=Path("/tmp/proj"),
+            )
+        )
+        captured = capsys.readouterr()
+        assert "not-a-tag" in captured.out
