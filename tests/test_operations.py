@@ -116,6 +116,10 @@ def test_tile_paths_are_retained_when_dumping_plan(path_with_tilde: Path):
             ),
             "start server (raw-command)",
         ],
+        [
+            RawCommand(config=RawCommand.OpConfig(arguments=["npm", "do the thing"])),
+            'npm "do the thing" (raw-command)',
+        ],
     ],
 )
 def test_summary(op: BaseOperation, expected: str):

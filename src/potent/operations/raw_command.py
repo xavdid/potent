@@ -34,12 +34,12 @@ class RawCommand(BaseOperation):
         if self.config.name:
             return f"{self.config.name} ({self.slug})"
 
+        # truncate arguments larger than this in the summary
         LIMIT = 5
 
-        msg = (
-            f"{' '.join(self.config.arguments[:LIMIT])}..."
-            if len(self.config.arguments) > LIMIT
-            else " ".join(self.config.arguments)
-        )
+        segments = self.config.arguments[:LIMIT]
+        msg = " ".join(f'"{s}"' if " " in s else s for s in segments)
+        if len(self.config.arguments) > LIMIT:
+            msg += "..."
 
         return f"{msg} ({self.slug})"

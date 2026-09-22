@@ -3,9 +3,10 @@
 ## Unreleased
 
 - Add `potent list` command to see all global and local plans that are currently available
-- don't mark halted steps as failed if there are incomplete steps before them
 - fix a crash where command output could be interpreted as (invalid) styling markup
+- don't mark halted steps as failed if there are incomplete steps before them
 - clean up duplicate lines when a step fails in `quiet` display mode
+- don't drop quotes from `raw-command` arguments that have spaces in them
 
 ## 0.8.1
 
