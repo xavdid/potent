@@ -119,7 +119,6 @@ class BasicRenderer:
                             Panel(
                                 f"\n{output.strip()}\n",
                                 title=f"[dim white]step[not dim]: {escape(summary)}",
-                                # title=f"[dim white]step[not dim]: {summary}[/][/] | [dim white]directory:[not dim] {path}[/]",
                                 title_align="left",
                                 border_style=style,
                                 subtitle=f"[dim white]result:[/] {subtitle}",
@@ -158,7 +157,7 @@ class CompactRenderer:
             ):
                 if self._spinner:
                     if result == "failure":
-                        self._spinner.stop()
+                        self._spinner.fail("❌")
                     elif result == "success":
                         self._spinner.ok("✅")
                     elif result == "halted":
@@ -168,7 +167,7 @@ class CompactRenderer:
                     self.console.print(
                         Panel(
                             f"\n{escape(output.strip())}\n",
-                            title=f"[dim white]step[not dim]: {escape(summary)}",
+                            # no title here, since the summary was used for the spinner
                             title_align="left",
                             border_style="red",
                         )

@@ -2,15 +2,16 @@
 
 ## Unreleased
 
-- Add `potent list` command to see all global and local plans that are currently available.
-- don't mark halted steps as failed if there are failed or pending steps before them.
-- fix crash where command output could be interpreted as (invalid) styling markup
+- Add `potent list` command to see all global and local plans that are currently available
+- don't mark halted steps as failed if there are incomplete steps before them
+- fix a crash where command output could be interpreted as (invalid) styling markup
+- clean up duplicate lines when a step fails in `quiet` display mode
 
 ## 0.8.1
 
 _released `2026-08-10`_
 
-- fix help text presentation for display mode
+- fix helptext presentation for `display-mode` flag
 
 ## 0.8.0
 
