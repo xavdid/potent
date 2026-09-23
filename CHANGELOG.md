@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.9.0
+
+_released `2026-09-22`_
 
 - add new `assert-branch` operation, which runs _every_ time your plan does and ensures you're not working on the wrong branch in a directory
 - Add `potent list` command to see all global and local plans that are currently available
