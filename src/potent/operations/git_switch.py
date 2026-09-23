@@ -29,43 +29,15 @@ class GitSwitch(BaseOperation):
 
     @override
     def _run(self, directory: Path) -> OperationResult:
-        switch_without_create = self._run_cmd(
-            directory,
-            [
-                "git",
-                "switch",
-                self.config.branch,
-            ],
-        )
+        no_create_cmd = ["git", "switch", self.config.branch]
+        switch_without_create = self._run_cmd(directory, no_create_cmd)
 
         if (
             switch_without_create.returncode > 0
             and self.config.create_if_missing
             and "invalid reference" in switch_without_create.stdout
         ):
-            return OperationResult.from_process(
-                self._run_cmd(
-                    directory,
-                    [
-                        "git",
-                        "switch",
-                        "-c",
-                        self.config.branch,
-                    ],
-                ),
-                cmd=[
-                    "git",
-                    "switch",
-                    "-c",
-                    self.config.branch,
-                ],
-            )
+            cmd = ["git", "switch", "-c", self.config.branch]
+            return OperationResult.from_process(self._run_cmd(directory, cmd), cmd=cmd)
 
-        return OperationResult.from_process(
-            switch_without_create,
-            cmd=[
-                "git",
-                "switch",
-                self.config.branch,
-            ],
-        )
+        return OperationResult.from_process(switch_without_create, cmd=no_create_cmd)

@@ -105,10 +105,8 @@ class BasicRenderer:
                         self.console.print(
                             Panel(
                                 f"\n{'\n'.join(f'- {s}' for s in self.skipped_steps)}\n",
-                                # title=f"[dim white]directory: [/]{path}",
                                 title_align="left",
-                                subtitle="[dim white]result:[/] Skipped",
-                                subtitle_align="left",
+                                title="[dim white]Skipped Steps[/]",
                             )
                         )
                         self.console.print()

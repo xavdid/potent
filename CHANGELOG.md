@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- add new `assert-branch` operation, which runs _every_ time your plan does and ensures you're not working on the wrong branch in a directory
 - Add `potent list` command to see all global and local plans that are currently available
 - fix a crash where command output could be interpreted as (invalid) styling markup
 - don't mark halted steps as failed if there are incomplete steps before them

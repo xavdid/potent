@@ -125,6 +125,7 @@ Each Operation is identified by its unique `slug` field. Each of the Operations 
 
 | Slug                                         | Requires Config? |
 | -------------------------------------------- | ---------------- |
+| [`assert-branch`](#AssertBranch)             | ✅ Reqiured      |
 | [`change-pr-status`](#ChangePrStatus)        | ☑️ Optional      |
 | [`create-pr`](#CreatePR)                     | ✅ Reqiured      |
 | [`git-add`](#GitAdd)                         | ☑️ Optional      |
@@ -136,6 +137,21 @@ Each Operation is identified by its unique `slug` field. Each of the Operations 
 | [`manual-confirmation`](#ManualConfirmation) | ☑️ Optional      |
 | [`raw-command`](#RawCommand)                 | ✅ Reqiured      |
 | [`set-automerge`](#SetAutomerge)             | ☑️ Optional      |
+
+### AssertBranch
+
+Fails if the current git branch doesn't match the configured one. Useful for ensuring a plan is always run against the intended branch. Helpful if you've been working in a directory and want to be sure a plan only runs against a specific branch.
+
+> [!NOTE]
+> This operation will be executed on every run, not just until it succeeds.
+
+**Slug**: `assert-branch`
+
+#### Config
+
+| name     | type  | description | default (if optional) |
+| -------- | ----- | ----------- | --------------------- |
+| `branch` | `str` | branch name |                       |
 
 ### ChangePrStatus
 
@@ -324,7 +340,7 @@ Execute a plan file and then print its status.
 #### Arguments
 
 - `path` (FILE, required): The location of a `.plan.json` file. Can be a full path or a name. If a name, the named file must exist in the configured command directory.
-- `display_mode` (display-mode, optional): Controls how the results are displayed. [choices: quiet, standard, verbose] (default: standard)
+- `display_mode` (display-mode, optional): Controls how the results are displayed.
 - `skip_reset` (bool, optional): If supplied, don't automatically reset a command plan. Ignored for non-command plans.
 
 ### `schema`
@@ -351,7 +367,7 @@ Print the current state of a plan file, including the progress through each dire
 #### Arguments
 
 - `path` (FILE, required): The location of a `.plan.json` file. Can be a full path or a name. If a name, the named file must exist in the configured command directory.
-- `display_mode` (display-mode, optional): Controls how the results are displayed. [choices: quiet, standard, verbose] (default: standard)
+- `display_mode` (display-mode, optional): Controls how the results are displayed.
 
 <!-- END:CLI -->
 

@@ -2,12 +2,7 @@ import subprocess
 from pathlib import Path
 from typing import Annotated, Literal, Optional, final, get_args
 
-from pydantic import (
-    AfterValidator,
-    BaseModel,
-    ConfigDict,
-    FilePath,
-)
+from pydantic import AfterValidator, BaseModel, ConfigDict, FilePath
 
 from potent.util import format_annotation, table_row, truthy_list
 
@@ -87,6 +82,11 @@ class BaseConfig(CommonBase):
 class BaseOperation(CommonBase):
     comment: Optional[str] = None
     directory_statuses: dict[AbsDirPath, Status] = {}
+
+    _always_rerun = False
+    """
+    Most operations are only run until they complete successfully, but operations can opt into re-running every time (e.g. to make assertions)
+    """
 
     @final
     def run(self, directory: Path) -> OperationResult:

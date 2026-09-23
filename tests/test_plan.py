@@ -7,6 +7,7 @@ from unittest.mock import ANY, MagicMock, Mock, patch
 import pytest
 
 from potent.operations._base import Status
+from potent.operations.assert_branch import AssertBranch
 from potent.operations.git_status import GitStatus
 from potent.operations.manual_confirmation import ManualConfirmation
 from potent.operations.raw_command import RawCommand
@@ -1248,3 +1249,25 @@ def test_get_avilable_commands(tmp_path, monkeypatch: pytest.MonkeyPatch):
         assert p.comment is None
         assert p._path
         assert re.search(r"(local|global)_\d\.plan\.json", p._path.name)
+
+
+@patch("subprocess.run", return_value=MagicMock(stdout="", returncode=0))
+def test_assert_runs_every_time(mock_subprocess: MagicMock, subdir):
+    plan = Plan(
+        operations=[
+            AssertBranch(config=AssertBranch.OpConfig(branch="")),
+            ManualConfirmation(),
+        ],
+        directories=[subdir],
+    )
+    plan.run()
+    plan.run()
+    plan.run()
+
+    # assert is called on every run
+    assert len(mock_subprocess.mock_calls) == 3
+
+    # until the plan is complete, then the whole directory is skipped
+    plan.operations[1].directory_statuses[subdir] = "completed"
+    plan.run()
+    assert len(mock_subprocess.mock_calls) == 3

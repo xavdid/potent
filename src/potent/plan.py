@@ -14,6 +14,7 @@ from rich.console import Console
 from rich.tree import Tree
 
 from potent.operations._base import AbsDirPath, PrintableStatus
+from potent.operations.assert_branch import AssertBranch
 from potent.operations.change_pr_status import ChangePrStatus
 from potent.operations.create_pr import CreatePR
 from potent.operations.enable_automerge import SetAutomerge
@@ -196,6 +197,7 @@ class Plan(BaseModel):
                 RawCommand,
                 ManualConfirmation,
                 ChangePrStatus,
+                AssertBranch,
                 # OPERATIONS ^
             ],
             Field(discriminator="slug"),
@@ -466,7 +468,8 @@ class Plan(BaseModel):
                     ev = OperationFinished(
                         directory, summary=step.summary, result="failure", output=""
                     )
-                    if step.completed(directory):
+
+                    if not step._always_rerun and step.completed(directory):
                         ev.result = "skipped"
                         ev.output = "Already completed"
                     else:
@@ -478,7 +481,9 @@ class Plan(BaseModel):
                             self.save()
                         if success := result.success:
                             ev.result = "success"
-                            just_completed_steps.append((idx, directory))
+                            # don't log asserts as new every time
+                            if not step._always_rerun:
+                                just_completed_steps.append((idx, directory))
                         elif step.slug == MANUAL_CONFIRMATION_SLUG:
                             # it failed, but mark it as halted instead of failed
                             ev.result = "halted"
