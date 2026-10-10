@@ -26,6 +26,7 @@ from potent.operations.git_status import GitStatus
 from potent.operations.git_switch import GitSwitch
 from potent.operations.manual_confirmation import ManualConfirmation
 from potent.operations.raw_command import RawCommand
+from potent.plugins import load_plugins
 from potent.renderers import NoopRenderer, Renderer
 from potent.run_events import (
     DirectorySkipped,
@@ -175,6 +176,30 @@ def directory_header(console: Console, directory: Path) -> None:
     )
 
 
+# declaring this here instead of as an annotation means it can be built at runtime
+Operations = list[
+    Annotated[
+        Union[
+            GitPull,
+            GitSwitch,
+            GitStatus,
+            GitAdd,
+            GitCommit,
+            GitPush,
+            CreatePR,
+            SetAutomerge,
+            RawCommand,
+            ManualConfirmation,
+            ChangePrStatus,
+            AssertBranch,
+            # OPERATIONS ^
+            *load_plugins(),
+        ],
+        Field(discriminator="slug"),
+    ]
+]
+
+
 class Plan(BaseModel):
     model_config = ConfigDict(extra="forbid")
     config: Annotated[Union[PlanConfig, CommandConfig], Field(discriminator="mode")] = (
@@ -183,26 +208,7 @@ class Plan(BaseModel):
 
     version: Version = "v1"
     comment: Optional[str] = None
-    operations: list[
-        Annotated[
-            Union[
-                GitPull,
-                GitSwitch,
-                GitStatus,
-                GitAdd,
-                GitCommit,
-                GitPush,
-                CreatePR,
-                SetAutomerge,
-                RawCommand,
-                ManualConfirmation,
-                ChangePrStatus,
-                AssertBranch,
-                # OPERATIONS ^
-            ],
-            Field(discriminator="slug"),
-        ]
-    ]
+    operations: Operations
     directories: Annotated[
         list[AbsDirPath],
         # Len(min_length=1), # we don't want to init plans with a directory that may not exist (or does exist, but has important things in it)
