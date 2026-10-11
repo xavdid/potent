@@ -59,7 +59,7 @@ class CreatePR(BaseOperation):
     config: Config
 
     @override
-    def _run(self, directory: Path) -> OperationResult:
+    def run(self, directory: Path) -> OperationResult:
         cmd = ["gh", "pr", "create", "--title", self.config.title]
 
         if self.config.body_file:
@@ -75,9 +75,4 @@ class CreatePR(BaseOperation):
         if self.config.base_branch:
             cmd += ["--base", self.config.base_branch]
 
-        result = self._run_cmd(
-            directory,
-            cmd,
-        )
-
-        return OperationResult.from_process(result)
+        return self.exec_cmd_with_result(directory, cmd)

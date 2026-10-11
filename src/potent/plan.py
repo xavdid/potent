@@ -26,7 +26,7 @@ from potent.operations.git_status import GitStatus
 from potent.operations.git_switch import GitSwitch
 from potent.operations.manual_confirmation import ManualConfirmation
 from potent.operations.raw_command import RawCommand
-from potent.plugins import load_plugins
+from potent.plugins import get_ops_from_plugins
 from potent.renderers import NoopRenderer, Renderer
 from potent.run_events import (
     DirectorySkipped,
@@ -193,7 +193,7 @@ Operations = list[
             ChangePrStatus,
             AssertBranch,
             # OPERATIONS ^
-            *load_plugins(),
+            *get_ops_from_plugins(),
         ],
         Field(discriminator="slug"),
     ]
@@ -466,45 +466,40 @@ class Plan(BaseModel):
                 renderer.send(DirectorySkipped(directory))
                 continue
 
-            try:
-                worked_dirs.append(directory)
+            worked_dirs.append(directory)
 
-                for idx, step in enumerate(self.operations):
-                    success: Optional[bool] = None  # the ol' triple bool
-                    ev = OperationFinished(
-                        directory, summary=step.summary, result="failure", output=""
+            for idx, step in enumerate(self.operations):
+                success: Optional[bool] = None  # the ol' triple bool
+                ev = OperationFinished(
+                    directory, summary=step.summary, result="failure", output=""
+                )
+
+                if not step.always_rerun and step.completed(directory):
+                    ev.result = "skipped"
+                    ev.output = "Already completed"
+                else:
+                    renderer.send(
+                        OperationStarted(path=directory, summary=step.summary)
                     )
+                    result = step.run_and_record_result(directory)
+                    if self._path:
+                        self.save()
+                    if success := result.success:
+                        ev.result = "success"
+                        # don't log asserts as new every time
+                        if not step.always_rerun:
+                            just_completed_steps.append((idx, directory))
+                    elif step.slug == MANUAL_CONFIRMATION_SLUG:
+                        # it failed, but mark it as halted instead of failed
+                        ev.result = "halted"
 
-                    if not step._always_rerun and step.completed(directory):
-                        ev.result = "skipped"
-                        ev.output = "Already completed"
-                    else:
-                        renderer.send(
-                            OperationStarted(path=directory, summary=step.summary)
-                        )
-                        result = step.run(directory)
-                        if self._path:
-                            self.save()
-                        if success := result.success:
-                            ev.result = "success"
-                            # don't log asserts as new every time
-                            if not step._always_rerun:
-                                just_completed_steps.append((idx, directory))
-                        elif step.slug == MANUAL_CONFIRMATION_SLUG:
-                            # it failed, but mark it as halted instead of failed
-                            ev.result = "halted"
+                    ev.output = result.output
+                    ev.cmd = result.cmd
 
-                        ev.output = result.output
-                        ev.cmd = result.cmd
+                renderer.send(ev)
 
-                    renderer.send(ev)
-
-                    if success is False:
-                        break
-
-            except NotImplementedError:
-                print("    err!")
-                continue
+                if success is False:
+                    break
 
         return just_completed_steps
 

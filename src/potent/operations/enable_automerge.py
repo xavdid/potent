@@ -28,8 +28,8 @@ class SetAutomerge(BaseOperation):
     config: OpConfig = OpConfig()
 
     @override
-    def _run(self, directory: Path) -> OperationResult:
-        result = self._run_cmd(
+    def run(self, directory: Path) -> OperationResult:
+        return self.exec_cmd_with_result(
             directory,
             [
                 "gh",
@@ -39,5 +39,3 @@ class SetAutomerge(BaseOperation):
                 f"--{self.config.mode}",
             ],
         )
-
-        return OperationResult.from_process(result)

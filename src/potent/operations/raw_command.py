@@ -23,10 +23,8 @@ class RawCommand(BaseOperation):
     config: OpConfig
 
     @override
-    def _run(self, directory: Path) -> OperationResult:
-        result = self._run_cmd(directory, self.config.arguments)
-
-        return OperationResult.from_process(result, cmd=self.config.arguments)
+    def run(self, directory: Path) -> OperationResult:
+        return self.exec_cmd_with_result(directory, self.config.arguments)
 
     @property
     @override

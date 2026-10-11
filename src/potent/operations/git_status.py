@@ -12,9 +12,9 @@ class GitStatus(BaseOperation):
     slug: Literal["git-status"] = "git-status"
 
     @override
-    def _run(self, directory: Path) -> OperationResult:
+    def run(self, directory: Path) -> OperationResult:
         cmd = ["git", "status", "--porcelain"]
-        result = self._run_cmd(directory, cmd)
+        result = self.exec_cmd(directory, cmd)
 
         success = not result.stdout
 

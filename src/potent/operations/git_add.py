@@ -45,7 +45,7 @@ class GitAdd(BaseOperation):
         return f"git add{suffix}"
 
     @override
-    def _run(self, directory: Path) -> OperationResult:
+    def run(self, directory: Path) -> OperationResult:
         if self.config.all:
             suffix = ["--all"]
         elif self.config.pattern:
@@ -54,6 +54,4 @@ class GitAdd(BaseOperation):
             raise RuntimeError("model validation should have prevented hitting this")
 
         cmd = ["git", "add", *suffix]
-        result = self._run_cmd(directory, cmd)
-
-        return OperationResult.from_process(result, cmd=cmd)
+        return self.exec_cmd_with_result(directory, cmd)

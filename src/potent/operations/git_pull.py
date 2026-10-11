@@ -12,8 +12,6 @@ class GitPull(BaseOperation):
     slug: Literal["git-pull"] = "git-pull"
 
     @override
-    def _run(self, directory: Path) -> OperationResult:
-        result = self._run_cmd(directory, ["git", "pull"])
-
+    def run(self, directory: Path) -> OperationResult:
         # print stdout? not sure if/when it's useful, can be long
-        return OperationResult.from_process(result)
+        return self.exec_cmd_with_result(directory, ["git", "pull"])

@@ -1271,3 +1271,16 @@ def test_assert_runs_every_time(mock_subprocess: MagicMock, subdir):
     plan.operations[1].directory_statuses[subdir] = "completed"
     plan.run()
     assert len(mock_subprocess.mock_calls) == 3
+
+
+def test_notimplemented_is_handled(subdir, monkeypatch):
+    plan = Plan(
+        operations=[RawCommand(config=RawCommand.OpConfig(arguments=["echo", "ok"]))],
+        directories=[subdir],
+    )
+    m = MagicMock()
+    m.side_effect = NotImplementedError
+    monkeypatch.setattr("potent.operations.raw_command.RawCommand.run", m)
+
+    plan.run()
+    assert plan.directory_failed(subdir)

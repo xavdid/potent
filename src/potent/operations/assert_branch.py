@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Literal, override
+from typing import ClassVar, Literal, override
 
 from potent.operations._base import BaseConfig, BaseOperation, OperationResult
 
@@ -21,7 +21,7 @@ class AssertBranch(BaseOperation):
     slug: Literal["assert-branch"] = "assert-branch"
     config: OpConfig
 
-    _always_rerun = True
+    always_rerun: ClassVar[bool] = True
 
     @property
     @override
@@ -29,9 +29,9 @@ class AssertBranch(BaseOperation):
         return f"assert branch == {self.config.branch}"
 
     @override
-    def _run(self, directory: Path) -> OperationResult:
+    def run(self, directory: Path) -> OperationResult:
         cmd = ["git", "branch", "--show-current"]
-        result = self._run_cmd(directory, cmd)
+        result = self.exec_cmd(directory, cmd)
         current_branch = result.stdout.strip()
 
         success = current_branch == self.config.branch

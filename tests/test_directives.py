@@ -14,7 +14,7 @@ def test_operation_saves_on_fail(tmp_path: Path):
     assert not b.completed(tmp_path)
     assert not b.failed(tmp_path)
 
-    b.run(tmp_path)
+    b.run_and_record_result(tmp_path)
 
     assert b.failed(tmp_path)
 

@@ -34,14 +34,14 @@ def validate_plugin(
             errors.append(f"{ident}: {op}.slug does not have a default value")
             continue
 
-        if not slug_field.default.startswith(package_name):
-            errors.append(f'{ident}: {op}.slug should start with "{package_name}"')
+        if not slug_field.default.startswith(f"{package_name}."):
+            errors.append(f'{ident}: {op}.slug should start with "{package_name}."')
             continue
 
     return ops, errors
 
 
-def load_plugins() -> list[type[BaseOperation]]:
+def get_ops_from_plugins() -> list[type[BaseOperation]]:
     loaded_ops: list[type[BaseOperation]] = []
     errors: list[str] = []
 
@@ -53,8 +53,9 @@ def load_plugins() -> list[type[BaseOperation]]:
             loaded_ops.extend(ops)
 
     if errors:
+        print("There were errors loading plugins:\n")
         for e in errors:
             print(e)
-        raise RuntimeError("There were issues loading plugins")
+        raise RuntimeError("Invalid plugins, see above")
 
     return loaded_ops
