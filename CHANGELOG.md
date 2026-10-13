@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- add plugin support & associated docs ([#5](https://github.com/xavdid/potent/pull/5))
+
 ## 0.9.0
 
 _released `2026-09-22`_

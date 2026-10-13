@@ -36,6 +36,7 @@ example.plan.json
 - [Plans](#plans)
 - [Operations](#operations)
 - [Configuration](#configuration)
+- [Plugins](#plugins)
 - [FAQ](#faq)
 - [Demo](#demo)
 
@@ -95,15 +96,16 @@ If you'd like in-editor hints, you can tell VSCode (or any other editor that sup
   "json.schemas": [
     {
       "fileMatch": ["*.plan.json"],
-      "url": "<SEE BELOW>"
+      "url": "<output of `potent schema url`>"
     }
   ]
 }
 ```
 
-Then, run `potent schema url` and paste the result into the `url` field above.
-
 Specifying the schema will help with autocomplete and flag potential errors during manual authoring.
+
+> [!NOTE]
+> If you use [plugins](#using-plugins), you'll need a slightly different approach. See [below](#editor-validation-with-plugins).
 
 ### Command Plans
 
@@ -409,6 +411,137 @@ The tool has a few ways to show data as scripts are running. Here are the featur
 | `standard` (default) | all, skipped steps grouped | yes                   |
 | `verbose`            | all                        | no                    |
 
+## Using Plugins
+
+3rd party packages can contribute additional [Operations](#operations) to your potent plans. Potent will automatically detect valid plugins that are installed alongside it:
+
+```shell
+uv tool install potent --with potent-example
+```
+
+Then, write your plan as normal. The slugs from 3rd-party Operations will start with the plugin name and a period:
+
+```jsonc
+{
+  // ...
+  "operations": [
+    {
+      "slug": "potent-example.echo",
+    },
+  ],
+}
+```
+
+### Editor Validation with Plugins
+
+If you use the in-editor validation described [above](#authoring-plan-files), you'll need to generate your schema instead of using the public one. Do do that:
+
+```shell
+# after installing a plugin
+potent schema dump > my-schema.json
+```
+
+And then point VSCode to that file:
+
+```json
+{
+  "json.schemas": [
+    {
+      "fileMatch": ["*.plan.json"],
+      "url": "./my-schema.json"
+    }
+  ]
+}
+```
+
+## Authoring Plugins
+
+> [!TIP]
+> There's a template you can start with: TKTK
+
+### Identifying as a Plugin
+
+Your plugin should supply a list of classes that inherit from `BaseOperation`. You expose this via the `[project.entry-points.potent]` key in your `pyproject.toml`. Underneath should be a key & [object reference](https://packaging.python.org/en/latest/specifications/entry-points/#data-model) pointing to your list:
+
+```toml
+[project.entry-points.potent]
+operations = 'potent_plugin:operations'
+```
+
+### Writing an Operation
+
+Each operation inherits from the built-in `BaseOperation` class. The base class provides a number of utility functions and ensures all operations follow a predictable interface. There are a few fields you **must** define:
+
+1. the `slug`. A literal that uniquely identifies your operation. It should start with your package name, followed by a `.`, like `potent-example.something`.
+2. the `run` method. It must accept a `Path` argument (the directory in which the operation will be run) and must return an `OperationResult`.
+
+Additionally, you _should_ define:
+
+3. The `summary` method, to disambiguate between multiple instances of this operation in a plan. This is strongly recommended if your operation takes a config object.
+4. A docstring under your class, which can be picked up by documentation generators.
+
+Lastly, you _may_ define:
+
+5. A nested `OpConfig` class, which provides validated input to your operation. It's accessible inside the `run` method as `self.config.<your property>`.
+
+Here's an example that uses all 5 properties:
+
+```py
+from pathlib import Path
+from typing import Literal, override
+
+from potent import BaseConfig, BaseOperation, OperationResult
+
+
+class EchoOp(BaseOperation):
+    # 4
+    """
+    An example operation that echoes user-defined text.
+    """
+
+    # 5
+    class OpConfig(BaseConfig):
+        text: str
+        """
+        the text to echo
+        """
+
+    # 1
+    slug: Literal["potent-plugin-example.echo"] = "potent-plugin-example.echo"
+    # 5
+    config: OpConfig
+
+    # 2
+    @override
+    def run(self, directory: Path) -> OperationResult:
+        cmd = ["echo", self.config.text]
+        return self.exec_cmd_with_result(directory, cmd)
+
+    # 3
+    @property
+    @override
+    def summary(self) -> str:
+        return f"echo ({self.config.text})"
+```
+
+### `OperationResult`
+
+Each operation must report its result. There are 2 required properties:
+
+- `success: bool`, whether the command should be considered successful
+- `output: str`, shown to the user. In general, this should be the result of the underlying shell command. But, for some operations (like a clean `git status`) it can make sense to provide information when the underlying command doesn't.
+
+There's also an optional `cmd` argument, which shows the user exactly what command was run for the step. This is useful if you have a lot of config properties and you want to be explicit about the final shape of the command.
+
+Consider using the static `OperationResult.from_process(result: subprocess.CompletedProcess[str], cmd: Optional[list[str]] = None)` method, which will simplify construction.
+
+### Available methods
+
+- `exec_cmd_with_result(self, directory: Path, cmd: list[str]) -> OperationResult`
+  - wraps a call to `exec_cmd` and handles result construction under the hood. Most operations will only need this method.
+- `exec_cmd`
+  - a lower-level function that wraps a `subprocess.run` with some good defaults, returning the raw result. Callers are responsible for constructing and returning the `OperationResult` themselves.
+
 ## FAQ
 
 ### Reading validation messages
@@ -423,7 +556,7 @@ operations.0
   Input tag 'bad-slug' found using 'slug' does not match any of the expected tags: 'git-pull',
 'switch-branch', 'git-status', 'git-add', 'git-commit', 'git-push', 'create-pr',
 'enable-automerge', 'raw-command' [type=union_tag_invalid, input_value={'comment': None,
-'direct...', 'allow_empty': True}}, input_type=dict]
+'direct...', 'allow_empty': True}, input_type=dict]
     For further information visit https://errors.pydantic.dev/2.11/v/union_tag_invalid
 ```
 
