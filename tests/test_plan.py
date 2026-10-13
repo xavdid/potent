@@ -26,32 +26,6 @@ from potent.run_events import (
 )
 
 
-@pytest.fixture
-def subdirs(tmp_path) -> list[Path]:
-    """
-    4 subfolders that all exist
-    """
-    dirs = [
-        (tmp_path / "a"),
-        (tmp_path / "b"),
-        (tmp_path / "c"),
-        (tmp_path / "d"),
-    ]
-
-    for d in dirs:
-        d.mkdir()
-
-    return dirs
-
-
-@pytest.fixture
-def subdir(subdirs) -> Path:
-    """
-    1 real subfolder
-    """
-    return subdirs[0]
-
-
 def test_save_path_kwarg(tmp_path):
     dest = tmp_path / "example.plan.json"
     plan = Plan(operations=[], directories=[])

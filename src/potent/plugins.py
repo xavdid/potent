@@ -53,9 +53,8 @@ def get_ops_from_plugins() -> list[type[BaseOperation]]:
             loaded_ops.extend(ops)
 
     if errors:
-        print("There were errors loading plugins:\n")
         for e in errors:
-            print(e)
-        raise RuntimeError("Invalid plugins, see above")
+            print(f"  {e}")
+        raise RuntimeError("There were errors loading plugins, see above")
 
     return loaded_ops
