@@ -1,7 +1,6 @@
-from pathlib import Path
 from typing import Literal, override
 
-from potent.operations._base import BaseConfig, BaseOperation, OperationResult
+from potent.operations._base import BaseConfig, BaseOperation, Context, OperationResult
 
 
 class GitCommit(BaseOperation):
@@ -35,12 +34,13 @@ class GitCommit(BaseOperation):
         return f'git commit -m "{msg}"'
 
     @override
-    def run(self, directory: Path) -> OperationResult:
-        cmd = [
-            "git",
-            "commit",
-            "-m",
-            self.config.message,
-            "--allow-empty" if self.config.allow_empty else "",
-        ]
-        return self.exec_cmd_with_result(directory, cmd)
+    def run(self, context: Context) -> OperationResult:
+        return context.exec_cmd(
+            [
+                "git",
+                "commit",
+                "-m",
+                self.config.message,
+                "--allow-empty" if self.config.allow_empty else "",
+            ]
+        )

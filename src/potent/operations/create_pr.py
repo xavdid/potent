@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Literal, Optional, Self, override
 
 from pydantic import model_validator
@@ -7,6 +6,7 @@ from potent.operations._base import (
     AbsFilePath,
     BaseConfig,
     BaseOperation,
+    Context,
     OperationResult,
 )
 
@@ -59,7 +59,7 @@ class CreatePR(BaseOperation):
     config: Config
 
     @override
-    def run(self, directory: Path) -> OperationResult:
+    def run(self, context: Context) -> OperationResult:
         cmd = ["gh", "pr", "create", "--title", self.config.title]
 
         if self.config.body_file:
@@ -75,4 +75,4 @@ class CreatePR(BaseOperation):
         if self.config.base_branch:
             cmd += ["--base", self.config.base_branch]
 
-        return self.exec_cmd_with_result(directory, cmd)
+        return context.exec_cmd(cmd)

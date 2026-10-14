@@ -1,9 +1,8 @@
-from pathlib import Path
 from typing import Literal, Self, override
 
 from pydantic import model_validator
 
-from potent.operations._base import BaseConfig, BaseOperation, OperationResult
+from potent.operations._base import BaseConfig, BaseOperation, Context, OperationResult
 
 
 class GitAdd(BaseOperation):
@@ -45,13 +44,12 @@ class GitAdd(BaseOperation):
         return f"git add{suffix}"
 
     @override
-    def run(self, directory: Path) -> OperationResult:
+    def run(self, context: Context) -> OperationResult:
         if self.config.all:
             suffix = ["--all"]
         elif self.config.pattern:
-            suffix = [str(s) for s in directory.glob(self.config.pattern)]
+            suffix = [str(s) for s in context.directory.glob(self.config.pattern)]
         else:
             raise RuntimeError("model validation should have prevented hitting this")
 
-        cmd = ["git", "add", *suffix]
-        return self.exec_cmd_with_result(directory, cmd)
+        return context.exec_cmd(["git", "add", *suffix])

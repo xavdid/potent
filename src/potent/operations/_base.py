@@ -1,4 +1,5 @@
 import subprocess
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Annotated, ClassVar, Literal, Optional, final, get_args
 
@@ -47,12 +48,13 @@ AbsFilePath = Annotated[
     FilePath,
     AfterValidator(ensure_abs_path),
 ]
-"""
-AbsFilePath cool comment? This doesn't make it into the generated docs.
-"""
 
 
 class OperationResult(BaseModel):
+    """
+    A struct representing the result of running an operation in a directory. Includes information about the input and output of the command.
+    """
+
     success: bool
     output: str
     cmd: Optional[str] = None
@@ -69,6 +71,37 @@ class OperationResult(BaseModel):
         return OperationResult(
             success=result.returncode == 0, output=result.stdout, cmd=command
         )
+
+
+@dataclass(frozen=True)
+class Context:
+    """
+    Passed to the `run` method of each operation. Holds runtime information and utility functions.
+    """
+
+    directory: Path
+
+    def exec_raw_cmd(self, cmd: list[str]) -> subprocess.CompletedProcess[str]:
+        """
+        Helper for shelling out. Removes falsy elements from `cmd` and doesn't throw for non-zero exit codes.
+
+        Prefer using exec_cmd_with_result, since that wraps the result for you.
+        """
+        return subprocess.run(
+            truthy_list(cmd),
+            cwd=self.directory,
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+
+    def exec_cmd(self, cmd: list[str]) -> OperationResult:
+        """
+        Shell out and run `cmd`, wrapping it in an `OperationResult` for better displaying.
+        """
+        result = self.exec_raw_cmd(cmd)
+        return OperationResult.from_process(result, cmd=cmd)
 
 
 class CommonBase(BaseModel):
@@ -92,7 +125,9 @@ class BaseOperation(CommonBase):
     def run_and_record_result(self, directory: Path) -> OperationResult:
         try:
             # we know the path exists, but it may need to be expanded before use
-            result = self.run(directory.expanduser())
+            # instead of passing the path, could pass a `context` object that has a bunch of helpers attached:
+            # exec and exec_with_result could pre-bind the directory, and the get/set methods for persisting data could get wired up here. Since it would be weird if directory A could read/write information about other directories
+            result = self.run(Context(directory=directory.expanduser()))
         # Could be lots of errors, but mostly I saw `FileNotFoundError` from subprocess.run()
         # when running non-existent commands
         except OSError as e:
@@ -107,7 +142,7 @@ class BaseOperation(CommonBase):
         return result
 
     # operation subclasses will implement this
-    def run(self, directory: Path) -> OperationResult:
+    def run(self, context: Context) -> OperationResult:
         """
         The function that's called to actually execute the step. Probably runs a subcommand (preferably via `self.exec_cmd_with_result`).
         """
@@ -123,46 +158,21 @@ class BaseOperation(CommonBase):
         # children will provide this if needed
         return self.slug  # type: ignore
 
-    # run helpers
-    def exec_cmd(
-        self, directory: Path, cmd: list[str]
-    ) -> subprocess.CompletedProcess[str]:
-        """
-        Helper for shelling out. Removes falsy elements from `cmd` and doesn't throw for non-zero exit codes.
-
-        Prefer using exec_cmd_with_result, since that wraps the result for you.
-        """
-        return subprocess.run(
-            truthy_list(cmd),
-            cwd=directory,
-            check=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-        )
-
-    def exec_cmd_with_result(self, directory: Path, cmd: list[str]) -> OperationResult:
-        """
-        Shell out and run `cmd`, wrapping it in an `OperationResult` for better displaying.
-        """
-        result = self.exec_cmd(directory, cmd)
-        return OperationResult.from_process(result, cmd=cmd)
-
     # process controls
     @final
     def reset(self) -> None:
         self.directory_statuses = {}
 
     @final
-    def completed(self, directory: Path) -> bool:
+    def is_completed(self, directory: Path) -> bool:
         return self.directory_statuses.get(directory) == "completed"
 
     @final
-    def failed(self, directory: Path) -> bool:
+    def is_failed(self, directory: Path) -> bool:
         return self.directory_statuses.get(directory) == "failed"
 
     @final
-    def pending(self, directory: Path) -> bool:
+    def is_pending(self, directory: Path) -> bool:
         return self.directory_statuses.get(directory, "not-started") == "not-started"
 
     @final

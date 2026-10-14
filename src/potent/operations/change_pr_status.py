@@ -1,7 +1,6 @@
-from pathlib import Path
 from typing import Literal, override
 
-from potent.operations._base import BaseConfig, BaseOperation, OperationResult
+from potent.operations._base import BaseConfig, BaseOperation, Context, OperationResult
 
 
 class ChangePrStatus(BaseOperation):
@@ -27,13 +26,7 @@ class ChangePrStatus(BaseOperation):
         return f"Mark PR as {self.config.to_status}"
 
     @override
-    def run(self, directory: Path) -> OperationResult:
-        return self.exec_cmd_with_result(
-            directory,
-            [
-                "gh",
-                "pr",
-                "ready",
-                "--undo" if self.config.to_status == "draft" else "",
-            ],
+    def run(self, context: Context) -> OperationResult:
+        return context.exec_cmd(
+            ["gh", "pr", "ready", "--undo" if self.config.to_status == "draft" else ""]
         )

@@ -1,7 +1,6 @@
-from pathlib import Path
 from typing import Literal, override
 
-from potent.operations._base import BaseConfig, BaseOperation, OperationResult
+from potent.operations._base import BaseConfig, BaseOperation, Context, OperationResult
 
 
 class SetAutomerge(BaseOperation):
@@ -28,9 +27,8 @@ class SetAutomerge(BaseOperation):
     config: OpConfig = OpConfig()
 
     @override
-    def run(self, directory: Path) -> OperationResult:
-        return self.exec_cmd_with_result(
-            directory,
+    def run(self, context: Context) -> OperationResult:
+        return context.exec_cmd(
             [
                 "gh",
                 "pr",

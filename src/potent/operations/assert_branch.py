@@ -1,7 +1,6 @@
-from pathlib import Path
 from typing import ClassVar, Literal, override
 
-from potent.operations._base import BaseConfig, BaseOperation, OperationResult
+from potent.operations._base import BaseConfig, BaseOperation, Context, OperationResult
 
 
 class AssertBranch(BaseOperation):
@@ -29,9 +28,9 @@ class AssertBranch(BaseOperation):
         return f"assert branch == {self.config.branch}"
 
     @override
-    def run(self, directory: Path) -> OperationResult:
+    def run(self, context: Context) -> OperationResult:
         cmd = ["git", "branch", "--show-current"]
-        result = self.exec_cmd(directory, cmd)
+        result = context.exec_raw_cmd(cmd)
         current_branch = result.stdout.strip()
 
         success = current_branch == self.config.branch

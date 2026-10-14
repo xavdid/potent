@@ -250,21 +250,21 @@ class Plan(BaseModel):
             p.reset()
 
     def directory_complete(self, directory: Path) -> bool:
-        return all(o.completed(directory) for o in self.operations)
+        return all(o.is_completed(directory) for o in self.operations)
 
     def directory_failed(self, directory: Path) -> bool:
-        return any(o.failed(directory) for o in self.operations)
+        return any(o.is_failed(directory) for o in self.operations)
 
     def directory_pending(self, directory: Path) -> bool:
         """
         if the first incomplete step is a manual-confirmation
         """
         for o in self.operations:
-            if o.completed(directory):
+            if o.is_completed(directory):
                 continue
 
             # if the first non-complete step is a pending one, then the directory is also pending
-            return o.pending(directory)
+            return o.is_pending(directory)
 
         # if we never returned above, must not be halted
         return False
@@ -274,7 +274,7 @@ class Plan(BaseModel):
         if the first incomplete step is a manual-confirmation
         """
         for o in self.operations:
-            if o.completed(directory):
+            if o.is_completed(directory):
                 continue
 
             # if we hit a manual confirmation that isn't completed, the step is halted
@@ -474,13 +474,14 @@ class Plan(BaseModel):
                     directory, summary=step.summary, result="failure", output=""
                 )
 
-                if not step.always_rerun and step.completed(directory):
+                if not step.always_rerun and step.is_completed(directory):
                     ev.result = "skipped"
                     ev.output = "Already completed"
                 else:
                     renderer.send(
                         OperationStarted(path=directory, summary=step.summary)
                     )
+                    # if an operation can write back to the plan, it has to be a callback wired here?
                     result = step.run_and_record_result(directory)
                     if self._path:
                         self.save()

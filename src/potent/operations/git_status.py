@@ -1,7 +1,6 @@
-from pathlib import Path
 from typing import Literal, override
 
-from potent.operations._base import BaseOperation, OperationResult
+from potent.operations._base import BaseOperation, Context, OperationResult
 
 
 class GitStatus(BaseOperation):
@@ -12,9 +11,9 @@ class GitStatus(BaseOperation):
     slug: Literal["git-status"] = "git-status"
 
     @override
-    def run(self, directory: Path) -> OperationResult:
+    def run(self, context: Context) -> OperationResult:
         cmd = ["git", "status", "--porcelain"]
-        result = self.exec_cmd(directory, cmd)
+        result = context.exec_raw_cmd(cmd)
 
         success = not result.stdout
 

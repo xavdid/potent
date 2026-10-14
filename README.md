@@ -489,7 +489,7 @@ operations = 'potent_plugin:operations'
 Each operation inherits from the built-in `BaseOperation` class. The base class provides a number of utility functions and ensures all operations follow a predictable interface. There are a few fields you **must** define:
 
 1. the `slug`. A literal that uniquely identifies your operation. It should start with your package name, followed by a `.`, like `potent-example.something`.
-2. the `run` method. It must accept a `Path` argument (the directory in which the operation will be run) and must return an `OperationResult`.
+2. the `run` method. It must accept a `potent.Context` argument (see: [context](#run-context)) and must return an `OperationResult`.
 
 Additionally, you _should_ define:
 
@@ -529,9 +529,9 @@ class EchoOp(BaseOperation):
 
     # 2
     @override
-    def run(self, directory: Path) -> OperationResult:
+    def run(self, context: Context) -> OperationResult:
         cmd = ["echo", self.config.text]
-        return self.exec_cmd_with_result(directory, cmd)
+        return context.exec_cmd(cmd)
 
     # 3
     @property
@@ -539,6 +539,23 @@ class EchoOp(BaseOperation):
     def summary(self) -> str:
         return f"echo ({self.config.text})"
 ```
+
+### Run `Context`
+
+Each invocation of the `run` method is passed a `Context` object with properties and helpers useful for implementing an operation.
+
+#### properties
+
+- `directory: Path`
+  - the directory in which the operation is being run
+
+#### methods
+
+- `exec_cmd(cmd: list[str]) -> OperationResult`
+  - a high-level helper for shelling out and running commands. Wraps a call to `exec_raw_cmd` and handles `OperationResult` construction under the hood. Most operations will only need this method. Empty strings are dropped from the `cmd` list.
+- `exec_raw_cmd(cmd: list[str]) -> subprocess.CompletedProcess[str]`
+  - a lower-level function that wraps `subprocess.run` with some good defaults, returning the raw result. Callers are responsible for constructing and returning the `OperationResult` themselves. Empty strings are dropped from the `cmd` list.
+  -
 
 ### `OperationResult`
 
@@ -549,14 +566,7 @@ Each operation must report its result. There are 2 required properties:
 
 There's also an optional `cmd` argument, which shows the user exactly what command was run for the step. This is useful if you have a lot of config properties and you want to be explicit about the final shape of the command.
 
-Consider using the static `OperationResult.from_process(result: subprocess.CompletedProcess[str], cmd: Optional[list[str]] = None)` method, which will simplify construction.
-
-### Helper methods
-
-- `exec_cmd_with_result(self, directory: Path, cmd: list[str]) -> OperationResult`
-  - wraps a call to `exec_cmd` and handles result construction under the hood. Most operations will only need this method.
-- `exec_cmd(self, directory: Path, cmd: list[str]) -> subprocess.CompletedProcess[str]`
-  - a lower-level function that wraps a `subprocess.run` with some good defaults, returning the raw result. Callers are responsible for constructing and returning the `OperationResult` themselves.
+Consider using the static `OperationResult.from_process(result: subprocess.CompletedProcess[str], cmd: Optional[list[str]] = None)` constructor, which extracts data from the `CompletedProcess` for you.
 
 ### Helper properties
 

@@ -1,7 +1,6 @@
-from pathlib import Path
 from typing import Literal, Optional, override
 
-from potent.operations._base import BaseConfig, BaseOperation, OperationResult
+from potent.operations._base import BaseConfig, BaseOperation, Context, OperationResult
 
 
 class ManualConfirmation(BaseOperation):
@@ -21,10 +20,10 @@ class ManualConfirmation(BaseOperation):
     config: OpConfig = OpConfig()
 
     @override
-    def run(self, directory: Path) -> OperationResult:
+    def run(self, context: Context) -> OperationResult:
         return OperationResult(
             success=False,
-            output=f'Manually mark this step as completed for "{directory}" to proceed.',
+            output=f'Manually mark this step as completed for "{context.directory}" to proceed.',
         )
 
     @property

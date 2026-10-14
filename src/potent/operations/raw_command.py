@@ -1,7 +1,6 @@
-from pathlib import Path
 from typing import Literal, Optional, override
 
-from potent.operations._base import BaseConfig, BaseOperation, OperationResult
+from potent.operations._base import BaseConfig, BaseOperation, Context, OperationResult
 
 
 class RawCommand(BaseOperation):
@@ -23,8 +22,8 @@ class RawCommand(BaseOperation):
     config: OpConfig
 
     @override
-    def run(self, directory: Path) -> OperationResult:
-        return self.exec_cmd_with_result(directory, self.config.arguments)
+    def run(self, context: Context) -> OperationResult:
+        return context.exec_cmd(self.config.arguments)
 
     @property
     @override

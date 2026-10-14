@@ -11,12 +11,12 @@ from potent.operations.enable_automerge import SetAutomerge
 def test_operation_saves_on_fail(tmp_path: Path):
     b = BaseOperation(directory_statuses={tmp_path: "not-started"})
 
-    assert not b.completed(tmp_path)
-    assert not b.failed(tmp_path)
+    assert not b.is_completed(tmp_path)
+    assert not b.is_failed(tmp_path)
 
     b.run_and_record_result(tmp_path)
 
-    assert b.failed(tmp_path)
+    assert b.is_failed(tmp_path)
 
 
 def test_automerge_has_only_two_modes():

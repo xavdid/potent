@@ -1,7 +1,6 @@
-from pathlib import Path
 from typing import Literal, override
 
-from potent.operations._base import BaseOperation, OperationResult
+from potent.operations._base import BaseOperation, Context, OperationResult
 
 
 class GitPush(BaseOperation):
@@ -12,5 +11,5 @@ class GitPush(BaseOperation):
     slug: Literal["git-push"] = "git-push"
 
     @override
-    def run(self, directory: Path) -> OperationResult:
-        return self.exec_cmd_with_result(directory, ["git", "push"])
+    def run(self, context: Context) -> OperationResult:
+        return context.exec_cmd(["git", "push"])
