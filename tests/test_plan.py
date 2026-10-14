@@ -26,32 +26,6 @@ from potent.run_events import (
 )
 
 
-@pytest.fixture
-def subdirs(tmp_path) -> list[Path]:
-    """
-    4 subfolders that all exist
-    """
-    dirs = [
-        (tmp_path / "a"),
-        (tmp_path / "b"),
-        (tmp_path / "c"),
-        (tmp_path / "d"),
-    ]
-
-    for d in dirs:
-        d.mkdir()
-
-    return dirs
-
-
-@pytest.fixture
-def subdir(subdirs) -> Path:
-    """
-    1 real subfolder
-    """
-    return subdirs[0]
-
-
 def test_save_path_kwarg(tmp_path):
     dest = tmp_path / "example.plan.json"
     plan = Plan(operations=[], directories=[])
@@ -1271,3 +1245,16 @@ def test_assert_runs_every_time(mock_subprocess: MagicMock, subdir):
     plan.operations[1].directory_statuses[subdir] = "completed"
     plan.run()
     assert len(mock_subprocess.mock_calls) == 3
+
+
+def test_notimplemented_is_handled(subdir, monkeypatch):
+    plan = Plan(
+        operations=[RawCommand(config=RawCommand.OpConfig(arguments=["echo", "ok"]))],
+        directories=[subdir],
+    )
+    m = MagicMock()
+    m.side_effect = NotImplementedError
+    monkeypatch.setattr("potent.operations.raw_command.RawCommand.run", m)
+
+    plan.run()
+    assert plan.directory_failed(subdir)

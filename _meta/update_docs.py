@@ -2,10 +2,8 @@ import inspect
 from itertools import chain
 from pathlib import Path
 from typing import (
-    TYPE_CHECKING,
     Annotated,
     Any,
-    Callable,
     Literal,
     Union,
     get_args,
@@ -16,10 +14,7 @@ from typing import (
 from cyclopts import App, Parameter
 
 from potent.cli import app as CLI
-from potent.plan import Plan
-
-if TYPE_CHECKING:
-    from potent.operations._base import BaseOperation
+from potent.docs import operations_markdown, update_file
 
 # must match the line in readme, so update those together
 type DocBlock = Literal["OPERATIONS", "CLI"]
@@ -189,49 +184,8 @@ def cli_docs() -> list[str]:
     )
 
 
-def operations_markdown() -> list[str]:
-    # the actual list of operations is fairly deeply nested
-    annotated = get_args(Plan.model_fields["operations"].annotation)[0]
-    union = get_args(annotated)[0]
-    operations: list[BaseOperation] = sorted(get_args(union), key=lambda d: d.__name__)
-
-    return [
-        # markdown table with operations names and slugs
-        "### Available Operations",
-        "|Slug|Requires Config?|",
-        "|---|---|",
-        *("|".join(o.to_markdown_summary()) for o in operations),
-        # full docs
-        *chain.from_iterable(o.to_markdown() for o in operations),
-    ]
-
-
-BUILDERS: dict[DocBlock, Callable[[], list[str]]] = {
-    "OPERATIONS": operations_markdown,
-    "CLI": cli_docs,
-}
-
-
-def boundaries(block: DocBlock) -> tuple[str, str]:
-    return f"<!-- BEGIN:{block} -->", f"<!-- END:{block} -->"
-
-
-def update_readme(block: DocBlock):
-    readme = Path(__file__, "..", "..", "README.md").resolve()
-    lines = readme.read_text().splitlines()
-
-    start_flag, stop_flag = boundaries(block)
-
-    start_index = lines.index(start_flag)
-    stop_index = lines.index(stop_flag)
-
-    updated_lines = list(
-        chain(lines[: start_index + 1], BUILDERS[block](), lines[stop_index:], [""])
-    )
-
-    readme.write_text("\n".join(updated_lines))
-
-
 if __name__ == "__main__":
-    for b in get_args(DocBlock.__value__):
-        update_readme(b)
+    update_file(
+        Path(__file__, "..", "..", "README.md").resolve(),
+        {"OPERATIONS": operations_markdown, "CLI": cli_docs},
+    )

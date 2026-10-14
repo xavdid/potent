@@ -35,7 +35,7 @@ class GitCommit(BaseOperation):
         return f'git commit -m "{msg}"'
 
     @override
-    def _run(self, directory: Path) -> OperationResult:
+    def run(self, directory: Path) -> OperationResult:
         cmd = [
             "git",
             "commit",
@@ -43,6 +43,4 @@ class GitCommit(BaseOperation):
             self.config.message,
             "--allow-empty" if self.config.allow_empty else "",
         ]
-        result = self._run_cmd(directory, cmd)
-
-        return OperationResult.from_process(result, cmd=cmd)
+        return self.exec_cmd_with_result(directory, cmd)

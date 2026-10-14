@@ -1,6 +1,6 @@
 import subprocess
 from pathlib import Path
-from typing import Annotated, Literal, Optional, final, get_args
+from typing import Annotated, ClassVar, Literal, Optional, final, get_args
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, FilePath
 
@@ -83,44 +83,35 @@ class BaseOperation(CommonBase):
     comment: Optional[str] = None
     directory_statuses: dict[AbsDirPath, Status] = {}
 
-    _always_rerun = False
+    always_rerun: ClassVar[bool] = False
     """
     Most operations are only run until they complete successfully, but operations can opt into re-running every time (e.g. to make assertions)
     """
 
     @final
-    def run(self, directory: Path) -> OperationResult:
+    def run_and_record_result(self, directory: Path) -> OperationResult:
         try:
             # we know the path exists, but it may need to be expanded before use
-            result = self._run(directory.expanduser())
+            result = self.run(directory.expanduser())
         # Could be lots of errors, but mostly I saw `FileNotFoundError` from subprocess.run()
         # when running non-existent commands
         except OSError as e:
             result = OperationResult(success=False, output=str(e))
+        except NotImplementedError:
+            result = OperationResult(
+                success=False,
+                output=f'Step "{self.summary}" does not implement `.run()`',
+            )
 
         self.directory_statuses[directory] = "completed" if result.success else "failed"
         return result
 
-    def _run(self, directory: Path) -> OperationResult:
+    # operation subclasses will implement this
+    def run(self, directory: Path) -> OperationResult:
+        """
+        The function that's called to actually execute the step. Probably runs a subcommand (preferably via `self.exec_cmd_with_result`).
+        """
         raise NotImplementedError
-
-    def reset(self) -> None:
-        self.directory_statuses = {}
-
-    def completed(self, directory: Path) -> bool:
-        return self.directory_statuses.get(directory) == "completed"
-
-    def failed(self, directory: Path) -> bool:
-        return self.directory_statuses.get(directory) == "failed"
-
-    def pending(self, directory: Path) -> bool:
-        return self.directory_statuses.get(directory, "not-started") == "not-started"
-
-    def dir_status(self, directory: Path) -> Status:
-        return self.directory_statuses.get(directory, "not-started")
-
-    def initialize_dirs(self, directories: list[Path]) -> None:
-        self.directory_statuses |= dict.fromkeys(directories, "not-started")
 
     @property
     def summary(self) -> str:
@@ -132,11 +123,14 @@ class BaseOperation(CommonBase):
         # children will provide this if needed
         return self.slug  # type: ignore
 
-    def _run_cmd(
+    # run helpers
+    def exec_cmd(
         self, directory: Path, cmd: list[str]
     ) -> subprocess.CompletedProcess[str]:
         """
-        helper for shelling out
+        Helper for shelling out. Removes falsy elements from `cmd` and doesn't throw for non-zero exit codes.
+
+        Prefer using exec_cmd_with_result, since that wraps the result for you.
         """
         return subprocess.run(
             truthy_list(cmd),
@@ -147,10 +141,39 @@ class BaseOperation(CommonBase):
             text=True,
         )
 
-    def _wrap_run(self, directory: Path, cmd: list[str]) -> OperationResult:
-        result = self._run_cmd(directory, cmd)
+    def exec_cmd_with_result(self, directory: Path, cmd: list[str]) -> OperationResult:
+        """
+        Shell out and run `cmd`, wrapping it in an `OperationResult` for better displaying.
+        """
+        result = self.exec_cmd(directory, cmd)
         return OperationResult.from_process(result, cmd=cmd)
 
+    # process controls
+    @final
+    def reset(self) -> None:
+        self.directory_statuses = {}
+
+    @final
+    def completed(self, directory: Path) -> bool:
+        return self.directory_statuses.get(directory) == "completed"
+
+    @final
+    def failed(self, directory: Path) -> bool:
+        return self.directory_statuses.get(directory) == "failed"
+
+    @final
+    def pending(self, directory: Path) -> bool:
+        return self.directory_statuses.get(directory, "not-started") == "not-started"
+
+    @final
+    def dir_status(self, directory: Path) -> Status:
+        return self.directory_statuses.get(directory, "not-started")
+
+    @final
+    def initialize_dirs(self, directories: list[Path]) -> None:
+        self.directory_statuses |= dict.fromkeys(directories, "not-started")
+
+    # docs helpers
     @classmethod
     def to_markdown(cls) -> list[str]:
         """
@@ -173,30 +196,27 @@ class BaseOperation(CommonBase):
                 "",
                 f"#### Config{'' if raw_config.is_required() else ' (optional)'}",
                 "",
-                table_row(["name", "type", "description", "default (if optional)"]),
-                table_row(["---"] * 4),
+                table_row("name", "type", "description", "default (if optional)"),
+                table_row(*(["---"] * 4)),
                 *[
                     table_row(
-                        [
-                            f"`{conf_key}`",
-                            format_annotation(v.annotation),
-                            v.description,
-                            ""
-                            if v.is_required()
-                            else f"`{f'"{v.default}"' if isinstance(v.default, str) else v.default}`",
-                        ]
+                        f"`{conf_key}`",
+                        format_annotation(v.annotation),
+                        v.description,
+                        ""
+                        if v.is_required()
+                        else f"`{f'"{v.default}"' if isinstance(v.default, str) else v.default}`",
                     )
                     for conf_key, v in config.items()
                 ],
             ]
-        # return fields
 
         return lines
 
     @classmethod
     def to_markdown_summary(cls) -> tuple[str, str]:
         """
-        Returns a tuple of (slug, required_config) to summarize this operation. The slug is also a link to the
+        Returns a tuple of (slug, required_config) to summarize this operation. The slug is also a link to the section in the docs.
         """
 
         fields = cls.model_fields

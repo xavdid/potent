@@ -27,8 +27,8 @@ class ChangePrStatus(BaseOperation):
         return f"Mark PR as {self.config.to_status}"
 
     @override
-    def _run(self, directory: Path) -> OperationResult:
-        result = self._run_cmd(
+    def run(self, directory: Path) -> OperationResult:
+        return self.exec_cmd_with_result(
             directory,
             [
                 "gh",
@@ -37,5 +37,3 @@ class ChangePrStatus(BaseOperation):
                 "--undo" if self.config.to_status == "draft" else "",
             ],
         )
-
-        return OperationResult.from_process(result)

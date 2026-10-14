@@ -21,7 +21,7 @@ class ManualConfirmation(BaseOperation):
     config: OpConfig = OpConfig()
 
     @override
-    def _run(self, directory: Path) -> OperationResult:
+    def run(self, directory: Path) -> OperationResult:
         return OperationResult(
             success=False,
             output=f'Manually mark this step as completed for "{directory}" to proceed.',
