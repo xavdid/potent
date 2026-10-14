@@ -4,7 +4,7 @@
 
 - add plugin support & `docs` CLI command ([#5](https://github.com/xavdid/potent/pull/5))
 - fix crash when an operation doesn't implement `run`
-- mark `BaseOperation`, `OperationResult`, and `BaseConfig` as exported so plugin authors can use them
+- mark `BaseOperation`, `OperationResult`, `Context`, and `BaseConfig` as exported so plugin authors can use them
 
 ## 0.9.0
 

@@ -555,7 +555,6 @@ Each invocation of the `run` method is passed a `Context` object with properties
   - a high-level helper for shelling out and running commands. Wraps a call to `exec_raw_cmd` and handles `OperationResult` construction under the hood. Most operations will only need this method. Empty strings are dropped from the `cmd` list.
 - `exec_raw_cmd(cmd: list[str]) -> subprocess.CompletedProcess[str]`
   - a lower-level function that wraps `subprocess.run` with some good defaults, returning the raw result. Callers are responsible for constructing and returning the `OperationResult` themselves. Empty strings are dropped from the `cmd` list.
-  -
 
 ### `OperationResult`
 
@@ -568,7 +567,7 @@ There's also an optional `cmd` argument, which shows the user exactly what comma
 
 Consider using the static `OperationResult.from_process(result: subprocess.CompletedProcess[str], cmd: Optional[list[str]] = None)` constructor, which extracts data from the `CompletedProcess` for you.
 
-### Helper properties
+### Configurable properties
 
 - `always_rerun: ClassVar[bool]`
   - if `True`, the check is re-run on _every_ plan run instead of just once. Useful for assertions. Defaults to `False`.

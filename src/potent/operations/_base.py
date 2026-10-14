@@ -125,10 +125,9 @@ class BaseOperation(CommonBase):
     def run_and_record_result(self, directory: Path) -> OperationResult:
         try:
             # we know the path exists, but it may need to be expanded before use
-            # instead of passing the path, could pass a `context` object that has a bunch of helpers attached:
-            # exec and exec_with_result could pre-bind the directory, and the get/set methods for persisting data could get wired up here. Since it would be weird if directory A could read/write information about other directories
             result = self.run(Context(directory=directory.expanduser()))
-        # Could be lots of errors, but mostly I saw `FileNotFoundError` from subprocess.run()
+
+        # Could get lots of errors here, but mostly I saw `FileNotFoundError` from subprocess.run()
         # when running non-existent commands
         except OSError as e:
             result = OperationResult(success=False, output=str(e))
