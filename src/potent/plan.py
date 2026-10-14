@@ -237,7 +237,7 @@ class Plan(BaseModel):
 
         tmp = dest.with_suffix(".tmp")
         # theoretically, writing the file can fail partway and leave us in a weird state
-        tmp.write_text(self.model_dump_json(indent=2))
+        tmp.write_text(self.model_dump_json(indent=2, exclude_none=True))
         # but the replace operation is atomic- if we get this far, the original write worked and we're ~guaranteed to produce a
         # this move retains the original file's metadata and deletes the tmp file in one go
         tmp.replace(dest)
