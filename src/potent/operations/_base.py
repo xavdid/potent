@@ -196,18 +196,16 @@ class BaseOperation(CommonBase):
                 "",
                 f"#### Config{'' if raw_config.is_required() else ' (optional)'}",
                 "",
-                table_row(["name", "type", "description", "default (if optional)"]),
-                table_row(["---"] * 4),
+                table_row("name", "type", "description", "default (if optional)"),
+                table_row(*(["---"] * 4)),
                 *[
                     table_row(
-                        [
-                            f"`{conf_key}`",
-                            format_annotation(v.annotation),
-                            v.description,
-                            ""
-                            if v.is_required()
-                            else f"`{f'"{v.default}"' if isinstance(v.default, str) else v.default}`",
-                        ]
+                        f"`{conf_key}`",
+                        format_annotation(v.annotation),
+                        v.description,
+                        ""
+                        if v.is_required()
+                        else f"`{f'"{v.default}"' if isinstance(v.default, str) else v.default}`",
                     )
                     for conf_key, v in config.items()
                 ],
@@ -218,7 +216,7 @@ class BaseOperation(CommonBase):
     @classmethod
     def to_markdown_summary(cls) -> tuple[str, str]:
         """
-        Returns a tuple of (slug, required_config) to summarize this operation. The slug is also a link to the
+        Returns a tuple of (slug, required_config) to summarize this operation. The slug is also a link to the section in the docs.
         """
 
         fields = cls.model_fields

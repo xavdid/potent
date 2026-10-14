@@ -26,6 +26,7 @@ test-versions *args:
 _test:
   uv run -- pytest --quiet
 
+[no-exit-message]
 dev *args:
   uv run -- potent {{ args }}
 

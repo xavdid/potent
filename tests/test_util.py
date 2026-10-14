@@ -29,7 +29,7 @@ def test_truthy_list(input_list, expected):
     ],
 )
 def test_table_row_builder(input_list, expected):
-    assert table_row(input_list) == expected
+    assert table_row(*input_list) == expected
 
 
 def test_get_command_dir_default():

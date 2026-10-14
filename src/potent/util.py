@@ -12,7 +12,7 @@ def truthy_list[T](l: list[T]) -> list[T]:
     return list(filter(None, l))
 
 
-def table_row(l: list[str]) -> str:
+def table_row(*l: str) -> str:
     return " | ".join(l).join("||")
 
 

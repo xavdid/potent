@@ -315,6 +315,22 @@ Print basic info about the plan, including the directories on which it acts and 
 
 - `path` (FILE, required): The location of a `.plan.json` file. Can be a full path or a name. If a name, the named file must exist in the configured command directory.
 
+### `docs`
+
+Commands to interact with auto-documentation.
+
+It includes the following subcommands:
+
+- `generate`
+
+### `docs generate`
+
+Generate markdown docs for all installed operations. If you're developing a plugin, running this in that directory will only show the operations your plugin contributes.
+
+#### Arguments
+
+- `into_file` (pathlib.Path | None, optional): If present, generate docs between the start and end markers in this file. Otherwise, prints to stdout.
+
 ### `init`
 
 Create an empty plan at the specified path. If the path resolves to the config directory, then it defaults to `command` mode. Otherwise, the default of `plan` is used.
