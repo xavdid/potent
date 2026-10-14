@@ -473,7 +473,7 @@ And then point VSCode to that file:
 ## Authoring Plugins
 
 > [!TIP]
-> There's a template you can start with: TKTK
+> There's a template you can start with: https://github.com/xavdid/potent-plugin-template
 
 ### Identifying as a Plugin
 
