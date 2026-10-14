@@ -551,12 +551,17 @@ There's also an optional `cmd` argument, which shows the user exactly what comma
 
 Consider using the static `OperationResult.from_process(result: subprocess.CompletedProcess[str], cmd: Optional[list[str]] = None)` method, which will simplify construction.
 
-### Available methods
+### Helper methods
 
 - `exec_cmd_with_result(self, directory: Path, cmd: list[str]) -> OperationResult`
   - wraps a call to `exec_cmd` and handles result construction under the hood. Most operations will only need this method.
-- `exec_cmd`
+- `exec_cmd(self, directory: Path, cmd: list[str]) -> subprocess.CompletedProcess[str]`
   - a lower-level function that wraps a `subprocess.run` with some good defaults, returning the raw result. Callers are responsible for constructing and returning the `OperationResult` themselves.
+
+### Helper properties
+
+- `always_rerun: ClassVar[bool]`
+  - if `True`, the check is re-run on _every_ plan run instead of just once. Useful for assertions. Defaults to `False`.
 
 ## FAQ
 
