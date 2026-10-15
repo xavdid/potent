@@ -4,6 +4,14 @@ import pathlib  # used for pattern matching
 import typing
 from pathlib import Path  # used for actual python operations
 
+DataValType = str | int | bool
+
+
+class DataReadException(Exception):
+    """
+    Raised when there's a problem reading from a plan's data
+    """
+
 
 def truthy_list[T](l: list[T]) -> list[T]:
     """

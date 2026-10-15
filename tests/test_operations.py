@@ -26,7 +26,9 @@ def path_with_tilde():
 )
 def test_os_errors_handled(_mock_run, tmp_path: Path):
     result = RawCommand(config=RawCommand.OpConfig(arguments=[])).run_and_record_result(
-        tmp_path
+        tmp_path,
+        read_func=lambda: None,  # type:ignore
+        write_func=lambda: None,  # type:ignore
     )
 
     # should fail, but not throw
