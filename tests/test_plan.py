@@ -24,6 +24,7 @@ from potent.run_events import (
     OperationFinished,
     OperationStarted,
 )
+from potent.util import DataReadException
 
 
 def test_save_path_kwarg(tmp_path):
@@ -153,6 +154,7 @@ def test_reset(tmp_path: Path):
     p = Plan(
         operations=[GitStatus(directory_statuses={tmp_path: "failed"})],
         directories=[tmp_path],
+        data={str(tmp_path): {"a": 1, "b": True}},
     )
 
     assert p.directory_failed(tmp_path)
@@ -160,6 +162,7 @@ def test_reset(tmp_path: Path):
     p.reset()
 
     assert p.directory_pending(tmp_path)
+    assert p.data is None
 
 
 def test_only_first_pending_dir_prints_steps(subdirs):
@@ -1258,3 +1261,58 @@ def test_notimplemented_is_handled(subdir, monkeypatch):
 
     plan.run()
     assert plan.directory_failed(subdir)
+
+
+def test_read_data(subdir):
+    plan = Plan(
+        operations=[],
+        directories=[subdir],
+        data={str(subdir): {"cool": True, "age": 100, "name": "bruce"}},
+    )
+    assert plan.read_data(subdir, "cool")
+    assert plan.read_data(subdir, "age") == 100
+    assert plan.read_data(subdir, "name") == "bruce"
+
+
+def test_data_serialization(subdir):
+    plan = Plan(
+        operations=[],
+        directories=[subdir],
+        data={str(subdir): {"cool": True, "age": 100, "name": "bruce"}},
+    )
+    json_str = plan.model_dump_json(exclude_none=True)
+    parsed = json.loads(json_str)
+
+    assert parsed["data"][str(subdir)]["cool"]
+    assert parsed["data"][str(subdir)]["age"] == 100
+    assert parsed["data"][str(subdir)]["name"] == "bruce"
+
+    Plan.model_validate_json(json_str)
+    assert plan.read_data(subdir, "cool")
+    assert plan.read_data(subdir, "age") == 100
+    assert plan.read_data(subdir, "name") == "bruce"
+
+
+def test_read_data_error(subdir):
+    plan = Plan(operations=[], directories=[subdir])
+
+    with pytest.raises(DataReadException):
+        plan.read_data(subdir, "name")
+
+    plan = Plan(operations=[], directories=[subdir], data={})
+    with pytest.raises(DataReadException):
+        plan.read_data(subdir, "name")
+
+    plan = Plan(operations=[], directories=[subdir], data={str(subdir): {}})
+    with pytest.raises(DataReadException):
+        plan.read_data(subdir, "name")
+
+
+def test_write_data(subdir):
+    plan = Plan(operations=[], directories=[subdir])
+    plan.write_data(subdir, "cool", True)
+    plan.write_data(subdir, "age", 100)
+    plan.write_data(subdir, "name", "bruce")
+
+    assert plan.data
+    assert plan.data[str(subdir)] == {"cool": True, "age": 100, "name": "bruce"}

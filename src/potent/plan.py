@@ -34,7 +34,7 @@ from potent.run_events import (
     OperationFinished,
     OperationStarted,
 )
-from potent.util import get_command_dir
+from potent.util import DataReadException, DataValType, get_command_dir
 
 # OPERATION IMPORTS ^
 
@@ -214,6 +214,7 @@ class Plan(BaseModel):
         # Len(min_length=1), # we don't want to init plans with a directory that may not exist (or does exist, but has important things in it)
         AfterValidator(unique_items),
     ]
+    data: Optional[dict[str, dict[str, DataValType]]] = None
     _path: Optional[Path] = None
     """
     When running the plan, progress events are sent to the renderer for presentation
@@ -248,6 +249,7 @@ class Plan(BaseModel):
     def reset(self):
         for p in self.operations:
             p.reset()
+        self.data = None
 
     def directory_complete(self, directory: Path) -> bool:
         return all(o.is_completed(directory) for o in self.operations)
@@ -481,8 +483,13 @@ class Plan(BaseModel):
                     renderer.send(
                         OperationStarted(path=directory, summary=step.summary)
                     )
-                    # if an operation can write back to the plan, it has to be a callback wired here?
-                    result = step.run_and_record_result(directory)
+
+                    result = step.run_and_record_result(
+                        directory,
+                        read_func=self.read_data,
+                        write_func=self.write_data,
+                    )
+
                     if self._path:
                         self.save()
                     if success := result.success:
@@ -503,6 +510,31 @@ class Plan(BaseModel):
                     break
 
         return just_completed_steps
+
+    def read_data(self, directory: Path, key: str) -> DataValType:
+        directory_str = str(directory)
+        if self.data is None:
+            raise DataReadException("no data has been written")
+
+        if self.data.get(directory_str) is None:
+            raise DataReadException("no data has been written for this directory")
+
+        try:
+            return self.data[directory_str][key]
+        except KeyError:
+            raise DataReadException(
+                f'Key "{key}" was not present in data for "{directory_str}"'
+            )
+
+    def write_data(self, directory: Path, key: str, value: DataValType) -> None:
+        directory_str = str(directory)
+        if self.data is None:
+            self.data = {}
+
+        if self.data.get(directory_str) is None:
+            self.data[directory_str] = {}
+
+        self.data[directory_str][key] = value
 
 
 def get_plans_from_path(path: Path) -> list[Plan]:
