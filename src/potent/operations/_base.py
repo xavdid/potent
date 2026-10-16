@@ -221,7 +221,12 @@ class BaseOperation(CommonBase):
         Otherwise, return the original untouched.
         """
         if config := cast("BaseConfig", getattr(self, CONFIG_KEY, None)):
-            return self.model_copy(update={CONFIG_KEY: config._resolve(lookup)})
+            return self.model_copy(
+                update={CONFIG_KEY: config._resolve(lookup)},
+                # we explicitly want to share other state between the copied instances of the model
+                # for example, the directory_statuses of the copy that we run should be reflected in the original (which is owned by, and saved by, the Plan)
+                deep=False,
+            )
 
         return self
 
