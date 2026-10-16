@@ -92,6 +92,9 @@ class OperationResult(BaseModel):
         )
 
 
+LookupFunc = Callable[[str], DataValType]
+
+
 @dataclass(frozen=True)
 class Context:
     """
@@ -99,7 +102,7 @@ class Context:
     """
 
     directory: Path
-    _read_func: Callable[[str], DataValType]
+    _read_func: LookupFunc
     _write_func: Callable[[str, DataValType], None]
 
     def exec_raw_cmd(self, cmd: list[str]) -> subprocess.CompletedProcess[str]:
@@ -135,9 +138,8 @@ class CommonBase(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-TEMPLATE_RE = re.compile(r"\{\{\s*(\w+)\s*\}\}")
-
-LookupFunc = Callable[[str], DataValType]
+# the text inside a `{{ }}` pair
+TEMPLATE_REGEX = re.compile(r"\{\{\s*(\w+)\s*\}\}")
 
 
 class BaseConfig(CommonBase):
@@ -150,7 +152,7 @@ class BaseConfig(CommonBase):
 
         return self.model_copy(
             update={
-                name: TEMPLATE_RE.sub(lambda m: str(lookup(m.group(1))), value)
+                name: TEMPLATE_REGEX.sub(lambda m: str(lookup(m.group(1))), value)
                 for name, value in self
                 if type(value) is str
             }
@@ -168,21 +170,10 @@ class BaseOperation(CommonBase):
 
     @final
     def run_and_record_result(
-        self,
-        directory: Path,
-        /,
-        read_func: Callable[[Path, str], DataValType],
-        write_func: Callable[[Path, str, DataValType], None],
+        self, raw_directory: Path, context: Context
     ) -> OperationResult:
         try:
-            result = self.run(
-                Context(
-                    # we know the path exists, but it may need to be expanded before use
-                    directory=directory.expanduser(),
-                    _read_func=partial(read_func, directory),
-                    _write_func=partial(write_func, directory),
-                )
-            )
+            result = self.run(context)
         # Could get lots of errors here, but mostly I saw `FileNotFoundError` from subprocess.run()
         # when running non-existent commands
         except OSError as e:
@@ -193,7 +184,8 @@ class BaseOperation(CommonBase):
                 output=f'Step "{self.summary}" does not implement `.run()`',
             )
 
-        self.record_result(directory, result.success)
+        # internal to the plan, everything uses the plain, un-expanded directory
+        self.record_result(raw_directory, result.success)
         return result
 
     # operation subclasses will implement this

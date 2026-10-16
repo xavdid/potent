@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
+from functools import partial
 from pathlib import Path
 from typing import (
     Annotated,
@@ -16,6 +17,7 @@ from rich.tree import Tree
 from potent.operations._base import (
     AbsDirPath,
     BaseOperation,
+    Context,
     PrintableStatus,
 )
 from potent.operations.assert_branch import AssertBranch
@@ -503,9 +505,13 @@ class Plan(BaseModel):
                         step.record_result(directory, False)
                     else:
                         result = resolved_step.run_and_record_result(
-                            directory,
-                            read_func=self.read_data,
-                            write_func=self.write_data,
+                            raw_directory=directory,
+                            context=Context(
+                                # we know the path exists, but it may need to be expanded before use
+                                directory=directory.expanduser(),
+                                _read_func=partial(self.read_data, directory),
+                                _write_func=partial(self.write_data, directory),
+                            ),
                         )
                         if self._path:
                             self.save()
