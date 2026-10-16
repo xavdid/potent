@@ -6,6 +6,7 @@
 - fix crash when an operation doesn't implement `run`
 - mark `BaseOperation`, `OperationResult`, `Context`, and `BaseConfig` as exported so plugin authors can use them
 - don't write `None` values when dumping a `Plan` to json
+- fix not showing the command when failing in compact mode
 
 ## 0.9.0
 
