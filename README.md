@@ -107,6 +107,10 @@ Specifying the schema will help with autocomplete and flag potential errors duri
 > [!NOTE]
 > If you use [plugins](#using-plugins), you'll need a slightly different approach. See [below](#editor-validation-with-plugins).
 
+### Templates
+
+TKTK
+
 ### Command Plans
 
 Command plans are special plan variant that will auto-reset themselves once each calendar day. They're useful for plans you want to run periodically but are still idempotent within a daily window. For example, running `git pull` on a bunch of directories.

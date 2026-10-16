@@ -2,7 +2,6 @@ import re
 import subprocess
 from collections.abc import Callable
 from dataclasses import dataclass
-from functools import partial
 from pathlib import Path
 from typing import (
     Annotated,
@@ -145,16 +144,16 @@ TEMPLATE_REGEX = re.compile(r"\{\{\s*(\w+)\s*\}\}")
 class BaseConfig(CommonBase):
     model_config = ConfigDict(use_attribute_docstrings=True)
 
-    def _resolve(self, lookup: LookupFunc) -> Self:
+    def _resolve(self, resolver: LookupFunc) -> Self:
         """
         (attempt to) materialize all templates into true values. Returns a copy of the original config.
         """
 
         return self.model_copy(
             update={
-                name: TEMPLATE_REGEX.sub(lambda m: str(lookup(m.group(1))), value)
+                name: TEMPLATE_REGEX.sub(lambda m: str(resolver(m.group(1))), value)
                 for name, value in self
-                if type(value) is str
+                if isinstance(value, str)
             }
         )
 
@@ -206,7 +205,7 @@ class BaseOperation(CommonBase):
         return self.slug  # type: ignore
 
     # internal helpers
-    def _resolve(self, lookup: LookupFunc) -> Self:
+    def _resolve(self, resolver: LookupFunc) -> Self:
         """
         If this operation has a config, copy this operation and replace its config with a resolved copy.
 
@@ -214,7 +213,7 @@ class BaseOperation(CommonBase):
         """
         if config := cast("BaseConfig", getattr(self, CONFIG_KEY, None)):
             return self.model_copy(
-                update={CONFIG_KEY: config._resolve(lookup)},
+                update={CONFIG_KEY: config._resolve(resolver)},
                 # we explicitly want to share other state between the copied instances of the model
                 # for example, the directory_statuses of the copy that we run should be reflected in the original (which is owned by, and saved by, the Plan)
                 deep=False,

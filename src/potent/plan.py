@@ -497,7 +497,6 @@ class Plan(BaseModel):
                         )
                     )
 
-                    result = None
                     try:
                         resolved_step = self.resolve_operation(step, directory)
                     except DataReadException as e:
@@ -535,13 +534,13 @@ class Plan(BaseModel):
 
         return just_completed_steps
 
-    def resolve_operation(
+    def resolve_operation[T: BaseOperation](
         self,
-        op: BaseOperation,
+        op: T,
         directory: Path,
         *,
         raise_read_errors: bool = True,
-    ) -> BaseOperation:
+    ) -> T:
         def lookup(key: str) -> DataValType:
             try:
                 return self.read_data(directory, key)
