@@ -5,11 +5,11 @@ from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
 from typing import (
-    TYPE_CHECKING,
     Annotated,
     ClassVar,
     Literal,
     Optional,
+    Self,
     cast,
     final,
     get_args,
@@ -18,7 +18,6 @@ from typing import (
 from pydantic import AfterValidator, BaseModel, ConfigDict, FilePath
 
 from potent.util import (
-    DataReadException,
     DataValType,
     format_annotation,
     table_row,
@@ -66,6 +65,8 @@ AbsFilePath = Annotated[
     FilePath,
     AfterValidator(ensure_abs_path),
 ]
+
+CONFIG_KEY = "config"
 
 
 class OperationResult(BaseModel):
@@ -136,32 +137,24 @@ class CommonBase(BaseModel):
 
 TEMPLATE_RE = re.compile(r"\{\{\s*(\w+)\s*\}\}")
 
+LookupFunc = Callable[[str], DataValType]
+
 
 class BaseConfig(CommonBase):
     model_config = ConfigDict(use_attribute_docstrings=True)
-    _str_fields: ClassVar[frozenset[str]] = frozenset()
-    _lookup: Callable[[str], DataValType] | None = None
 
-    @classmethod
-    def __pydantic_init_subclass__(cls, **kwargs):
-        super().__pydantic_init_subclass__(**kwargs)
-        cls._str_fields = frozenset(
-            name
-            for name, field in cls.model_fields.items()
-            if field.annotation in (str, str | None)
+    def _resolve(self, lookup: LookupFunc) -> Self:
+        """
+        (attempt to) materialize all templates into true values. Returns a copy of the original config.
+        """
+
+        return self.model_copy(
+            update={
+                name: TEMPLATE_RE.sub(lambda m: str(lookup(m.group(1))), value)
+                for name, value in self
+                if type(value) is str
+            }
         )
-
-    if not TYPE_CHECKING:
-
-        def __getattribute__(self, name):
-            value = super().__getattribute__(name)
-            if (
-                isinstance(value, str)
-                and name in type(self)._str_fields
-                and self._lookup
-            ):
-                return TEMPLATE_RE.sub(lambda m: str(self._lookup(m.group(1))), value)
-            return value
 
 
 class BaseOperation(CommonBase):
@@ -181,20 +174,12 @@ class BaseOperation(CommonBase):
         read_func: Callable[[Path, str], DataValType],
         write_func: Callable[[Path, str, DataValType], None],
     ) -> OperationResult:
-        bound_read = partial(read_func, directory)
-
-        if config := getattr(self, "config", None):
-            # attach the data lookup to the config so it can resolve templates
-            cast("BaseConfig", config)._lookup = bound_read
-        else:
-            config = None
-
         try:
             result = self.run(
                 Context(
                     # we know the path exists, but it may need to be expanded before use
                     directory=directory.expanduser(),
-                    _read_func=bound_read,
+                    _read_func=partial(read_func, directory),
                     _write_func=partial(write_func, directory),
                 )
             )
@@ -207,17 +192,8 @@ class BaseOperation(CommonBase):
                 success=False,
                 output=f'Step "{self.summary}" does not implement `.run()`',
             )
-        except DataReadException as e:
-            result = OperationResult(
-                success=False,
-                output=f"Unexpected data read error: {e!s}",
-            )
-        finally:
-            #  don't leak lookups between operation invocations
-            if config:
-                config._lookup = None
 
-        self.directory_statuses[directory] = "completed" if result.success else "failed"
+        self.record_result(directory, result.success)
         return result
 
     # operation subclasses will implement this
@@ -236,6 +212,18 @@ class BaseOperation(CommonBase):
         """
         # children will provide this if needed
         return self.slug  # type: ignore
+
+    # internal helpers
+    def _resolve(self, lookup: LookupFunc) -> Self:
+        """
+        If this operation has a config, copy this operation and replace its config with a resolved copy.
+
+        Otherwise, return the original untouched.
+        """
+        if config := cast("BaseConfig", getattr(self, CONFIG_KEY, None)):
+            return self.model_copy(update={CONFIG_KEY: config._resolve(lookup)})
+
+        return self
 
     # process controls
     @final
@@ -262,6 +250,10 @@ class BaseOperation(CommonBase):
     def initialize_dirs(self, directories: list[Path]) -> None:
         self.directory_statuses |= dict.fromkeys(directories, "not-started")
 
+    @final
+    def record_result(self, directory: Path, success: bool) -> None:
+        self.directory_statuses[directory] = "completed" if success else "failed"
+
     # docs helpers
     @classmethod
     def to_markdown(cls) -> list[str]:
@@ -278,7 +270,7 @@ class BaseOperation(CommonBase):
             f"**Slug**: `{get_args(fields['slug'].annotation)[0]}`",
         ]
 
-        if (raw_config := fields.get("config")) and raw_config.annotation:
+        if (raw_config := fields.get(CONFIG_KEY)) and raw_config.annotation:
             config = raw_config.annotation.model_fields
 
             lines += [
@@ -311,7 +303,7 @@ class BaseOperation(CommonBase):
         fields = cls.model_fields
 
         config_note = "∅ None"
-        if (raw_config := fields.get("config")) and (
+        if (raw_config := fields.get(CONFIG_KEY)) and (
             annotation := raw_config.annotation
         ):
             if any(f.is_required() for f in annotation.model_fields.values()):

@@ -13,7 +13,11 @@ from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from rich.console import Console
 from rich.tree import Tree
 
-from potent.operations._base import AbsDirPath, PrintableStatus
+from potent.operations._base import (
+    AbsDirPath,
+    BaseOperation,
+    PrintableStatus,
+)
 from potent.operations.assert_branch import AssertBranch
 from potent.operations.change_pr_status import ChangePrStatus
 from potent.operations.create_pr import CreatePR
@@ -355,7 +359,9 @@ class Plan(BaseModel):
                     status=o.dir_status(d),
                     op_slug=o.slug,
                     completed_this_run=(idx, d) in just_completed_steps,
-                    details=o.summary,
+                    details=self.resolve_operation(
+                        o, d, raise_read_errors=False
+                    ).summary,
                 )
                 for idx, o in enumerate(self.operations)
             ]
@@ -481,28 +487,40 @@ class Plan(BaseModel):
                     ev.output = "Already completed"
                 else:
                     renderer.send(
-                        OperationStarted(path=directory, summary=step.summary)
+                        OperationStarted(
+                            path=directory,
+                            summary=self.resolve_operation(
+                                step, directory, raise_read_errors=False
+                            ).summary,
+                        )
                     )
 
-                    result = step.run_and_record_result(
-                        directory,
-                        read_func=self.read_data,
-                        write_func=self.write_data,
-                    )
+                    result = None
+                    try:
+                        resolved_step = self.resolve_operation(step, directory)
+                    except DataReadException as e:
+                        ev.output = f"Unexpected data read error: {e!s}"
+                        step.record_result(directory, False)
+                    else:
+                        result = resolved_step.run_and_record_result(
+                            directory,
+                            read_func=self.read_data,
+                            write_func=self.write_data,
+                        )
+                        if self._path:
+                            self.save()
 
-                    if self._path:
-                        self.save()
-                    if success := result.success:
-                        ev.result = "success"
-                        # don't log asserts as new every time
-                        if not step.always_rerun:
-                            just_completed_steps.append((idx, directory))
-                    elif step.slug == MANUAL_CONFIRMATION_SLUG:
-                        # it failed, but mark it as halted instead of failed
-                        ev.result = "halted"
+                        if success := result.success:
+                            ev.result = "success"
+                            # don't log asserts as new every time
+                            if not step.always_rerun:
+                                just_completed_steps.append((idx, directory))
+                        elif step.slug == MANUAL_CONFIRMATION_SLUG:
+                            # it failed, but mark it as halted instead of failed
+                            ev.result = "halted"
 
-                    ev.output = result.output
-                    ev.cmd = result.cmd
+                        ev.output = result.output
+                        ev.cmd = result.cmd
 
                 renderer.send(ev)
 
@@ -510,6 +528,23 @@ class Plan(BaseModel):
                     break
 
         return just_completed_steps
+
+    def resolve_operation(
+        self,
+        op: BaseOperation,
+        directory: Path,
+        *,
+        raise_read_errors: bool = True,
+    ) -> BaseOperation:
+        def lookup(key: str) -> DataValType:
+            try:
+                return self.read_data(directory, key)
+            except DataReadException:
+                if raise_read_errors:
+                    raise
+                return f"{{{{ {key} }}}}"  # leave the template visible
+
+        return op._resolve(lookup)
 
     def read_data(self, directory: Path, key: str) -> DataValType:
         directory_str = str(directory)
