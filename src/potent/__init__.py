@@ -2,9 +2,9 @@ from potent.operations._base import (
     BaseConfig,
     BaseOperation,
     Context,
-    DataReadException,
     OperationResult,
 )
+from potent.util import DataReadException
 
 __all__ = [
     "BaseConfig",
