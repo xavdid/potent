@@ -149,9 +149,7 @@ class CompactRenderer:
                 self._spinner = yaspin(text=summary)
                 self._spinner.start()
             case OperationFinished(
-                result=result,
-                output=output,
-                summary=summary,
+                result=result, output=output, summary=summary, cmd=cmd
             ):
                 if self._spinner:
                     if result == "failure":
@@ -162,9 +160,13 @@ class CompactRenderer:
                         self._spinner.ok("⏸️")
 
                 if result == "failure":
+                    output = escape(output) or "[dim]no output[/]"
+                    if cmd:
+                        output = f"[dim white]>>>[/] [cyan]{cmd}[/]\n\n{output}"
+
                     self.console.print(
                         Panel(
-                            f"\n{escape(output.strip())}\n",
+                            f"\n{output.strip()}\n",
                             # no title here, since the summary was used for the spinner
                             title_align="left",
                             border_style="red",
