@@ -1,8 +1,19 @@
+import re
 import subprocess
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
-from typing import Annotated, Callable, ClassVar, Literal, Optional, final, get_args
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    ClassVar,
+    Literal,
+    Optional,
+    cast,
+    final,
+    get_args,
+)
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, FilePath
 
@@ -123,8 +134,34 @@ class CommonBase(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+TEMPLATE_RE = re.compile(r"\{\{\s*(\w+)\s*\}\}")
+
+
 class BaseConfig(CommonBase):
     model_config = ConfigDict(use_attribute_docstrings=True)
+    _str_fields: ClassVar[frozenset[str]] = frozenset()
+    _lookup: Callable[[str], DataValType] | None = None
+
+    @classmethod
+    def __pydantic_init_subclass__(cls, **kwargs):
+        super().__pydantic_init_subclass__(**kwargs)
+        cls._str_fields = frozenset(
+            name
+            for name, field in cls.model_fields.items()
+            if field.annotation in (str, str | None)
+        )
+
+    if not TYPE_CHECKING:
+
+        def __getattribute__(self, name):
+            value = super().__getattribute__(name)
+            if (
+                isinstance(value, str)
+                and name in type(self)._str_fields
+                and self._lookup
+            ):
+                return TEMPLATE_RE.sub(lambda m: str(self._lookup(m.group(1))), value)
+            return value
 
 
 class BaseOperation(CommonBase):
@@ -144,16 +181,23 @@ class BaseOperation(CommonBase):
         read_func: Callable[[Path, str], DataValType],
         write_func: Callable[[Path, str, DataValType], None],
     ) -> OperationResult:
+        bound_read = partial(read_func, directory)
+
+        if config := getattr(self, "config", None):
+            # attach the data lookup to the config so it can resolve templates
+            cast("BaseConfig", config)._lookup = bound_read
+        else:
+            config = None
+
         try:
-            # we know the path exists, but it may need to be expanded before use
             result = self.run(
                 Context(
+                    # we know the path exists, but it may need to be expanded before use
                     directory=directory.expanduser(),
-                    _read_func=partial(read_func, directory),
+                    _read_func=bound_read,
                     _write_func=partial(write_func, directory),
                 )
             )
-
         # Could get lots of errors here, but mostly I saw `FileNotFoundError` from subprocess.run()
         # when running non-existent commands
         except OSError as e:
@@ -166,8 +210,12 @@ class BaseOperation(CommonBase):
         except DataReadException as e:
             result = OperationResult(
                 success=False,
-                output=f"Unexpected data read error: {str(e)}",
+                output=f"Unexpected data read error: {e!s}",
             )
+        finally:
+            #  don't leak lookups between operation invocations
+            if config:
+                config._lookup = None
 
         self.directory_statuses[directory] = "completed" if result.success else "failed"
         return result

@@ -202,7 +202,7 @@ Operations = list[
 
 class Plan(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    config: Annotated[Union[PlanConfig, CommandConfig], Field(discriminator="mode")] = (
+    config: Annotated[PlanConfig | CommandConfig, Field(discriminator="mode")] = (
         PlanConfig()
     )
 

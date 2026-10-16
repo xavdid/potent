@@ -85,4 +85,7 @@ unfixable = [
     "F401", # don't remove unused imports; annoying while editing
     # run `just lint --fix --fixable F401` to fix these manually
     "F841", # don't remove unused variables
+    # temp things to keep my diff small
+    "UP045",
+    "PYI030",
 ]
