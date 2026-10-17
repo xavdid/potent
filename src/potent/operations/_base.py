@@ -149,13 +149,25 @@ class BaseConfig(CommonBase):
         (attempt to) materialize all templates into true values. Returns a copy of the original config.
         """
 
-        return self.model_copy(
-            update={
-                name: TEMPLATE_REGEX.sub(lambda m: str(resolver(m.group(1))), value)
-                for name, value in self
-                if isinstance(value, str)
-            }
-        )
+        def resolve_str(s: str) -> str:
+            return TEMPLATE_REGEX.sub(lambda m: str(resolver(m.group(1))), s)
+
+        updates = {}
+        for name, value in self:
+            match value:
+                case str(s):
+                    updates[name] = resolve_str(s)
+                case list(l):
+                    updates[name] = [
+                        resolve_str(s) if isinstance(s, str) else s for s in l
+                    ]
+                case dict(d):
+                    updates[name] = {
+                        k: resolve_str(v) if isinstance(v, str) else v
+                        for k, v in d.items()
+                    }
+
+        return self.model_copy(update=updates)
 
 
 class BaseOperation(CommonBase):

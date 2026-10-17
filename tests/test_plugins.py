@@ -10,25 +10,6 @@ from potent.operations._base import BaseOperation
 from potent.plugins import get_ops_from_plugins, validate_plugin
 
 
-@pytest.fixture
-def define_plan_with_extra_ops(monkeypatch):
-    """
-    Fixture to patch the plugin loader and force a re-import of the plan.py file, which re-runs the class declaration
-    """
-
-    def _import(*ops: list[type[BaseOperation]]):
-        monkeypatch.setattr("potent.plugins.get_ops_from_plugins", lambda: ops)
-        # clear the module
-        monkeypatch.delitem(sys.modules, "potent.plan", raising=False)
-        # re-import so the patched value is used
-        return importlib.import_module("potent.plan")
-
-    yield _import
-
-    # drop the throwaway module so later tests re-import the real one
-    sys.modules.pop("potent.plan", None)
-
-
 class CorrectOp(BaseOperation):
     slug: Literal["my-plugin.test-op"] = "my-plugin.test-op"
 
@@ -92,9 +73,9 @@ def test_loading_ops(define_plan_with_extra_ops, subdir):
     class TestOp(BaseOperation):
         slug: Literal["test-op"] = "test-op"
 
-    plan = define_plan_with_extra_ops(TestOp)
+    plan_module = define_plan_with_extra_ops(TestOp)
 
-    plan.Plan(operations=[TestOp()], directories=[subdir])
+    plan_module.Plan(operations=[TestOp()], directories=[subdir])
 
 
 @patch("potent.plugins.entry_points", return_value=[MagicMock(), MagicMock()])

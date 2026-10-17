@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import cast, get_args
+from typing import Any, Literal, cast, get_args
 from unittest.mock import patch
 
 import pytest
@@ -146,10 +146,6 @@ def test_only_3_statuses():
     assert len(get_args(Status)) == 3
 
 
-# TODO: test raw command templating
-# i think it won't work because we don't recurse
-
-
 def test_basic_resolving(subdir):
     op = GitSwitch(config=GitSwitch.OpConfig(branch="{{ name }}"))
     plan = Plan(
@@ -192,9 +188,14 @@ def test_replacement(subdir):
         data={str(subdir): {"name": "bruce", "NAME": "BRUCE"}},
     )
 
-    for o in plan.operations:
-        resolved = plan.resolve_operation(o, subdir)
-        assert cast("GitSwitch", resolved).config.branch.lower() == "bruce"
+    resolved = plan.resolve_operation(op, subdir)
+    assert resolved.config.branch == "bruce"
+
+    resolved = plan.resolve_operation(trailing_space_op, subdir)
+    assert resolved.config.branch == "bruce"
+
+    resolved = plan.resolve_operation(upper_op, subdir)
+    assert resolved.config.branch == "BRUCE"
 
 
 def test_replacement_error(subdir):
@@ -203,3 +204,57 @@ def test_replacement_error(subdir):
 
     with pytest.raises(DataReadException):
         plan.resolve_operation(op, subdir)
+
+
+# TODO: test raw command templating
+# i think it won't work because we don't recurse
+
+
+def test_raw_command_template(subdir):
+    """
+    raw-command is (currently) the only operation which has a non-scalar as a config value (there's a str[] for the commands). Have to make sure it resolves templates correctly
+    """
+    op = RawCommand(config=RawCommand.OpConfig(arguments=["echo", "{{ name }}"]))
+    plan = Plan(
+        directories=[subdir],
+        operations=[op],
+        data={str(subdir): {"name": "bruce"}},
+    )
+    resolved = plan.resolve_operation(op, subdir)
+    assert resolved.config.arguments == ["echo", "bruce"]
+
+
+def test_nested_replacements(define_plan_with_extra_ops, subdir):
+    class TestOp(BaseOperation):
+        class OpConfig(BaseConfig):
+            name: str
+            age: int
+            args: list[str]
+            kwargs: dict[str, Any]
+
+        slug: Literal["test-op"] = "test-op"
+        config: OpConfig
+
+    plan_module = define_plan_with_extra_ops(TestOp)
+
+    op = TestOp(
+        config=TestOp.OpConfig(
+            name="{{ name }}",
+            age=100,
+            args=["cool", "{{ name }}", "sweet"],
+            kwargs={"template": "{{ name }}", "raw": "neat", "int": 333},
+        )
+    )
+    plan = cast(
+        "Plan",
+        plan_module.Plan(
+            directories=[subdir], operations=[op], data={str(subdir): {"name": "bruce"}}
+        ),
+    )
+
+    resolved = plan.resolve_operation(op, subdir)
+
+    assert resolved.config.name == "bruce"
+    assert resolved.config.age == 100
+    assert resolved.config.args == ["cool", "bruce", "sweet"]
+    assert resolved.config.kwargs == {"template": "bruce", "raw": "neat", "int": 333}
