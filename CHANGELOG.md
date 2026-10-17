@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.10.0
+
+_released `2026-10-17`_
 
 - add plugin support & `docs` CLI command ([#5](https://github.com/xavdid/potent/pull/5))
 - add new top-level `Plan` field, `data`, for operations to read/write data from

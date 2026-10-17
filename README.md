@@ -532,7 +532,7 @@ Additionally, you _should_ define:
 
 Lastly, you _may_ define:
 
-5. A nested `OpConfig` class, which provides validated input to your operation. It's accessible inside the `run` method as `self.config.<your property>`.
+5. A nested `OpConfig` class, which provides validated input to your operation. If present, it **must** be declared under the `config` key. It's accessible inside the `run` method as `self.config`.
 
 Here's an example that uses all 5 properties:
 

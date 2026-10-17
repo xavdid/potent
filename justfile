@@ -64,8 +64,9 @@ bump level: _test lint (format "--check") typecheck docs
 
 package_version := `uv run potent --version`
 
-[confirm("This will release the package as written. Have you already run `just bump LEVEL`? (yN)")]
+[confirm("This will release the package as written. Have you already run `just bump LEVEL` and committed the result? (yN)")]
 release:
+  test -z "$(git status --porcelain)" || (echo "ERR: Working directory is dirty" >&2; exit 1)
   rm -rf dist
   uv build
   uv publish
