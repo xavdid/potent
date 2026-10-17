@@ -1,15 +1,23 @@
 from pathlib import Path
-from typing import get_args
+from typing import Any, Literal, cast, get_args
 from unittest.mock import patch
 
 import pytest
 
-from potent.operations._base import BaseOperation, Status, ensure_directory
+from potent.operations._base import (
+    BaseConfig,
+    BaseOperation,
+    Context,
+    Status,
+    ensure_directory,
+)
 from potent.operations.git_add import GitAdd
 from potent.operations.git_commit import GitCommit
+from potent.operations.git_status import GitStatus
 from potent.operations.git_switch import GitSwitch
 from potent.operations.raw_command import RawCommand
 from potent.plan import Plan
+from potent.util import DataReadException
 
 
 @pytest.fixture
@@ -27,8 +35,9 @@ def path_with_tilde():
 def test_os_errors_handled(_mock_run, tmp_path: Path):
     result = RawCommand(config=RawCommand.OpConfig(arguments=[])).run_and_record_result(
         tmp_path,
-        read_func=lambda: None,  # type:ignore
-        write_func=lambda: None,  # type:ignore
+        Context(
+            directory=tmp_path, _read_func=lambda *_: 0, _write_func=lambda *_: None
+        ),
     )
 
     # should fail, but not throw
@@ -135,3 +144,121 @@ def test_only_3_statuses():
     if there are more than 3 statuses, some logic (around halted status) will break
     """
     assert len(get_args(Status)) == 3
+
+
+def test_basic_resolving(subdir):
+    op = GitSwitch(config=GitSwitch.OpConfig(branch="{{ name }}"))
+    plan = Plan(
+        directories=[subdir],
+        operations=[op],
+        data={str(subdir): {"name": "bruce"}},
+    )
+    resolved = plan.resolve_operation(op, subdir)
+
+    assert resolved is not op
+
+    assert op.is_pending(subdir)
+    assert resolved.is_pending(subdir)
+
+    assert op.config.branch == "{{ name }}"
+    assert resolved.config.branch == "bruce"
+
+    resolved.record_result(subdir, True)
+
+    # it's important that success changes on the copy are reflected on the original
+    assert resolved.is_completed(subdir)
+    assert op.is_completed(subdir)
+
+
+def test_noop_resolving():
+    op = GitStatus()
+    resolved = op._resolve(lambda _: 0)
+
+    # ops without configs are passed through
+    assert op is resolved
+
+
+def test_replacement(subdir):
+    op = GitSwitch(config=GitSwitch.OpConfig(branch="{{name}}"))
+    trailing_space_op = GitSwitch(config=GitSwitch.OpConfig(branch="{{name }}"))
+    upper_op = GitSwitch(config=GitSwitch.OpConfig(branch="{{ NAME }}"))
+    double_op = GitSwitch(config=GitSwitch.OpConfig(branch="{{ NAME }}-{{name}}"))
+    plan = Plan(
+        directories=[subdir],
+        operations=[op, upper_op, trailing_space_op],
+        data={str(subdir): {"name": "bruce", "NAME": "BRUCE"}},
+    )
+
+    resolved = plan.resolve_operation(op, subdir)
+    assert resolved.config.branch == "bruce"
+
+    resolved = plan.resolve_operation(trailing_space_op, subdir)
+    assert resolved.config.branch == "bruce"
+
+    resolved = plan.resolve_operation(upper_op, subdir)
+    assert resolved.config.branch == "BRUCE"
+
+    resolved = plan.resolve_operation(double_op, subdir)
+    assert resolved.config.branch == "BRUCE-bruce"
+
+
+def test_replacement_error(subdir):
+    op = GitSwitch(config=GitSwitch.OpConfig(branch="{{name}}"))
+    plan = Plan(directories=[subdir], operations=[op])
+
+    with pytest.raises(DataReadException):
+        plan.resolve_operation(op, subdir)
+
+
+# TODO: test raw command templating
+# i think it won't work because we don't recurse
+
+
+def test_raw_command_template(subdir):
+    """
+    raw-command is (currently) the only operation which has a non-scalar as a config value (there's a str[] for the commands). Have to make sure it resolves templates correctly
+    """
+    op = RawCommand(config=RawCommand.OpConfig(arguments=["echo", "{{ name }}"]))
+    plan = Plan(
+        directories=[subdir],
+        operations=[op],
+        data={str(subdir): {"name": "bruce"}},
+    )
+    resolved = plan.resolve_operation(op, subdir)
+    assert resolved.config.arguments == ["echo", "bruce"]
+
+
+def test_nested_replacements(define_plan_with_extra_ops, subdir):
+    class TestOp(BaseOperation):
+        class OpConfig(BaseConfig):
+            name: str
+            age: int
+            args: list[str]
+            kwargs: dict[str, Any]
+
+        slug: Literal["test-op"] = "test-op"
+        config: OpConfig
+
+    plan_module = define_plan_with_extra_ops(TestOp)
+
+    op = TestOp(
+        config=TestOp.OpConfig(
+            name="{{ name }}",
+            age=100,
+            args=["cool", "{{ name }}", "sweet"],
+            kwargs={"template": "{{ name }}", "raw": "neat", "int": 333},
+        )
+    )
+    plan = cast(
+        "Plan",
+        plan_module.Plan(
+            directories=[subdir], operations=[op], data={str(subdir): {"name": "bruce"}}
+        ),
+    )
+
+    resolved = plan.resolve_operation(op, subdir)
+
+    assert resolved.config.name == "bruce"
+    assert resolved.config.age == 100
+    assert resolved.config.args == ["cool", "bruce", "sweet"]
+    assert resolved.config.kwargs == {"template": "bruce", "raw": "neat", "int": 333}

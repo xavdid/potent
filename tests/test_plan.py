@@ -9,6 +9,7 @@ import pytest
 from potent.operations._base import Status
 from potent.operations.assert_branch import AssertBranch
 from potent.operations.git_status import GitStatus
+from potent.operations.git_switch import GitSwitch
 from potent.operations.manual_confirmation import ManualConfirmation
 from potent.operations.raw_command import RawCommand
 from potent.plan import (
@@ -1316,3 +1317,41 @@ def test_write_data(subdir):
 
     assert plan.data
     assert plan.data[str(subdir)] == {"cool": True, "age": 100, "name": "bruce"}
+
+
+def test_status_no_data(subdir):
+    plan = Plan(
+        operations=[GitSwitch(config=GitSwitch.OpConfig(branch="{{name}}"))],
+        directories=[subdir],
+    )
+    assert plan.status() == PlanStatus(
+        filename=":in memory:",
+        directories=[
+            DirectoryStatus(
+                path=subdir,
+                status="not-started",
+                op_results=[
+                    OperationStatus(
+                        status="not-started",
+                        op_slug="git-switch",
+                        # not resolved, which is fine
+                        details="git switch -> {{ name }}",
+                        completed_this_run=False,
+                    )
+                ],
+            )
+        ],
+    )
+
+
+def test_decsribe_no_data():
+    p = Plan(
+        directories=[],
+        operations=[
+            RawCommand(config=RawCommand.OpConfig(arguments=["echo", "{{name}}"]))
+        ],
+    )
+    ops = p.outline().children[0].children
+
+    # `describe` doesn't resolve, and that's fine
+    assert "{{name}}" in ops[0].label  # pyright: ignore[reportOperatorIssue]

@@ -1,13 +1,22 @@
+import re
 import subprocess
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import partial
 from pathlib import Path
-from typing import Annotated, Callable, ClassVar, Literal, Optional, final, get_args
+from typing import (
+    Annotated,
+    ClassVar,
+    Literal,
+    Optional,
+    Self,
+    cast,
+    final,
+    get_args,
+)
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, FilePath
 
 from potent.util import (
-    DataReadException,
     DataValType,
     format_annotation,
     table_row,
@@ -56,6 +65,8 @@ AbsFilePath = Annotated[
     AfterValidator(ensure_abs_path),
 ]
 
+CONFIG_KEY = "config"
+
 
 class OperationResult(BaseModel):
     """
@@ -80,6 +91,9 @@ class OperationResult(BaseModel):
         )
 
 
+LookupFunc = Callable[[str], DataValType]
+
+
 @dataclass(frozen=True)
 class Context:
     """
@@ -87,7 +101,7 @@ class Context:
     """
 
     directory: Path
-    _read_func: Callable[[str], DataValType]
+    _read_func: LookupFunc
     _write_func: Callable[[str, DataValType], None]
 
     def exec_raw_cmd(self, cmd: list[str]) -> subprocess.CompletedProcess[str]:
@@ -123,8 +137,37 @@ class CommonBase(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+# the text inside a `{{ }}` pair
+TEMPLATE_REGEX = re.compile(r"\{\{\s*(\w+)\s*\}\}")
+
+
 class BaseConfig(CommonBase):
     model_config = ConfigDict(use_attribute_docstrings=True)
+
+    def _resolve(self, resolver: LookupFunc) -> Self:
+        """
+        (attempt to) materialize all templates into true values. Returns a copy of the original config.
+        """
+
+        def resolve_str(s: str) -> str:
+            return TEMPLATE_REGEX.sub(lambda m: str(resolver(m.group(1))), s)
+
+        updates = {}
+        for name, value in self:
+            match value:
+                case str(s):
+                    updates[name] = resolve_str(s)
+                case list(l):
+                    updates[name] = [
+                        resolve_str(s) if isinstance(s, str) else s for s in l
+                    ]
+                case dict(d):
+                    updates[name] = {
+                        k: resolve_str(v) if isinstance(v, str) else v
+                        for k, v in d.items()
+                    }
+
+        return self.model_copy(update=updates)
 
 
 class BaseOperation(CommonBase):
@@ -138,22 +181,10 @@ class BaseOperation(CommonBase):
 
     @final
     def run_and_record_result(
-        self,
-        directory: Path,
-        /,
-        read_func: Callable[[Path, str], DataValType],
-        write_func: Callable[[Path, str, DataValType], None],
+        self, raw_directory: Path, context: Context
     ) -> OperationResult:
         try:
-            # we know the path exists, but it may need to be expanded before use
-            result = self.run(
-                Context(
-                    directory=directory.expanduser(),
-                    _read_func=partial(read_func, directory),
-                    _write_func=partial(write_func, directory),
-                )
-            )
-
+            result = self.run(context)
         # Could get lots of errors here, but mostly I saw `FileNotFoundError` from subprocess.run()
         # when running non-existent commands
         except OSError as e:
@@ -163,13 +194,9 @@ class BaseOperation(CommonBase):
                 success=False,
                 output=f'Step "{self.summary}" does not implement `.run()`',
             )
-        except DataReadException as e:
-            result = OperationResult(
-                success=False,
-                output=f"Unexpected data read error: {str(e)}",
-            )
 
-        self.directory_statuses[directory] = "completed" if result.success else "failed"
+        # internal to the plan, everything uses the plain, un-expanded directory
+        self.record_result(raw_directory, result.success)
         return result
 
     # operation subclasses will implement this
@@ -188,6 +215,23 @@ class BaseOperation(CommonBase):
         """
         # children will provide this if needed
         return self.slug  # type: ignore
+
+    # internal helpers
+    def _resolve(self, resolver: LookupFunc) -> Self:
+        """
+        If this operation has a config, copy this operation and replace its config with a resolved copy.
+
+        Otherwise, return the original untouched.
+        """
+        if config := cast("BaseConfig", getattr(self, CONFIG_KEY, None)):
+            return self.model_copy(
+                update={CONFIG_KEY: config._resolve(resolver)},
+                # we explicitly want to share other state between the copied instances of the model
+                # for example, the directory_statuses of the copy that we run should be reflected in the original (which is owned by, and saved by, the Plan)
+                deep=False,
+            )
+
+        return self
 
     # process controls
     @final
@@ -214,6 +258,10 @@ class BaseOperation(CommonBase):
     def initialize_dirs(self, directories: list[Path]) -> None:
         self.directory_statuses |= dict.fromkeys(directories, "not-started")
 
+    @final
+    def record_result(self, directory: Path, success: bool) -> None:
+        self.directory_statuses[directory] = "completed" if success else "failed"
+
     # docs helpers
     @classmethod
     def to_markdown(cls) -> list[str]:
@@ -230,7 +278,7 @@ class BaseOperation(CommonBase):
             f"**Slug**: `{get_args(fields['slug'].annotation)[0]}`",
         ]
 
-        if (raw_config := fields.get("config")) and raw_config.annotation:
+        if (raw_config := fields.get(CONFIG_KEY)) and raw_config.annotation:
             config = raw_config.annotation.model_fields
 
             lines += [
@@ -263,7 +311,7 @@ class BaseOperation(CommonBase):
         fields = cls.model_fields
 
         config_note = "∅ None"
-        if (raw_config := fields.get("config")) and (
+        if (raw_config := fields.get(CONFIG_KEY)) and (
             annotation := raw_config.annotation
         ):
             if any(f.is_required() for f in annotation.model_fields.values()):

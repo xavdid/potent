@@ -74,10 +74,11 @@ pipx install potent
 
 A bash script is stored as a Plan file. They're standard JSON with the extension `.plan.json`.
 
-Plans have two main sections:
+Plans have three main sections:
 
 - a list of directories in which the Plan will run
 - a list of Operations to perform in those directories
+- an optional key-value store mapped to each directory
 
 Plan files must conform to The Schema so that the invalid operations are surfaced early and loudly.
 
@@ -111,7 +112,7 @@ Specifying the schema will help with autocomplete and flag potential errors duri
 
 Command plans are special plan variant that will auto-reset themselves once each calendar day. They're useful for plans you want to run periodically but are still idempotent within a daily window. For example, running `git pull` on a bunch of directories.
 
-### Plans as input
+### Plans as CLI input
 
 Most CLI commands accept a plan as their main argument. You can pass either a path to a plan file (like `~/Desktop/my-plan.plan.json`) or a simple string. In the latter case, `potent` will look in its config directory for a plan with the corresponding name. For example, `potent run my-script` tries to run the plan at `~/.config/potent/commands/my-script.plan.json`.
 
@@ -120,6 +121,38 @@ The config directory respects the `XDG_CONFIG_HOME` environment variable.
 ## Operations
 
 Each Operation is identified by its unique `slug` field. Each of the Operations below describes a single bash command with well-defined (and validated) arguments. If you need more flexibility, check out the [raw command](#rawcommand) Operation.
+
+### Templates
+
+Any operation config that takes a string can also accept a template value. These can be any string and are wrapped in double curly braces, like `{{ example }}` (whitespace optional).
+
+At runtime, values are replaced with the corresponding entry from the plan's `data` property, if present. Missing values will fail the operation at runtime. For example, running:
+
+```json
+{
+  "operations": [
+    {
+      "slug": "git-switch",
+      "config": {
+        "branch": "feature-{{ name }}"
+      }
+    }
+  ],
+  "directories": [
+    "~/projects/potent-demo/aardvark",
+    "~/projects/potent-demo/badger"
+  ],
+  "data": {
+    "~/projects/potent-demo/aardvark": {
+      "name": "bruce"
+    }
+  }
+}
+```
+
+would produce `git switch feature-bruce` in `aardvark` and a runtime error in `badger`.
+
+Some operations can populate the `data` property at runtime, or you can hand write those values when creating your plan.
 
 <!-- BEGIN:OPERATIONS -->
 
