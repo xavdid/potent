@@ -818,6 +818,19 @@
           "default": null,
           "description": "A name used to disambiguate this step in summaries. Useful if you have many `raw-command`s.",
           "title": "Name"
+        },
+        "write_output_to_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "If specified, save a trimmed copy of the output to the `data` property under this key. Will save _all_ output, so only use when output is short.",
+          "title": "Write Output To Key"
         }
       },
       "required": [

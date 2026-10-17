@@ -5,6 +5,7 @@
 - add plugin support & `docs` CLI command ([#5](https://github.com/xavdid/potent/pull/5))
 - add new top-level `Plan` field, `data`, for operations to read/write data from
 - add basic template support to operation configs. If a step takes a string, any instances of `{{ something }}` will be replaced with the directory's `something` key from the `data` store ([#8](https://github.com/xavdid/potent/pull/8))
+- add `write_output_to_key` to `raw-command`, enabling it to save output to `data`
 - export `BaseOperation`, `OperationResult`, `Context`, `BaseConfig`, and `DataReadException` so plugin authors can use them
 - don't write `None` values when dumping a `Plan` to json
 - fix crash when an operation doesn't implement `run`

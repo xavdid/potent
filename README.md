@@ -301,10 +301,11 @@ Runs a shell command. The step succeeds if the command exits 0 and fails otherwi
 
 #### Config
 
-| name        | type            | description                                                                                                                          | default (if optional) |
-| ----------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
-| `arguments` | `list[str]`     | The arguments that will be passed into Python's [subprocess.run()](https://docs.python.org/3/library/subprocess.html#subprocess.run) |                       |
-| `name`      | `Optional[str]` | A name used to disambiguate this step in summaries. Useful if you have many `raw-command`s.                                          | `None`                |
+| name                  | type            | description                                                                                                                                      | default (if optional) |
+| --------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
+| `arguments`           | `list[str]`     | The arguments that will be passed into Python's [subprocess.run()](https://docs.python.org/3/library/subprocess.html#subprocess.run)             |                       |
+| `name`                | `Optional[str]` | A name used to disambiguate this step in summaries. Useful if you have many `raw-command`s.                                                      | `None`                |
+| `write_output_to_key` | `Optional[str]` | If specified, save a trimmed copy of the output to the `data` property under this key. Will save _all_ output, so only use when output is short. | `None`                |
 
 ### SetAutomerge
 

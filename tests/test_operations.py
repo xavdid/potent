@@ -262,3 +262,19 @@ def test_nested_replacements(define_plan_with_extra_ops, subdir):
     assert resolved.config.age == 100
     assert resolved.config.args == ["cool", "bruce", "sweet"]
     assert resolved.config.kwargs == {"template": "bruce", "raw": "neat", "int": 333}
+
+
+def test_raw_command_save_output(subdir):
+    op = RawCommand(
+        config=RawCommand.OpConfig(
+            arguments=["echo", "{{ name }}"], write_output_to_key="output"
+        )
+    )
+    plan = Plan(
+        directories=[subdir],
+        operations=[op],
+        data={str(subdir): {"name": "bruce"}},
+    )
+    plan.run()
+    assert plan.data
+    assert plan.data[str(subdir)]["output"] == "bruce"

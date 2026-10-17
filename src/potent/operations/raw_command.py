@@ -17,13 +17,22 @@ class RawCommand(BaseOperation):
         """
         A name used to disambiguate this step in summaries. Useful if you have many `raw-command`s.
         """
+        write_output_to_key: Optional[str] = None
+        """
+        If specified, save a trimmed copy of the output to the `data` property under this key. Will save _all_ output, so only use when output is short.
+        """
 
     slug: Literal["raw-command"] = "raw-command"
     config: OpConfig
 
     @override
     def run(self, context: Context) -> OperationResult:
-        return context.exec_cmd(self.config.arguments)
+        result = context.exec_raw_cmd(self.config.arguments)
+
+        if key := self.config.write_output_to_key:
+            context.write_data(key, result.stdout.strip())
+
+        return OperationResult.from_process(result)
 
     @property
     @override
