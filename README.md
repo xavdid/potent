@@ -555,6 +555,10 @@ Each invocation of the `run` method is passed a `Context` object with properties
   - a high-level helper for shelling out and running commands. Wraps a call to `exec_raw_cmd` and handles `OperationResult` construction under the hood. Most operations will only need this method. Empty strings are dropped from the `cmd` list.
 - `exec_raw_cmd(cmd: list[str]) -> subprocess.CompletedProcess[str]`
   - a lower-level function that wraps `subprocess.run` with some good defaults, returning the raw result. Callers are responsible for constructing and returning the `OperationResult` themselves. Empty strings are dropped from the `cmd` list.
+- `read_data(key: str) -> int | str | bool`
+  - Read a key, returning its value. Raises `DataReadException` if the value isn't present in `data`.
+- `write_data(key: str, value: int | str | bool) -> None`
+  - Write a key a key to storage. Writes will still get saved if the step fails (as long as `write_data` is called before any exceptions are thrown)
 
 ### `OperationResult`
 

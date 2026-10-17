@@ -1,11 +1,18 @@
 import subprocess
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
-from typing import Annotated, ClassVar, Literal, Optional, final, get_args
+from typing import Annotated, Callable, ClassVar, Literal, Optional, final, get_args
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, FilePath
 
-from potent.util import format_annotation, table_row, truthy_list
+from potent.util import (
+    DataReadException,
+    DataValType,
+    format_annotation,
+    table_row,
+    truthy_list,
+)
 
 # the only valid values in the json
 Status = Literal["not-started", "failed", "completed"]
@@ -80,6 +87,8 @@ class Context:
     """
 
     directory: Path
+    _read_func: Callable[[str], DataValType]
+    _write_func: Callable[[str, DataValType], None]
 
     def exec_raw_cmd(self, cmd: list[str]) -> subprocess.CompletedProcess[str]:
         """
@@ -103,6 +112,12 @@ class Context:
         result = self.exec_raw_cmd(cmd)
         return OperationResult.from_process(result, cmd=cmd)
 
+    def read_data(self, key: str) -> DataValType:
+        return self._read_func(key)
+
+    def write_data(self, key: str, value: DataValType) -> None:
+        self._write_func(key, value)
+
 
 class CommonBase(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -122,10 +137,22 @@ class BaseOperation(CommonBase):
     """
 
     @final
-    def run_and_record_result(self, directory: Path) -> OperationResult:
+    def run_and_record_result(
+        self,
+        directory: Path,
+        /,
+        read_func: Callable[[Path, str], DataValType],
+        write_func: Callable[[Path, str, DataValType], None],
+    ) -> OperationResult:
         try:
             # we know the path exists, but it may need to be expanded before use
-            result = self.run(Context(directory=directory.expanduser()))
+            result = self.run(
+                Context(
+                    directory=directory.expanduser(),
+                    _read_func=partial(read_func, directory),
+                    _write_func=partial(write_func, directory),
+                )
+            )
 
         # Could get lots of errors here, but mostly I saw `FileNotFoundError` from subprocess.run()
         # when running non-existent commands
@@ -135,6 +162,11 @@ class BaseOperation(CommonBase):
             result = OperationResult(
                 success=False,
                 output=f'Step "{self.summary}" does not implement `.run()`',
+            )
+        except DataReadException as e:
+            result = OperationResult(
+                success=False,
+                output=f"Unexpected data read error: {str(e)}",
             )
 
         self.directory_statuses[directory] = "completed" if result.success else "failed"

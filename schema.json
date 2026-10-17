@@ -936,6 +936,34 @@
       },
       "title": "Directories",
       "type": "array"
+    },
+    "data": {
+      "anyOf": [
+        {
+          "additionalProperties": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "type": "object"
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Data"
     }
   },
   "required": [

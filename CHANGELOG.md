@@ -3,8 +3,9 @@
 ## Unreleased
 
 - add plugin support & `docs` CLI command ([#5](https://github.com/xavdid/potent/pull/5))
+- add new top-level plan field, `data` for operations to read/write data from
 - fix crash when an operation doesn't implement `run`
-- mark `BaseOperation`, `OperationResult`, `Context`, and `BaseConfig` as exported so plugin authors can use them
+- export `BaseOperation`, `OperationResult`, `Context`, `BaseConfig`, and `DataReadException` so plugin authors can use them
 - don't write `None` values when dumping a `Plan` to json
 - fix not showing the command when failing in compact mode
 
