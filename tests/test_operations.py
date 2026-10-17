@@ -182,6 +182,7 @@ def test_replacement(subdir):
     op = GitSwitch(config=GitSwitch.OpConfig(branch="{{name}}"))
     trailing_space_op = GitSwitch(config=GitSwitch.OpConfig(branch="{{name }}"))
     upper_op = GitSwitch(config=GitSwitch.OpConfig(branch="{{ NAME }}"))
+    double_op = GitSwitch(config=GitSwitch.OpConfig(branch="{{ NAME }}-{{name}}"))
     plan = Plan(
         directories=[subdir],
         operations=[op, upper_op, trailing_space_op],
@@ -196,6 +197,9 @@ def test_replacement(subdir):
 
     resolved = plan.resolve_operation(upper_op, subdir)
     assert resolved.config.branch == "BRUCE"
+
+    resolved = plan.resolve_operation(double_op, subdir)
+    assert resolved.config.branch == "BRUCE-bruce"
 
 
 def test_replacement_error(subdir):
