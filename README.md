@@ -568,10 +568,9 @@ Lastly, you _may_ define:
 Here's an example that uses all the properties:
 
 ```py
-from pathlib import Path
-from typing import Literal, override, ClassVar
+from typing import ClassVar, Literal, override
 
-from potent import BaseConfig, BaseOperation, OperationResult
+from potent import BaseConfig, BaseOperation, Context, OperationResult
 
 
 class EchoOp(BaseOperation):
