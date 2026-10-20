@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.11.0
+
+_released `2026-10-19`_
 
 - Add support for `template`-type plans, which are copied on run. These are better for sharing among a team, since they can be run without modifying the shared original
 - ❗ remove support for `command`-type plans in favor of templates
