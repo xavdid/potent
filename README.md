@@ -563,12 +563,13 @@ Additionally, you _should_ define:
 Lastly, you _may_ define:
 
 5. A nested `OpConfig` class, which provides validated input to your operation. If present, it **must** be declared under the `config` key. It's accessible inside the `run` method as `self.config`.
+6. A set of strings, declared as `ignored_fields_for_compare: ClassVar[set[str]] = set([...])`, to note which (if any) properties should be ignored when comparing two `Operation`s or `OpConfig`s. These are used in divergence calculations for [template plans](#template-plans). You should only add field names to this set that have no runtime implications (for example, the `name` field on [raw-command](#rawcommand), which is just used in summarization).
 
-Here's an example that uses all 5 properties:
+Here's an example that uses all the properties:
 
 ```py
 from pathlib import Path
-from typing import Literal, override
+from typing import Literal, override, ClassVar
 
 from potent import BaseConfig, BaseOperation, OperationResult
 
@@ -586,6 +587,14 @@ class EchoOp(BaseOperation):
         the text to echo
         """
 
+        name: str
+        """
+        Used to differentiate between multiple instances of this operation
+        """
+
+        # 6
+        ignored_fields_for_compare: ClassVar[set[str]] = {"name"}
+
     # 1
     slug: Literal["potent-plugin-example.echo"] = "potent-plugin-example.echo"
     # 5
@@ -601,7 +610,7 @@ class EchoOp(BaseOperation):
     @property
     @override
     def summary(self) -> str:
-        return f"echo ({self.config.text})"
+        return f"echo ({self.config.name})"
 ```
 
 ### Run `Context`
