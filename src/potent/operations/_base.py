@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import (
     Annotated,
+    Any,
     ClassVar,
     Literal,
     Optional,
@@ -135,6 +136,57 @@ class Context:
 
 class CommonBase(BaseModel):
     model_config = ConfigDict(extra="forbid")
+    ignored_fields_for_compare: ClassVar[set[str]] = set()
+    """
+    Which fields, if any, should be ignored when deciding whether two instances of an operation have diverged. Should include anything that doesn't affect the runtime behavior, like comments or labels.
+    """
+
+    @classmethod
+    def __pydantic_on_complete__(cls, **kwargs):
+        super().__pydantic_on_complete__(**kwargs)
+
+        if unknown_fields := cls.ignored_fields_for_compare - cls.model_fields.keys():
+            raise ValueError(
+                f"{cls.__name__}: unknown ignored fields {sorted(unknown_fields)}"
+            )
+
+    def _compute_ignored_fields(self) -> dict[str, Any]:
+        """
+        Produce a dict of field names and subfield structures that should be excluded from a comparison.
+
+        Each model can declare its own ignored_fields_for_compare.
+
+        See: https://pydantic.dev/docs/validation/latest/concepts/serialization/#excluding-and-including-specific-fields
+        """
+        ignored_fields: dict[str, Any] = dict.fromkeys(
+            self.ignored_fields_for_compare, True
+        )
+        for name, field in self:
+            if name in ignored_fields:
+                continue
+
+            if isinstance(field, CommonBase):
+                if subfields := field._compute_ignored_fields():
+                    ignored_fields[name] = subfields
+
+            elif isinstance(field, list):
+                items = {
+                    i: subfields
+                    for i, item in enumerate(field)
+                    if isinstance(item, CommonBase)
+                    and (subfields := item._compute_ignored_fields())
+                }
+                if items:
+                    ignored_fields[name] = items
+
+        return ignored_fields
+
+    def dump_for_comparison(self) -> dict[str, Any]:
+        return self.model_dump(
+            exclude_none=True,
+            exclude=self._compute_ignored_fields(),
+            serialize_as_any=True,
+        )
 
 
 # the text inside a `{{ }}` pair
@@ -149,21 +201,21 @@ class BaseConfig(CommonBase):
         (attempt to) materialize all templates into true values. Returns a copy of the original config.
         """
 
-        def resolve_str(s: str) -> str:
+        def _resolve_str(s: str) -> str:
             return TEMPLATE_REGEX.sub(lambda m: str(resolver(m.group(1))), s)
 
         updates = {}
         for name, value in self:
             match value:
                 case str(s):
-                    updates[name] = resolve_str(s)
+                    updates[name] = _resolve_str(s)
                 case list(l):
                     updates[name] = [
-                        resolve_str(s) if isinstance(s, str) else s for s in l
+                        _resolve_str(s) if isinstance(s, str) else s for s in l
                     ]
                 case dict(d):
                     updates[name] = {
-                        k: resolve_str(v) if isinstance(v, str) else v
+                        k: _resolve_str(v) if isinstance(v, str) else v
                         for k, v in d.items()
                     }
 
@@ -178,6 +230,9 @@ class BaseOperation(CommonBase):
     """
     Most operations are only run until they complete successfully, but operations can opt into re-running every time (e.g. to make assertions)
     """
+
+    ignored_fields_for_compare: ClassVar[set[str]] = {"comment", "directory_statuses"}
+    _resolved = False
 
     @final
     def run_and_record_result(
@@ -225,7 +280,7 @@ class BaseOperation(CommonBase):
         """
         if config := cast("BaseConfig", getattr(self, CONFIG_KEY, None)):
             return self.model_copy(
-                update={CONFIG_KEY: config._resolve(resolver)},
+                update={CONFIG_KEY: config._resolve(resolver), "_resolved": True},
                 # we explicitly want to share other state between the copied instances of the model
                 # for example, the directory_statuses of the copy that we run should be reflected in the original (which is owned by, and saved by, the Plan)
                 deep=False,

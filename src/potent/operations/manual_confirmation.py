@@ -1,4 +1,4 @@
-from typing import Literal, Optional, override
+from typing import ClassVar, Literal, Optional, override
 
 from potent.operations._base import BaseConfig, BaseOperation, Context, OperationResult
 
@@ -15,6 +15,8 @@ class ManualConfirmation(BaseOperation):
         """
         User-facing reason for the pause
         """
+
+        ignored_fields_for_compare: ClassVar[set[str]] = {"reason"}
 
     slug: Literal["manual-confirmation"] = "manual-confirmation"
     config: OpConfig = OpConfig()

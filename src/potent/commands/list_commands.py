@@ -2,7 +2,7 @@ import rich
 from cyclopts import App
 from rich.tree import Tree
 
-from potent.plan import Plan, get_available_commands
+from potent.plan import Plan, get_available_templates
 
 app = App()
 
@@ -31,7 +31,7 @@ def list_commands():
                 f"[bold {color}]{plan_name}[/]{f' ({p.comment})' if p.comment else ''}"
             )
 
-    global_commands, local_commands = get_available_commands()
+    global_commands, local_commands = get_available_templates()
 
     print_tree(global_commands, label="global", trim_filename=True, color="blue")
     print_tree(local_commands, label="local", trim_filename=False, color="yellow")

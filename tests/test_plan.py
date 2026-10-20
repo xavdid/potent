@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import date, timedelta
 from itertools import chain
 from pathlib import Path
 from unittest.mock import ANY, MagicMock, Mock, patch
@@ -13,11 +14,14 @@ from potent.operations.git_switch import GitSwitch
 from potent.operations.manual_confirmation import ManualConfirmation
 from potent.operations.raw_command import RawCommand
 from potent.plan import (
+    NUM_OLD_TEMPLATE_RUNS_KEPT,
     DirectoryStatus,
     OperationStatus,
     Plan,
     PlanStatus,
-    get_available_commands,
+    TemplateConfig,
+    escape_path,
+    get_available_templates,
 )
 from potent.run_events import (
     DirectorySkipped,
@@ -25,7 +29,7 @@ from potent.run_events import (
     OperationFinished,
     OperationStarted,
 )
-from potent.util import DataReadException
+from potent.util import DataReadException, get_template_runs_dir
 
 
 def test_save_path_kwarg(tmp_path):
@@ -1194,34 +1198,34 @@ def test_renderer_is_called_with_halted(subdir: Path):
     )
 
 
-def test_get_avilable_commands(tmp_path, monkeypatch: pytest.MonkeyPatch):
+def test_get_avilable_templates(tmp_path, monkeypatch: pytest.MonkeyPatch):
     global_dir = tmp_path / "global"
     monkeypatch.setenv("XDG_CONFIG_HOME", str(global_dir))
 
-    commands_dir = global_dir / "potent" / "commands"
-    commands_dir.mkdir(parents=True)
+    templates_dir = global_dir / "potent" / "templates"
+    templates_dir.mkdir(parents=True)
 
     basic_plan = Plan(operations=[], directories=[])
 
-    # global commands
-    basic_plan.save(commands_dir / "global_0.plan.json")
-    basic_plan.save(commands_dir / "global_1.plan.json")
-    (commands_dir / "fake.json").touch()  # red herring!
+    # global templates
+    basic_plan.save(templates_dir / "global_0.plan.json")
+    basic_plan.save(templates_dir / "global_1.plan.json")
+    (templates_dir / "fake.json").touch()  # red herring!
 
-    # local commands
+    # local templates
     basic_plan.save(tmp_path / "local_0.plan.json")
 
     # so we find the local ones
     monkeypatch.chdir(tmp_path)
 
-    global_result, local_result = get_available_commands()
+    global_result, local_result = get_available_templates()
 
     # can't compare the output to anything directly because they all have _path set differently, so comparison fails
 
     assert len(global_result) == 2
     assert len(local_result) == 1
 
-    for p in chain(*get_available_commands()):
+    for p in chain(*get_available_templates()):
         assert p.directories == []
         assert p.operations == []
         assert p.comment is None
@@ -1355,3 +1359,107 @@ def test_decsribe_no_data():
 
     # `describe` doesn't resolve, and that's fine
     assert "{{name}}" in ops[0].label  # pyright: ignore[reportOperatorIssue]
+
+
+def test_templates_cant_run():
+    with pytest.raises(ValueError):
+        Plan(config=TemplateConfig(), directories=[], operations=[]).run()
+
+
+def test_template_copying(tmp_path, monkeypatch: pytest.MonkeyPatch, subdir):
+    global_dir = tmp_path / "global"
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(global_dir))
+
+    template_plan = Plan(
+        config=TemplateConfig(), operations=[GitStatus()], directories=[subdir]
+    )
+    template_path = tmp_path / "example.plan.json"
+    template_plan.save(template_path)
+
+    template_plan.convert_template()
+
+    template_runs_dir = get_template_runs_dir()
+    template_runs = list(template_runs_dir.iterdir())
+    assert len(template_runs) == 1
+    assert str(date.today()) in str(template_runs[0])
+
+
+def test_rerunning_templates_dont_overwrite(
+    tmp_path, monkeypatch: pytest.MonkeyPatch, subdir
+):
+    global_dir = tmp_path / "global"
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(global_dir))
+
+    template_plan = Plan(
+        config=TemplateConfig(), operations=[GitStatus()], directories=[subdir]
+    )
+    template_path = tmp_path / "example.plan.json"
+    template_plan.save(template_path)
+
+    copied_plan = template_plan.convert_template()
+    copied_plan.operations[0].record_result(subdir, True)
+    copied_plan.save()
+    assert copied_plan._path
+
+    # this should _not_ overwrite the existing copy
+    template_plan.convert_template()
+
+    updated_template = Plan.from_path(copied_plan._path)
+
+    # as a result, the directory is still complete
+    assert updated_template.directory_complete(subdir)
+
+
+def test_template_divergence_is_an_error(
+    tmp_path, monkeypatch: pytest.MonkeyPatch, subdir
+):
+    global_dir = tmp_path / "global"
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(global_dir))
+
+    template_plan = Plan(
+        config=TemplateConfig(),
+        operations=[GitSwitch(config=GitSwitch.OpConfig(branch="neat"))],
+        directories=[subdir],
+    )
+    template_path = tmp_path / "example.plan.json"
+    template_plan.save(template_path)
+
+    copied_plan = template_plan.convert_template()
+    copied_plan.operations[0].config.branch = "cool"  # type:ignore
+    copied_plan.save()
+    assert template_plan._path != copied_plan._path
+    assert (
+        template_plan.operations[0].config.branch  # type: ignore
+        != copied_plan.operations[0].config.branch  # type: ignore
+    )
+
+    with pytest.raises(ValueError):
+        template_plan.convert_template()
+
+
+@pytest.mark.parametrize("num_files", [0, 1, 5, 15, 30])
+def test_old_template_runs_are_cleared(
+    tmp_path, monkeypatch: pytest.MonkeyPatch, num_files: int
+):
+    global_dir = tmp_path / "global"
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(global_dir))
+
+    template_plan = Plan(config=TemplateConfig(), operations=[], directories=[])
+    template_path = tmp_path / "example.plan.json"
+    template_plan.save(template_path)
+    stem = escape_path(template_path)
+
+    runs_dir = get_template_runs_dir()
+    runs_dir.mkdir(parents=True, exist_ok=True)
+    assert len(list(runs_dir.iterdir())) == 0
+
+    today = date.today()
+    for days_ago in range(num_files):
+        (runs_dir / f"{today - timedelta(days=days_ago)}_{stem}").touch()
+    assert len(list(runs_dir.iterdir())) == num_files
+
+    template_plan.clean_old_template_runs()
+
+    assert len(list(runs_dir.iterdir())) == min(num_files, NUM_OLD_TEMPLATE_RUNS_KEPT)
+    if num_files:
+        assert (runs_dir / f"{today}_{stem}").exists()

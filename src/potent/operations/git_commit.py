@@ -1,4 +1,4 @@
-from typing import Literal, override
+from typing import ClassVar, Literal, override
 
 from potent.operations._base import BaseConfig, BaseOperation, Context, OperationResult
 
@@ -17,6 +17,8 @@ class GitCommit(BaseOperation):
         """
         If true, allows commits without changed/added files.
         """
+
+        ignored_fields_for_compare: ClassVar[set[str]] = {"message"}
 
     slug: Literal["git-commit"] = "git-commit"
     config: OpConfig

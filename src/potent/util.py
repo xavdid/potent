@@ -69,11 +69,18 @@ def get_config_dir() -> Path:
     return config_root / "potent"
 
 
-def get_command_dir() -> Path:
+def get_templates_dir() -> Path:
     """
-    global commands live here
+    global templates live here
     """
-    return get_config_dir() / "commands"
+    return get_config_dir() / "templates"
+
+
+def get_template_runs_dir() -> Path:
+    """
+    every time a template is run, it's copied into this dir
+    """
+    return get_config_dir() / "template-runs"
 
 
 def get_config_path() -> Path:

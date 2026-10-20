@@ -96,32 +96,6 @@
       "title": "ChangePrStatus",
       "type": "object"
     },
-    "CommandConfig": {
-      "description": "One of the configuration options for a Plan",
-      "properties": {
-        "mode": {
-          "const": "command",
-          "default": "command",
-          "title": "Mode",
-          "type": "string"
-        },
-        "last_run": {
-          "anyOf": [
-            {
-              "format": "date",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Last Run"
-        }
-      },
-      "title": "CommandConfig",
-      "type": "object"
-    },
     "Config": {
       "additionalProperties": false,
       "properties": {
@@ -659,6 +633,19 @@
       "title": "SetAutomerge",
       "type": "object"
     },
+    "TemplateConfig": {
+      "description": "One of the configuration options for a Plan",
+      "properties": {
+        "mode": {
+          "const": "template",
+          "default": "template",
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "title": "TemplateConfig",
+      "type": "object"
+    },
     "potent__operations__assert_branch__AssertBranch__OpConfig": {
       "additionalProperties": false,
       "properties": {
@@ -848,8 +835,8 @@
       },
       "discriminator": {
         "mapping": {
-          "command": "#/$defs/CommandConfig",
-          "plan": "#/$defs/PlanConfig"
+          "plan": "#/$defs/PlanConfig",
+          "template": "#/$defs/TemplateConfig"
         },
         "propertyName": "mode"
       },
@@ -858,7 +845,7 @@
           "$ref": "#/$defs/PlanConfig"
         },
         {
-          "$ref": "#/$defs/CommandConfig"
+          "$ref": "#/$defs/TemplateConfig"
         }
       ],
       "title": "Config"

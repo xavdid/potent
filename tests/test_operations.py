@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Literal, cast, get_args
+from typing import Any, ClassVar, Literal, cast, get_args
 from unittest.mock import patch
 
 import pytest
@@ -210,10 +210,6 @@ def test_replacement_error(subdir):
         plan.resolve_operation(op, subdir)
 
 
-# TODO: test raw command templating
-# i think it won't work because we don't recurse
-
-
 def test_raw_command_template(subdir):
     """
     raw-command is (currently) the only operation which has a non-scalar as a config value (there's a str[] for the commands). Have to make sure it resolves templates correctly
@@ -278,3 +274,25 @@ def test_raw_command_save_output(subdir):
     plan.run()
     assert plan.data
     assert plan.data[str(subdir)]["output"] == "bruce"
+
+
+def test_raw_command_instances_compare_ignoring_name():
+    assert (
+        RawCommand(
+            comment="something",
+            config=RawCommand.OpConfig(arguments=["echo", "cool"], name="a"),
+        ).dump_for_comparison()
+        == RawCommand(
+            comment="something else",
+            config=RawCommand.OpConfig(arguments=["echo", "cool"], name="b"),
+        ).dump_for_comparison()
+    )
+
+
+def test_ignored_fields_must_be_valid_references():
+    with pytest.raises(ValueError):
+
+        class TestConfig(BaseConfig):
+            name: str
+
+            ignored_fields_for_compare: ClassVar[set[str]] = {"nam"}

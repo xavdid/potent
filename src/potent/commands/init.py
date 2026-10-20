@@ -4,8 +4,8 @@ from typing import Annotated
 from cyclopts import App, Parameter, validators
 
 from potent.commands._types import is_plan_json, pathify
-from potent.plan import CommandConfig, Plan, PlanConfig
-from potent.util import get_command_dir
+from potent.plan import Plan, PlanConfig, TemplateConfig
+from potent.util import get_templates_dir
 
 app = App()
 
@@ -29,7 +29,7 @@ def init(
     Create an empty plan at the specified path. If the path resolves to the config directory, then it defaults to `command` mode. Otherwise, the default of `plan` is used.
     """
 
-    is_command = get_command_dir() in path.parents
+    is_template = get_templates_dir() in path.parents
 
     path.parent.mkdir(exist_ok=True, parents=True)
 
@@ -37,8 +37,8 @@ def init(
         version="v1",
         operations=[],
         directories=[],
-        config=CommandConfig() if is_command else PlanConfig(),
+        config=TemplateConfig() if is_template else PlanConfig(),
     ).save(path)
 
-    if is_command:
+    if is_template:
         print(f"Created {path}")

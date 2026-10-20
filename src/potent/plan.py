@@ -1,22 +1,25 @@
+import os.path
 from dataclasses import dataclass
 from datetime import date
 from functools import partial
 from pathlib import Path
 from typing import (
     Annotated,
+    ClassVar,
     Literal,
     Optional,
     Union,
     assert_never,
 )
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field
+from pydantic import AfterValidator, BaseModel, Field
 from rich.console import Console
 from rich.tree import Tree
 
 from potent.operations._base import (
     AbsDirPath,
     BaseOperation,
+    CommonBase,
     Context,
     PrintableStatus,
 )
@@ -40,20 +43,23 @@ from potent.run_events import (
     OperationFinished,
     OperationStarted,
 )
-from potent.util import DataReadException, DataValType, get_command_dir
+from potent.util import (
+    DataReadException,
+    DataValType,
+    get_template_runs_dir,
+    get_templates_dir,
+)
 
 # OPERATION IMPORTS ^
 
 MANUAL_CONFIRMATION_SLUG = ManualConfirmation().slug
+NUM_OLD_TEMPLATE_RUNS_KEPT = 15
 
 
 def unique_items(v):
     if len(v) != len(set(v)):
         raise ValueError("list is not unique")
     return v
-
-
-Version = Literal["v1"]
 
 
 class PlanConfig(BaseModel):
@@ -67,18 +73,14 @@ class PlanConfig(BaseModel):
     """
 
 
-class CommandConfig(BaseModel):
+class TemplateConfig(BaseModel):
     """
     One of the configuration options for a Plan
     """
 
-    mode: Literal["command"] = "command"
+    mode: Literal["template"] = "template"
     """
-    commands are auto-resetting plans
-    """
-    last_run: Optional[date] = None
-    """
-    the iso date (`YYYY-MM-DD`) on which this command was last run. If a command is run and `date.today()` doesn't match this value, the command is reset before proceeding. Otherwise, it runs as normal (maybe as a no-op). The plan can still be manually reset; this value only affects auto-resetting behavior.
+    plans are run as one-off operations (that can be manually reset)
     """
 
 
@@ -206,13 +208,12 @@ Operations = list[
 ]
 
 
-class Plan(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    config: Annotated[PlanConfig | CommandConfig, Field(discriminator="mode")] = (
+class Plan(CommonBase):
+    config: Annotated[PlanConfig | TemplateConfig, Field(discriminator="mode")] = (
         PlanConfig()
     )
 
-    version: Version = "v1"
+    version: Literal["v1"] = "v1"
     comment: Optional[str] = None
     operations: Operations
     directories: Annotated[
@@ -226,6 +227,8 @@ class Plan(BaseModel):
     When running the plan, progress events are sent to the renderer for presentation
     """
 
+    ignored_fields_for_compare: ClassVar[set[str]] = {"config", "comment", "data"}
+
     @staticmethod
     def from_path(path: Path) -> "Plan":
         plan = Plan.model_validate_json(path.read_text())
@@ -237,9 +240,7 @@ class Plan(BaseModel):
         Persist an open Plan to disk. Errors if no path is provided _and_ the plan was not given a path at creation time.
         """
 
-        dest = path or self._path
-
-        if dest is None:
+        if (dest := path or self._path) is None:
             raise ValueError("Can't save a Plan without a path.")
 
         tmp = dest.with_suffix(".tmp")
@@ -249,7 +250,7 @@ class Plan(BaseModel):
         # this move retains the original file's metadata and deletes the tmp file in one go
         tmp.replace(dest)
 
-        if path and (self._path is None):
+        if self._path is None:
             self._path = path
 
     def reset(self):
@@ -448,27 +449,15 @@ class Plan(BaseModel):
 
         return result
 
-    def run(
-        self, skip_reset=False, renderer: Renderer = NoopRenderer()
-    ) -> list[tuple[int, Path]]:
+    def run(self, renderer: Renderer = NoopRenderer()) -> list[tuple[int, Path]]:
         """
         Executes a plan, modifying this object. Returns the steps that it completed this run
         """
+        if self.config.mode == "template":
+            raise ValueError("Can't run template-type plans.")
+
         worked_dirs = []
         just_completed_steps: list[tuple[int, Path]] = []
-
-        if self.config.mode == "command":
-            if skip_reset:
-                renderer.log("skpping reset calculation")
-            elif self.config.last_run != (today := date.today()):
-                if self.config.last_run is not None:
-                    renderer.log("Resetting plan")
-                self.reset()
-                self.config.last_run = today
-        elif self.config.mode == "plan" and skip_reset:
-            renderer.log(
-                "[magenta]WARN: [bold cyan]--skip-reset[/] has no effect on non-command plans; ignoring.[/]"
-            )
 
         for directory in self.directories:
             renderer.send(DirectoryStarted(directory))
@@ -541,6 +530,10 @@ class Plan(BaseModel):
         *,
         raise_read_errors: bool = True,
     ) -> T:
+        """
+        Given an operation (which includes any configuration data) & a directory, attempt to resolve all variables in the config with their corresponding data entries. Returns the resolved copy of the operation (or the original if it has no variables to replace).
+        """
+
         def lookup(key: str) -> DataValType:
             try:
                 return self.read_data(directory, key)
@@ -552,6 +545,11 @@ class Plan(BaseModel):
         return op._resolve(lookup)
 
     def read_data(self, directory: Path, key: str) -> DataValType:
+        """
+        Read `key` for this `directory` from the plan's `data` dict.
+
+        Raises `DataReadException` if any intermediate structures are missing.
+        """
         directory_str = str(directory)
         if self.data is None:
             raise DataReadException("no data has been written")
@@ -567,6 +565,9 @@ class Plan(BaseModel):
             )
 
     def write_data(self, directory: Path, key: str, value: DataValType) -> None:
+        """
+        Write `key`:`value` for this `directory` into the plan's `data` dict, creating intermediate structures as needed.
+        """
         directory_str = str(directory)
         if self.data is None:
             self.data = {}
@@ -576,6 +577,67 @@ class Plan(BaseModel):
 
         self.data[directory_str][key] = value
 
+    def convert_template(self) -> "Plan":
+        """
+        If a plan is a template, copy it to the template dir as a real plan w/ an escaped path pointing to the original
+        """
+        if self.config.mode == "plan":
+            return self
+        if self.config.mode == "template":
+            if not self._path:
+                raise ValueError("expected template plan to have a _path")
+            dest_path = get_template_runs_dir() / self.template_dest_path()
+
+            if dest_path.exists():
+                copied_plan = Plan.from_path(dest_path)
+
+                if copied_plan.dump_for_comparison() != self.dump_for_comparison():
+                    raise ValueError(
+                        f"Cannot safely run because the copied plan ({str(dest_path)}) has diverged from its template. To proceed, either delete the copied plan and re-run the template or run the copied plan directly."
+                    )
+
+                return copied_plan
+
+            dest_path.parent.mkdir(exist_ok=True, parents=True)
+
+            plan = self.model_copy(
+                update={"config": PlanConfig(), "_path": dest_path},
+                # it's as if we reloaded everything from disk
+                deep=True,
+            )
+            plan.save()
+            return plan
+
+        assert_never(self.config.mode)
+
+    def clean_old_template_runs(self):
+        if self.config.mode != "template":
+            raise ValueError("Can only clean template runs from a template")
+
+        if not self._path:
+            raise ValueError("Can only clean template if the template has a path")
+
+        stem = escape_path(self._path).name
+
+        existing_runs = sorted(
+            p for p in get_template_runs_dir().iterdir() if p.name.endswith(stem)
+        )
+
+        # delete matching files until we only have NUM_OLD_TEMPLATE_RUNS_KEPT remaining
+        # if the number of files is smaller than the length of the list, this is empty
+        for p in existing_runs[:-NUM_OLD_TEMPLATE_RUNS_KEPT]:
+            p.unlink()
+
+    def template_dest_path(self) -> Path:
+        """
+        Where a copied template should be written
+        """
+
+        if not self._path:
+            raise ValueError("Can't compute dest path without a _path")
+
+        return Path(f"{date.today()}_{escape_path(self._path)}")
+
 
 def get_plans_from_path(path: Path) -> list[Plan]:
     return [
@@ -583,5 +645,13 @@ def get_plans_from_path(path: Path) -> list[Plan]:
     ]
 
 
-def get_available_commands() -> tuple[list[Plan], list[Plan]]:
-    return get_plans_from_path(get_command_dir()), get_plans_from_path(Path.cwd())
+def get_available_templates() -> tuple[list[Plan], list[Plan]]:
+    return get_plans_from_path(get_templates_dir()), get_plans_from_path(Path.cwd())
+
+
+def escape_path(path: Path) -> Path:
+    """
+    Given a path, escape it so it can be used in another path
+    """
+
+    return Path(str(path).replace("|", "||").replace(os.path.sep, "|"))

@@ -1,4 +1,4 @@
-from typing import Literal, Optional, override
+from typing import ClassVar, Literal, Optional, override
 
 from potent.operations._base import BaseConfig, BaseOperation, Context, OperationResult
 
@@ -21,6 +21,8 @@ class RawCommand(BaseOperation):
         """
         If specified, save a trimmed copy of the output to the `data` property under this key. Will save _all_ output, so only use when output is short.
         """
+
+        ignored_fields_for_compare: ClassVar[set[str]] = {"name"}
 
     slug: Literal["raw-command"] = "raw-command"
     config: OpConfig

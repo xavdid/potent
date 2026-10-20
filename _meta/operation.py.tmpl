@@ -15,6 +15,8 @@ class TKTK(BaseOperation):
     class OpConfig(BaseConfig):
         pass
 
+        ignored_fields_for_compare: ClassVar[set[str]] = {"TKTK"}
+
     slug: Literal["TKTK"] = "TKTK"
     config: OpConfig
 

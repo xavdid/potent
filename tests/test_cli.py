@@ -1,6 +1,5 @@
 import re
-from datetime import date, timedelta
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import cyclopts
 import pytest
@@ -8,8 +7,9 @@ from cyclopts import CycloptsError
 from pydantic import ValidationError
 
 from potent.cli import app as cli
-from potent.operations.raw_command import RawCommand
-from potent.plan import CommandConfig, Plan
+from potent.operations.git_status import GitStatus
+from potent.plan import Plan, TemplateConfig
+from potent.util import get_template_runs_dir
 
 
 @pytest.fixture(autouse=True)
@@ -51,83 +51,25 @@ def test_invalid_json(tmp_path):
     assert "validation errors for Plan" in str(err)
 
 
-@patch("subprocess.run", return_value=MagicMock(stdout="", returncode=0))
-def test_auto_reset_commands(mock_run: MagicMock, tmp_path):
-    plan_path = tmp_path / "example.plan.json"
+@patch("potent.plan.Plan.clean_old_template_runs")
+@patch("potent.plan.Path.unlink")
+def test_templates_are_copied(
+    mock_unlink, mock_clean, tmp_path, monkeypatch: pytest.MonkeyPatch, subdir
+):
+    global_dir = tmp_path / "global"
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(global_dir))
 
-    sub_path = tmp_path / "cool"
-    sub_path.mkdir()
-
-    plan_path.write_text(
-        Plan(
-            operations=[RawCommand(config=RawCommand.OpConfig(arguments=["pwd"]))],
-            directories=[sub_path],
-            config=CommandConfig(),
-        ).model_dump_json()
+    template_plan = Plan(
+        config=TemplateConfig(), operations=[GitStatus()], directories=[subdir]
     )
+    template_path = tmp_path / "example.plan.json"
+    template_plan.save(template_path)
 
     result = cli(
-        ["run", str(plan_path)], result_action="return_int_as_exit_code_else_zero"
+        ["run", str(template_path)], result_action="return_int_as_exit_code_else_zero"
     )
     assert result == 0
-    # runs normally
-    assert mock_run.call_count == 1
-
-    p = Plan.from_path(plan_path)
-    assert p.config.mode == "command"
-    assert p.config.last_run == date.today()
-    assert list(p.operations[0].directory_statuses.values()) == ["completed"]
-
-    result = cli(
-        ["run", str(plan_path)], result_action="return_int_as_exit_code_else_zero"
-    )
-    assert result == 0
-    # doesn't get run again
-    assert mock_run.call_count == 1
-
-    # last run is now yesterday
-    p.config.last_run = date.today() - timedelta(days=1)
-    plan_path.write_text(p.model_dump_json())
-
-    # running again now resets it
-    result = cli(
-        ["run", str(plan_path)], result_action="return_int_as_exit_code_else_zero"
-    )
-    assert result == 0
-    # shells out again
-    assert mock_run.call_count == 2
-
-    p = Plan.from_path(plan_path).config.last_run == date.today()  # type:ignore
-
-
-@patch("subprocess.run", return_value=MagicMock(stdout="", returncode=0))
-def test_auto_reset_plans_ignored(mock_run: MagicMock, tmp_path):
-    plan_path = tmp_path / "example.plan.json"
-
-    sub_path = tmp_path / "cool"
-    sub_path.mkdir()
-
-    plan_path.write_text(
-        Plan(
-            operations=[RawCommand(config=RawCommand.OpConfig(arguments=["pwd"]))],
-            directories=[sub_path],
-        ).model_dump_json()
-    )
-
-    result = cli(
-        ["run", str(plan_path)], result_action="return_int_as_exit_code_else_zero"
-    )
-    assert result == 0
-    # runs normally
-    assert mock_run.call_count == 1
-
-    p = Plan.from_path(plan_path)
-    assert p.config.mode == "plan"
-    assert list(p.operations[0].directory_statuses.values()) == ["completed"]
-
-    result = cli(
-        ["run", str(plan_path)], result_action="return_int_as_exit_code_else_zero"
-    )
-    assert result == 0
-    # doesn't get run again
-    assert mock_run.call_count == 1
+    assert len(list(get_template_runs_dir().iterdir())) == 1
+    assert len(mock_clean.mock_calls) == 1
+    # nothing to remove
+    assert len(mock_unlink.mock_calls) == 0

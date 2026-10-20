@@ -3,7 +3,7 @@ from typing import Annotated, Sequence
 
 from cyclopts import Parameter, Token, validators
 
-from potent.util import get_command_dir
+from potent.util import get_templates_dir
 
 
 def is_plan_json(_, path: Path) -> None:
@@ -21,8 +21,8 @@ def pathify(_, tokens: Sequence[Token]) -> Path:
     if "." in token or "/" in token:
         return Path(token)
 
-    # assume it's a shortcut to a command
-    return get_command_dir() / f"{token}.plan.json"
+    # assume it's a shortcut to a template
+    return get_templates_dir() / f"{token}.plan.json"
 
 
 # this must not be a type= annotation and you must not use a special cyclopts type, like ExistingJsonPath, since it shadows my parameter

@@ -108,13 +108,44 @@ Specifying the schema will help with autocomplete and flag potential errors duri
 > [!NOTE]
 > If you use [plugins](#using-plugins), you'll need a slightly different approach. See [below](#editor-validation-with-plugins).
 
-### Command Plans
+### Template Plans
 
-Command plans are special plan variant that will auto-reset themselves once each calendar day. They're useful for plans you want to run periodically but are still idempotent within a daily window. For example, running `git pull` on a bunch of directories.
+Template plans are special plan variant that creates a non-template copy when run instead of modifying the original. A new copy is created each calendar day. They're useful for plans you want to run periodically but are still idempotent within a daily window. For example, running `git pull` on a bunch of directories.
+
+Because the copy is run & modified instead of the original, template plans are great for sharing plans between teammates.
+
+Template plans are declared just like normal ones, but have `config.mode == "template"`:
+
+```json
+{
+  "config": {
+    "mode": "template"
+  },
+  "version": "v1",
+  "operations": [
+    {
+      "slug": "git-status"
+    }
+  ],
+  "directories": [
+    "~/projects/potent-demo/aardvark",
+    "~/projects/potent-demo/badger"
+  ]
+}
+```
+
+The most recent 15 copies of a given plan are kept. Older ones are auto-pruned after each `potent run`.
+
+Copies of a template live in `XDG_CONFIG_HOME/potent/template-runs/` and include both the calendar date and an escaped version of the the path to the template, like `~/.config/potent/template-runs/2026-10-18_|Users|david|.config|potent|templates|example.plan.json`.
+
+> [!WARNING]
+> Template executions are idempotent based the **calendar date of your local machine**. As a result, running a template at 11:59pm and running it again at 12:01am will cause the plan to start from scratch.
+>
+> To avoid this, run the created copy directly for runs after the first (e.g. `potent run ~/.config/potent/template-runs/2026-10-18_|Users|<...>|example.plan.json`).
 
 ### Plans as CLI input
 
-Most CLI commands accept a plan as their main argument. You can pass either a path to a plan file (like `~/Desktop/my-plan.plan.json`) or a simple string. In the latter case, `potent` will look in its config directory for a plan with the corresponding name. For example, `potent run my-script` tries to run the plan at `~/.config/potent/commands/my-script.plan.json`.
+Most CLI commands accept a plan as their main argument. You can pass either a path to a plan file (like `~/Desktop/my-plan.plan.json`) or a simple string. In the latter case, `potent` will look in its config directory for a plan with the corresponding name. For example, `potent run my-script` tries to run the plan at `~/.config/potent/templates/my-script.plan.json`.
 
 The config directory respects the `XDG_CONFIG_HOME` environment variable.
 
@@ -122,9 +153,9 @@ The config directory respects the `XDG_CONFIG_HOME` environment variable.
 
 Each Operation is identified by its unique `slug` field. Each of the Operations below describes a single bash command with well-defined (and validated) arguments. If you need more flexibility, check out the [raw command](#rawcommand) Operation.
 
-### Templates
+### Variables
 
-Any operation config that takes a string can also accept a template value. These can be any string and are wrapped in double curly braces, like `{{ example }}` (whitespace optional).
+Any operation config that takes a string can also accept a variable value. These can be any string and are wrapped in double curly braces, like `{{ example }}` (whitespace optional).
 
 At runtime, values are replaced with the corresponding entry from the plan's `data` property, if present. Missing values will fail the operation at runtime. For example, running:
 
@@ -393,7 +424,6 @@ Execute a plan file and then print its status.
 
 - `path` (FILE, required): The location of a `.plan.json` file. Can be a full path or a name. If a name, the named file must exist in the configured command directory.
 - `display_mode` (display-mode, optional): Controls how the results are displayed.
-- `skip_reset` (bool, optional): If supplied, don't automatically reset a command plan. Ignored for non-command plans.
 
 ### `schema`
 
@@ -507,7 +537,7 @@ And then point VSCode to that file:
 ## Authoring Plugins
 
 > [!TIP]
-> There's a template you can start with: https://github.com/xavdid/potent-plugin-template
+> There's a repo template to get you started: https://github.com/xavdid/potent-plugin-template
 
 ### Identifying as a Plugin
 

@@ -1,6 +1,4 @@
-from typing import Annotated
-
-from cyclopts import App, Parameter
+from cyclopts import App
 from rich.console import Console
 
 from potent.commands._types import PlanJson
@@ -12,32 +10,26 @@ app = App()
 
 
 @app.command()
-def run(
-    path: PlanJson,
-    /,
-    display_mode: DisplayModeFlag = StandardDisplayMode,
-    skip_reset: Annotated[
-        bool,
-        Parameter(
-            negative="",
-            help="If supplied, don't automatically reset a command plan. Ignored for non-command plans.",
-        ),
-    ] = False,
-):
+def run(path: PlanJson, /, display_mode: DisplayModeFlag = StandardDisplayMode):
     """
     Execute a plan file and then print its status.
     """
+    original_plan = Plan.from_path(path)
+
+    if is_template := original_plan.config.mode == "template":
+        plan = original_plan.convert_template()
+    else:
+        plan = original_plan
+
     console = Console()
+    console.print(
+        f"{'Copying template' if is_template else 'Running'} [bold yellow]{str(path)}"
+    )
 
-    console.print(f"Running [bold yellow]{str(path)}")
-
-    plan = Plan.from_path(path)
     completed_steps = plan.run(
-        skip_reset,
-        # this is smelly
         renderer=CompactRenderer()
         if display_mode.name == "quiet"
-        else BasicRenderer(display_mode),
+        else BasicRenderer(display_mode)
     )
 
     result = plan.status(
@@ -49,3 +41,6 @@ def run(
     console.rule("Summary")
     console.print(result.legend())
     console.print(result.to_tree())
+
+    if is_template:
+        original_plan.clean_old_template_runs()

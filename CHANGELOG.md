@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Add support for `template`-type plans, which are copied on run. These are better for sharing among a team, since they can be run without modifying the shared original
+- ❗ remove support for `command`-type plans in favor of templates
+  - to migrate existing commands:
+    1. call `potent reset` on each command-style plan file
+    2. rename your `commands` directory (defaults to `~/.config/potent/commands`) to `templates`
+    3. In each plan, change `config.mode` from `"command"` to `"template"`
+- ❗ remove `skip-reset` flag from `potent run`, since it was only relevant for commands
+
 ## 0.10.0
 
 _released `2026-10-17`_
